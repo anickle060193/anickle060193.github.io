@@ -22,48 +22,6 @@ addEventListener( "resize", function()
 
 /* Images */
 
-var playerDownImage = 0;
-var playerUpImage = 1;
-var playerLeftImage = 2;
-var playerRightImage = 3;
-
-var imageFileNames = [
-    "images/PlayerDown.png",
-    "images/PlayerUp.png",
-    "images/PlayerLeft.png",
-    "images/PlayerRight.png"
-];
-
-var images = [ ];
-
-function onLoadingComplete( image )
-{
-    return function()
-    {
-        image.loadingComplete = true;
-    };
-}
-
-for( var i = 0; i < imageFileNames.length; i++ )
-{
-    var image = new Image();
-    image.loadingComplete = false;
-    image.onload = onLoadingComplete( image );
-    image.onerror = onLoadingComplete( image );
-    image.src = imageFileNames[ i ];
-    images[ i ] = image;
-}
-
-function drawImage( context, imageNumber, x, y, width, height )
-{
-    if( images[ imageNumber ].loadingComplete )
-    {
-        context.drawImage( images[ imageNumber ], x, y, width, height );
-        return true;
-    }
-    return false;
-}
-
 function getImageSrcForPlayer( facing )
 {
     switch( facing )
@@ -98,32 +56,13 @@ function getImageSrcForMove( move )
     }
 }
 
-var waitForImagesLoadedInterval = null;
-var waitForImagesLoadedDelay = 100;
-
-function waitForImagesLoaded( callback )
-{
-    waitForImagesLoadedInterval = setInterval( function()
-    {
-        for( var i = 0; i < images.length; i++ )
-        {
-            if( !images[ i ].loadingComplete )
-            {
-                return;
-            }
-        }
-        clearInterval( waitForImagesLoadedInterval );
-        callback();
-    }, waitForImagesLoadedDelay );
-}
-
 
 /* Game Board */
 
 var board = null;
 
-var boardWidth = 500;
-var boardHeight = 500;
+var boardWidth = 700;
+var boardHeight = 700;
 
 var boardRows = 10;
 var boardColumns = 10;
@@ -234,39 +173,33 @@ function Location( row, column )
 
 var playerFacing;
 var playerLocation;
+var playerImg = createPlayerImage();
+
+function createPlayerImage()
+{
+    var img = document.createElement( "img" );
+    img.className = "player";
+    img.width = boardCellWidth;
+    img.height = boardCellHeight;
+    document.body.appendChild( img );
+    console.log( "creating PLayer" );
+    return img;
+}
+
+function updatePlayerImg()
+{
+    var left = boardStyle.left + playerLocation.column * ( boardCellWidth + boardBorderThickness );
+    var top = boardStyle.top + playerLocation.row * ( boardCellHeight + boardBorderThickness );
+    playerImg.style.left = left + "px";
+    playerImg.style.top = top + "px";
+    playerImg.src = getImageSrcForPlayer( playerFacing );
+}
 
 function initializePlayer()
 {
     playerFacing = facingDown;
     playerLocation = new Location( 0, 0 );
-}
-
-function drawPlayer()
-{
-    var x = boardStyle.left + playerLocation.column * ( boardCellWidth + boardBorderThickness );
-    var y = boardStyle.top + playerLocation.row * ( boardCellHeight + boardBorderThickness );
-    var width = boardCellWidth;
-    var height = boardCellHeight;
-    var imageIndex = -1;
-    switch( playerFacing )
-    {
-        case facingDown:
-            imageIndex = playerDownImage;
-            break;
-        case facingLeft:
-            imageIndex = playerLeftImage;
-            break;
-        case facingRight:
-            imageIndex = playerRightImage;
-            break;
-        case facingUp:
-            imageIndex = playerUpImage;
-            break;
-    }
-    if( imageIndex != -1 )
-    {
-        return drawImage( context, imageIndex, x, y, width, height );
-    }
+    updatePlayerImg();
 }
 
 
@@ -615,7 +548,7 @@ function render()
 {
     clear();
     drawBoard();
-    drawPlayer();
+    updatePlayerImg();
     
     drawMoveQueue( moveQueueParams );
     drawMoveQueue( possibleMoveQueueParams );
@@ -625,11 +558,6 @@ function render()
 /* Main */
 
 function main()
-{
-    waitForImagesLoaded( _main );
-}
-
-function _main()
 {
     initializeBoard();
     initializePlayer();

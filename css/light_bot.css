@@ -92,3 +92,8 @@ canvas
 {
 	background-color: #FFC54A;
 }
+
+.player
+{
+	position: absolute;
+}
