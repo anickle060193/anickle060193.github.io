@@ -1,39 +1,13 @@
 /* Document Elements */
 
-var boardCanvas = document.getElementById( "board" );
-var boardContext = boardCanvas.getContext( "2d" );
-boardContext.translate( 0.5, 0.5 );
-
-var moveQueueCanvas = document.getElementById( "moveQueue" );
-var moveQueueContext = moveQueueCanvas.getContext( "2d" );
-moveQueueContext.translate( 0.5, 0.5 );
-
-var possibleMovesCanvas = document.getElementById( "possibleMoves" );
-var possibleMovesContext = possibleMovesCanvas.getContext( "2d" );
-possibleMovesContext.translate( 0.5, 0.5 );
-
-var buttonsCanvas = document.getElementById( "buttons" );
-var buttonsContext = buttonsCanvas.getContext( "2d" );
-buttonsContext.translate( 0.5, 0.5 );
+var canvas = document.getElementById( "canvas" );
+var context = canvas.getContext( "2d" );
+context.translate( 0.5, 0.5 );
 
 function resize()
 {
-    var leftWidth = boardWidth;
-    var rightWidth = window.innerWidth - boardWidth;
-    var topHeight = boardHeight;
-    var bottomHeight = window.innerHeight - boardHeight;
-    
-    boardCanvas.width = leftWidth;
-    boardCanvas.height = topHeight;
-    
-    moveQueueCanvas.width = rightWidth;
-    moveQueueCanvas.height = topHeight;
-    
-    possibleMovesCanvas.width = leftWidth;
-    possibleMovesCanvas.height = bottomHeight;
-    
-    buttonsCanvas.width = rightWidth;
-    buttonsCanvas.height = bottomHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     render();
 }
@@ -48,20 +22,12 @@ addEventListener( "resize", function()
 
 /* Images */
 
-var turnLeftImage = 0;
-var turnRightImage = 1;
-var forwardImage = 2;
-var lightUpImage = 3;
-var playerDownImage = 4;
-var playerUpImage = 5;
-var playerLeftImage = 6;
-var playerRightImage = 7;
+var playerDownImage = 0;
+var playerUpImage = 1;
+var playerLeftImage = 2;
+var playerRightImage = 3;
 
 var imageFileNames = [
-    "images/TurnLeft.png",
-    "images/TurnRight.png",
-    "images/MoveForward.png",
-    "images/LightUp.png",
     "images/PlayerDown.png",
     "images/PlayerUp.png",
     "images/PlayerLeft.png",
@@ -98,6 +64,40 @@ function drawImage( context, imageNumber, x, y, width, height )
     return false;
 }
 
+function getImageSrcForPlayer( facing )
+{
+    switch( facing )
+    {
+        case facingDown:
+            return "images/PlayerDown.png";
+        case facingUp:
+            return "images/PlayerUp.png";
+        case facingLeft:
+            return "images/PlayerLeft.png";
+        case facingRight:
+            return "images/PlayerRight.png";
+        default:
+            return "";
+    }
+}
+
+function getImageSrcForMove( move )
+{
+    switch( move )
+    {
+        case turnLeftMove:
+            return "images/TurnLeft.png";
+        case turnRightMove:
+            return "images/TurnRight.png";
+        case forwardMove:
+            return "images/MoveForward.png";
+        case lightUpMove:
+            return "images/LightUp.png";
+        default:
+            return "";
+    }
+}
+
 var waitForImagesLoadedInterval = null;
 var waitForImagesLoadedDelay = 100;
 
@@ -120,7 +120,7 @@ function waitForImagesLoaded( callback )
 
 /* Game Board */
 
-var board = [];
+var board = null;
 
 var boardWidth = 500;
 var boardHeight = 500;
@@ -133,7 +133,7 @@ var cellUnlitLight = 1;
 var cellLitLight = 2;
 
 var emptyColor = "#669999";
-var unlitLightColor = "#FFFF99";
+var unlitLightColor = "#99FAFF";
 var litLightColor = "#FFFF00";
 
 var boardStartX = 0;
@@ -142,8 +142,11 @@ var boardBorderThickness = 1;
 var boardCellWidth = ( boardWidth - boardBorderThickness * ( boardColumns - 1 ) ) / boardColumns;
 var boardCellHeight = ( boardHeight - boardBorderThickness * ( boardRows - 1 ) ) / boardRows;
 
+var boardStyle = getBoardStyle();
+
 function initializeBoard()
 {
+    board = [ ];
     for( var r = 0; r < boardRows; r++ )
     {
         board[ r ] = [ ];
@@ -159,29 +162,23 @@ function initializeBoard()
 
 function drawBoardCell( row, column )
 {
+    var x = boardStyle.left + ( boardCellWidth + boardBorderThickness ) * column;
+    var y = boardStyle.top + ( boardCellHeight + boardBorderThickness )  * row;
     var cell = board[ row ][ column ];
-    var validCell = true;
     if( cell == cellEmpty )
     {
-        validCell = true;
-        boardContext.fillStyle = emptyColor;
+        context.fillStyle = emptyColor;
+        context.fillRect( x, y, boardCellWidth, boardCellHeight );
     }
     else if( cell == cellUnlitLight )
     {
-        validCell = true;
-        boardContext.fillStyle = unlitLightColor;
+        context.fillStyle = unlitLightColor;
+        context.fillRect( x, y, boardCellWidth, boardCellHeight );
     }
     else if( cell == cellLitLight )
     {
-        validCell = true;
-        boardContext.fillColor = litLightColor;
-    }
-    
-    if( validCell )
-    {
-        var x = boardStartX + ( boardCellWidth + boardBorderThickness ) * column;
-        var y = boardStartY + ( boardCellHeight + boardBorderThickness )  * row;
-        boardContext.fillRect( x, y, boardCellWidth, boardCellHeight );
+        context.fillStyle = litLightColor;
+        context.fillRect( x, y, boardCellWidth, boardCellHeight );
     }
 }
 
@@ -194,6 +191,22 @@ function drawBoard()
             drawBoardCell( r, c );
         }
     }
+}
+
+function getBoardStyle()
+{
+    var left = boardStartX;
+    var top = boardStartY;
+    var right = left + boardWidth;
+    var bottom = top + boardHeight;
+    return {
+        left: left,
+        right: right,
+        top: top,
+        bottom: bottom,
+        width: boardWidth,
+        height: boardHeight
+    };
 }
 
 
@@ -219,13 +232,19 @@ function Location( row, column )
     };
 }
 
-var playerFacing = facingDown;
-var playerLocation = new Location( 0, 0 );
+var playerFacing;
+var playerLocation;
+
+function initializePlayer()
+{
+    playerFacing = facingDown;
+    playerLocation = new Location( 0, 0 );
+}
 
 function drawPlayer()
 {
-    var x = boardStartX + playerLocation.column * ( boardCellWidth + boardBorderThickness );
-    var y = boardStartY + playerLocation.row * ( boardCellHeight + boardBorderThickness );
+    var x = boardStyle.left + playerLocation.column * ( boardCellWidth + boardBorderThickness );
+    var y = boardStyle.top + playerLocation.row * ( boardCellHeight + boardBorderThickness );
     var width = boardCellWidth;
     var height = boardCellHeight;
     var imageIndex = -1;
@@ -246,7 +265,7 @@ function drawPlayer()
     }
     if( imageIndex != -1 )
     {
-        return drawImage( boardContext, imageIndex, x, y, width, height );
+        return drawImage( context, imageIndex, x, y, width, height );
     }
 }
 
@@ -357,26 +376,44 @@ var moveExecutionDelay = 1000;
 
 function executeMoves()
 {
-    currentMoveIndex = 0;
+    stopExecution();
+    initializePlayer();
     moveInterval = setInterval( function()
     {
         executeMove( moves[ currentMoveIndex ] );
         currentMoveIndex++;
         if( currentMoveIndex >= moves.length )
          {
-             clearInterval( moveInterval );
-             moveInterval = null;
+             stopExecution();
          }
          render();
     }, moveExecutionDelay );
+    render();
+}
+
+function stopExecution()
+{
+    clearInterval( moveInterval );
+    moveInterval = null;
+    currentMoveIndex = 0;
+    render();
 }
 
 function addMove( move )
 {
     moves.push( move );
     var loc = getMoveButtonLocation( moveQueueParams, moves.length - 1 );
-    var button = createMoveButton( moveQueueParams, move, loc.x, loc.y );
-    document.body.appendChild( button );
+    addMoveButton( moveQueueParams, move, loc.x, loc.y );
+}
+
+function clearMoves()
+{
+    var moveButtons = document.getElementsByClassName( "moveButton" );
+    while( moveButtons[ 0 ] )
+    {
+        moveButtons[ 0 ].parentNode.removeChild( moveButtons[ 0 ] );
+    }
+    moves = [ ];
 }
 
 
@@ -385,79 +422,37 @@ function addMove( move )
 var moveSize = 64;
 var movePadding = 8;
 
-var moveBorderColor = "#009671";
-var moveBackgroundColor = "#00CC99";
-
-var currentMoveBorderColor = "#009671";
-var currentMoveBackgroundColor = "#00FFBF";
-
-function createMoveButton( params, move, x, y )
+function addMoveButton( params, move, x, y )
 {
     var button = document.createElement( "input" );
-    button.type = "button";
+    button.type = "image";
     button.className = params.moveButtonClass;
-    var rect = params.canvas.getBoundingClientRect();
-    var left = x + rect.left;
-    var top = y + rect.top;
-    console.log( "left: " + rect.left + " top: " + rect.top );
+    button.disabled = params.moveButtonsDisabled;
+    var left = x + params.x;
+    var top = y + params.y;
     button.style.left = left + "px";
     button.style.top = top + "px";
     button.style.width = moveSize + "px";
     button.style.height = moveSize + "px";
+    button.src = getImageSrcForMove( move );
+    document.body.appendChild( button );
     return button;
-}
-
-function getMoveButtonId( moveIndex )
-{
-    return "moveQueueButton" + moveIndex;
 }
 
 function getMoveButtonLocation( params, moveIndex )
 {
-    var x = params.padding * 2;
-    var y = params.padding * 2;
+    var x = params.padding;
+    var y = params.padding;
     for( var i = 0; i < moveIndex; i++ )
     {
-        drawMove( params.context, moves[ i ], x, y, params.showCurrent && ( i == currentMoveIndex ) );
         x += movePadding + moveSize;
         if( x + moveSize > params.width )
         {
-            x = params.padding * 2;
+            x = params.padding;
             y += movePadding + moveSize;
         }
     }
     return { x: x, y: y };
-}
-
-function drawMove( context, move, x, y, current )
-{
-    context.fillStyle = current ? currentMoveBackgroundColor : moveBackgroundColor;
-    context.fillRect( x, y, moveSize, moveSize );
-    context.strokeStyle = current ? currentMoveBorderColor : moveBorderColor;
-    context.strokeRect( x, y, moveSize, moveSize );
-    x += movePadding;
-    y += movePadding;
-    var size = moveSize - movePadding * 2;
-    var imageIndex = -1;
-    switch( move )
-    {
-        case forwardMove:
-            imageIndex = forwardImage;
-            break;
-        case turnLeftMove:
-            imageIndex = turnLeftImage;
-            break;
-        case turnRightMove:
-            imageIndex = turnRightImage;
-            break;
-        case lightUpMove:
-            imageIndex = lightUpImage;
-            break;
-    }
-    if( imageIndex != -1 )
-    {
-        return drawImage( context, imageIndex, x, y, size, size );
-    }
 }
 
 
@@ -470,8 +465,8 @@ function setMoveQueueSize( params )
 }
 
 var moveQueueParams = {
-    canvas: moveQueueCanvas,
-    context: moveQueueContext,
+    x: boardStyle.right + 10,
+    y: 10,
     moves: moves,
     padding: 10,
     backgroundColor: "#2EB8E6",
@@ -479,13 +474,14 @@ var moveQueueParams = {
     movesPerRow: 5,
     movesPerColumn: 6,
     showCurrent: true,
-    moveButtonClass: "moveButton"
+    moveButtonClass: "moveButton",
+    moveButtonsDisabled: true
 };
 setMoveQueueSize( moveQueueParams );
 
 var possibleMoveQueueParams = {
-    canvas: possibleMovesCanvas,
-    context: possibleMovesContext,
+    x: 10,
+    y: boardStyle.bottom + 10,
     moves: possibleMoves,
     padding: 10,
     backgroundColor: "#2EB8E6",
@@ -493,44 +489,126 @@ var possibleMoveQueueParams = {
     movesPerRow: 6,
     movesPerColumn: 1,
     showCurrent: false,
-    moveButtonClass: "possibleMoveButton"
+    moveButtonClass: "possibleMoveButton",
+    moveButtonsDisabled: false
 };
 setMoveQueueSize( possibleMoveQueueParams );
 
-function drawMoveQueue( params )
+function createOnPossibleMoveClick( move )
 {
-    params.context.fillStyle = params.backgroundColor;
-    params.context.fillRect( params.padding, params.padding, params.width, params.height );
-    params.context.strokeStyle = params.borderColor;
-    params.context.strokeRect( params.padding, params.padding, params.width, params.height );
-    
-    var x = params.padding * 2;
-    var y = params.padding * 2;
-    for( var i = 0; i < params.moves.length; i++ )
+    return function()
     {
-        drawMove( params.context, moves[ i ], x, y, params.showCurrent && ( i == currentMoveIndex ) );
-        x += movePadding + moveSize;
-        if( x + moveSize > params.width )
-        {
-            x = params.padding * 2;
-            y += movePadding + moveSize;
-            if( y + moveSize > params.height )
-            {
-                break;
-            }
-        }
+        addMove( move );
+    };
+}
+
+function initializePossibleMovesQueue()
+{
+    for( var i = 0; i < possibleMoves.length; i++ )
+    {
+        var loc = getMoveButtonLocation( possibleMoveQueueParams, i );
+        var button = addMoveButton( possibleMoveQueueParams, possibleMoves[ i ], loc.x, loc.y );
+        button.onclick = createOnPossibleMoveClick( possibleMoves[ i ] );
     }
 }
 
+function drawMoveQueue( params )
+{
+    context.fillStyle = params.backgroundColor;
+    context.fillRect( params.x, params.y, params.width, params.height );
+    context.strokeStyle = params.borderColor;
+    context.strokeRect( params.x, params.y, params.width, params.height );
+}
+
+
+/* Buttons */
+
+var buttonsPadding = 15;
+var buttonSize = 81;
+
+function onExecuteClick()
+{
+    executeMoves();
+}
+
+function createExecuteButton()
+{
+    var button = document.createElement( "input" );
+    button.type = "image";
+    button.className = "executeButton";
+    var left = boardStyle.right + buttonsPadding;
+    var top = boardStyle.bottom + buttonsPadding;
+    button.style.left = left + "px";
+    button.style.top = top + "px";
+    button.style.width = buttonSize + "px";
+    button.style.height = buttonSize + "px";
+    button.src = "images/Execute.png";
+    button.onclick = onExecuteClick;
+    document.body.appendChild( button );
+    return button;
+}
+
+function onStopClick()
+{
+    stopExecution();
+}
+
+function createStopButton()
+{
+    var button = document.createElement( "input" );
+    button.type = "image";
+    button.className = "stopButton";
+    var left = boardStyle.right + buttonsPadding * 2 + buttonSize;
+    var top = boardStyle.bottom + buttonsPadding;
+    button.style.left = left + "px";
+    button.style.top = top + "px";
+    button.style.width = buttonSize + "px";
+    button.style.height = buttonSize + "px";
+    button.src = "images/Stop.png";
+    button.onclick = onStopClick;
+    document.body.appendChild( button );
+    return button;
+}
+
+function onResetClick()
+{
+    stopExecution();
+    initializePlayer();
+    clearMoves();
+}
+
+function createResetButton()
+{
+    var button = document.createElement( "input" );
+    button.type = "image";
+    button.className = "resetButton";
+    var left = boardStyle.right + buttonsPadding * 3 + buttonSize * 2;
+    var top = boardStyle.bottom + buttonsPadding;
+    button.style.left = left + "px";
+    button.style.top = top + "px";
+    button.style.width = buttonSize + "px";
+    button.style.height = buttonSize + "px";
+    button.src = "images/Reset.png";
+    button.onclick = onResetClick;
+    document.body.appendChild( button );
+    return button;
+}
+
+function initializeControlButtons()
+{
+    createExecuteButton();
+    createStopButton();
+    createResetButton();
+}
 
 /* Rendering */
 
 function clear()
 {
-    boardContext.save();
-    boardContext.setTransform( 1, 0, 0, 1, 0, 0 );
-    boardContext.clearRect( 0, 0, boardContext.canvas.width, boardContext.canvas.height );
-    boardContext.restore();
+    context.save();
+    context.setTransform( 1, 0, 0, 1, 0, 0 );
+    context.clearRect( 0, 0, context.canvas.width, context.canvas.height );
+    context.restore();
 }
 
 function render()
@@ -554,41 +632,11 @@ function main()
 function _main()
 {
     initializeBoard();
+    initializePlayer();
+    initializePossibleMovesQueue();
+    initializeControlButtons();
     resize();
     render();
 }
 
-addMove( turnLeftMove );
-addMove( turnRightMove );
-addMove( forwardMove );
-addMove( lightUpMove );
-addMove( turnLeftMove );
-addMove( turnRightMove );
-addMove( forwardMove );
-addMove( lightUpMove );
-addMove( turnLeftMove );
-addMove( turnRightMove );
-addMove( forwardMove );
-addMove( lightUpMove );
-addMove( turnLeftMove );
-addMove( turnRightMove );
-addMove( forwardMove );
-addMove( lightUpMove );
-addMove( turnLeftMove );
-addMove( turnRightMove );
-addMove( forwardMove );
-addMove( lightUpMove );
-addMove( turnLeftMove );
-addMove( turnRightMove );
-addMove( forwardMove );
-addMove( lightUpMove );
-addMove( turnLeftMove );
-addMove( turnRightMove );
-addMove( forwardMove );
-addMove( lightUpMove );
-addMove( turnLeftMove );
-addMove( turnRightMove );
-
 main();
-
-executeMoves();
