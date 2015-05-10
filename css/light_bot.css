@@ -24,6 +24,11 @@ canvas
 	cursor: default;
 }
 
+.currentMove
+{
+	background-color: #99FFE5 !important;
+}
+
 .possibleMoveButton
 {
 	position: absolute;

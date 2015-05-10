@@ -61,8 +61,8 @@ function getImageSrcForMove( move )
 
 var board = null;
 
-var boardWidth = 700;
-var boardHeight = 700;
+var boardWidth = 500;
+var boardHeight = 500;
 
 var boardRows = 10;
 var boardColumns = 10;
@@ -182,7 +182,6 @@ function createPlayerImage()
     img.width = boardCellWidth;
     img.height = boardCellHeight;
     document.body.appendChild( img );
-    console.log( "creating PLayer" );
     return img;
 }
 
@@ -212,6 +211,8 @@ var lightUpMove = 3;
 
 var moves = [ ];
 var possibleMoves = [ turnLeftMove, turnRightMove, forwardMove, lightUpMove ];
+
+var moveButtons = [ ];
 
 var currentMoveIndex = -1;
 
@@ -306,6 +307,7 @@ function executeMove( move )
 
 var moveInterval = null;
 var moveExecutionDelay = 1000;
+var lastMoveButton;
 
 function executeMoves()
 {
@@ -313,13 +315,23 @@ function executeMoves()
     initializePlayer();
     moveInterval = setInterval( function()
     {
+        if( lastMoveButton && lastMoveButton.classList.contains( "currentMove" ) )
+        {
+            lastMoveButton.classList.remove( "currentMove" );
+        }
+        
+        if( currentMoveIndex >= moves.length )
+        {
+            stopExecution();
+            return;
+        }
+        
+        lastMoveButton = moveButtons[ currentMoveIndex ];
+        lastMoveButton.classList.add( "currentMove" );
+        
         executeMove( moves[ currentMoveIndex ] );
         currentMoveIndex++;
-        if( currentMoveIndex >= moves.length )
-         {
-             stopExecution();
-         }
-         render();
+        render();
     }, moveExecutionDelay );
     render();
 }
@@ -336,17 +348,17 @@ function addMove( move )
 {
     moves.push( move );
     var loc = getMoveButtonLocation( moveQueueParams, moves.length - 1 );
-    addMoveButton( moveQueueParams, move, loc.x, loc.y );
+    moveButtons.push( addMoveButton( moveQueueParams, move, loc.x, loc.y ) );
 }
 
 function clearMoves()
 {
-    var moveButtons = document.getElementsByClassName( "moveButton" );
-    while( moveButtons[ 0 ] )
+    for( var i = 0; i < moveButtons.length; i++ )
     {
-        moveButtons[ 0 ].parentNode.removeChild( moveButtons[ 0 ] );
+        moveButtons[ i ].parentNode.removeChild( moveButtons[ i ] );
     }
     moves = [ ];
+    moveButtons = [ ];
 }
 
 
@@ -405,7 +417,7 @@ var moveQueueParams = {
     backgroundColor: "#2EB8E6",
     borderColor: "#0D8FBA",
     movesPerRow: 5,
-    movesPerColumn: 6,
+    movesPerColumn: Math.floor( ( boardHeight - 10 * 2 ) / ( moveSize + movePadding ) ),
     showCurrent: true,
     moveButtonClass: "moveButton",
     moveButtonsDisabled: true
@@ -419,7 +431,7 @@ var possibleMoveQueueParams = {
     padding: 10,
     backgroundColor: "#2EB8E6",
     borderColor: "#0D8FBA",
-    movesPerRow: 6,
+    movesPerRow: Math.floor( ( boardWidth - 10 * 2 ) / ( moveSize + movePadding ) ),
     movesPerColumn: 1,
     showCurrent: false,
     moveButtonClass: "possibleMoveButton",
