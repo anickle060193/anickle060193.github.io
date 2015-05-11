@@ -1,7 +1,33 @@
 var canvas = document.getElementById( "canvas" );
 var ctx = canvas.getContext( "2d" );
 ctx.translate( 0.5, 0.5 );
+
 var line = new Line();
+
+// By David Walsh: http://davidwalsh.name/javascript-debounce-function
+function debounce( func, wait, immediate )
+{
+	var timeout;
+	return function()
+    {
+		var context = this, args = arguments;
+		var later = function()
+        {
+			timeout = null;
+			if( !immediate )
+            {
+                func.apply( context, args );
+            }
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout( timeout );
+		timeout = setTimeout( later, wait );
+		if( callNow )
+        {
+            func.apply( context, args );
+        }
+	};
+}
 
 function onWindowResize()
 {
@@ -9,6 +35,9 @@ function onWindowResize()
 	canvas.height = window.innerHeight;
 	update();
 }
+
+window.addEventListener( "resize", debounce( onWindowResize, 250 ) );
+onWindowResize();
 
 function getChar( event )
 {
@@ -74,9 +103,6 @@ function onKeyPress( event )
 		}
 	}
 }
-
-onWindowResize();
-window.addEventListener( "resize", onWindowResize );
 
 window.addEventListener( "keypress", onKeyPress );
 
