@@ -1,23 +1,21 @@
 /* Document Elements */
 
-var canvas = document.getElementById( "canvas" );
-var context = canvas.getContext( "2d" );
-context.translate( 0.5, 0.5 );
+var boardCanvas = document.getElementById( "boardCanvas" );
+var boardContext = boardCanvas.getContext( "2d" );
+boardContext.translate( 0.5, 0.5 );
 
-function resize()
+var moveQueue = document.getElementById( "moveQueue" );
+var possibleMoveQueue = document.getElementById( "possibleMoveQueue" );
+
+var startButton = document.getElementById( "start" );
+var stopButton = document.getElementById( "stop" );
+var resetButton = document.getElementById( "reset" );
+
+function setSizes()
 {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    render();
+    boardCanvas.width = boardStyle.width;
+    boardCanvas.height = boardStyle.height;
 }
-
-var resizeTimer;
-addEventListener( "resize", function()
-{
-    clearTimeout( resizeTimer );
-    resizeTimer = setTimeout( resize, 250 );
-} );
 
 
 /* Images */
@@ -106,18 +104,18 @@ function drawBoardCell( row, column )
     var cell = board[ row ][ column ];
     if( cell == cellEmpty )
     {
-        context.fillStyle = emptyColor;
-        context.fillRect( x, y, boardCellWidth, boardCellHeight );
+        boardContext.fillStyle = emptyColor;
+        boardContext.fillRect( x, y, boardCellWidth, boardCellHeight );
     }
     else if( cell == cellUnlitLight )
     {
-        context.fillStyle = unlitLightColor;
-        context.fillRect( x, y, boardCellWidth, boardCellHeight );
+        boardContext.fillStyle = unlitLightColor;
+        boardContext.fillRect( x, y, boardCellWidth, boardCellHeight );
     }
     else if( cell == cellLitLight )
     {
-        context.fillStyle = litLightColor;
-        context.fillRect( x, y, boardCellWidth, boardCellHeight );
+        boardContext.fillStyle = litLightColor;
+        boardContext.fillRect( x, y, boardCellWidth, boardCellHeight );
     }
 }
 
@@ -347,8 +345,7 @@ function stopExecution()
 function addMove( move )
 {
     moves.push( move );
-    var loc = getMoveButtonLocation( moveQueueParams, moves.length - 1 );
-    moveButtons.push( addMoveButton( moveQueueParams, move, loc.x, loc.y ) );
+    moveButtons.push( addMoveButton( moveQueueParams, move ) );
 }
 
 function clearMoves()
@@ -364,80 +361,34 @@ function clearMoves()
 
 /* Move Renderer */
 
-var moveSize = 64;
-var movePadding = 8;
-
-function addMoveButton( params, move, x, y )
+function addMoveButton( params, move )
 {
     var button = document.createElement( "input" );
     button.type = "image";
-    button.className = params.moveButtonClass;
+    button.classList.add( "baseMoveButton" );
+    button.classList.add( params.moveButtonClass );
     button.disabled = params.moveButtonsDisabled;
-    var left = x + params.x;
-    var top = y + params.y;
-    button.style.left = left + "px";
-    button.style.top = top + "px";
-    button.style.width = moveSize + "px";
-    button.style.height = moveSize + "px";
     button.src = getImageSrcForMove( move );
-    document.body.appendChild( button );
+    params.parentElement.appendChild( button );
     return button;
-}
-
-function getMoveButtonLocation( params, moveIndex )
-{
-    var x = params.padding;
-    var y = params.padding;
-    for( var i = 0; i < moveIndex; i++ )
-    {
-        x += movePadding + moveSize;
-        if( x + moveSize > params.width )
-        {
-            x = params.padding;
-            y += movePadding + moveSize;
-        }
-    }
-    return { x: x, y: y };
 }
 
 
 /* Move Queue */
 
-function setMoveQueueSize( params )
-{
-    params.width = 2 * params.padding + params.movesPerRow * moveSize + ( params.movesPerRow - 1 ) * movePadding;
-    params.height = 2 * params.padding + params.movesPerColumn * moveSize + ( params.movesPerColumn - 1 ) * movePadding;
-}
-
 var moveQueueParams = {
-    x: boardStyle.right + 10,
-    y: 10,
-    moves: moves,
-    padding: 10,
-    backgroundColor: "#2EB8E6",
-    borderColor: "#0D8FBA",
-    movesPerRow: 5,
-    movesPerColumn: Math.floor( ( boardHeight - 10 * 2 ) / ( moveSize + movePadding ) ),
+    parentElement: moveQueue,
     showCurrent: true,
     moveButtonClass: "moveButton",
     moveButtonsDisabled: true
 };
-setMoveQueueSize( moveQueueParams );
 
 var possibleMoveQueueParams = {
-    x: 10,
-    y: boardStyle.bottom + 10,
-    moves: possibleMoves,
-    padding: 10,
-    backgroundColor: "#2EB8E6",
-    borderColor: "#0D8FBA",
-    movesPerRow: Math.floor( ( boardWidth - 10 * 2 ) / ( moveSize + movePadding ) ),
-    movesPerColumn: 1,
+    parentElement: possibleMoveQueue,
     showCurrent: false,
     moveButtonClass: "possibleMoveButton",
     moveButtonsDisabled: false
 };
-setMoveQueueSize( possibleMoveQueueParams );
 
 function createOnPossibleMoveClick( move )
 {
@@ -451,68 +402,22 @@ function initializePossibleMovesQueue()
 {
     for( var i = 0; i < possibleMoves.length; i++ )
     {
-        var loc = getMoveButtonLocation( possibleMoveQueueParams, i );
-        var button = addMoveButton( possibleMoveQueueParams, possibleMoves[ i ], loc.x, loc.y );
+        var button = addMoveButton( possibleMoveQueueParams, possibleMoves[ i ] );
         button.onclick = createOnPossibleMoveClick( possibleMoves[ i ] );
     }
 }
 
-function drawMoveQueue( params )
-{
-    context.fillStyle = params.backgroundColor;
-    context.fillRect( params.x, params.y, params.width, params.height );
-    context.strokeStyle = params.borderColor;
-    context.strokeRect( params.x, params.y, params.width, params.height );
-}
-
 
 /* Buttons */
-
-var buttonsPadding = 15;
-var buttonSize = 81;
 
 function onExecuteClick()
 {
     executeMoves();
 }
 
-function createExecuteButton()
-{
-    var button = document.createElement( "input" );
-    button.type = "image";
-    button.className = "executeButton";
-    var left = boardStyle.right + buttonsPadding;
-    var top = boardStyle.bottom + buttonsPadding;
-    button.style.left = left + "px";
-    button.style.top = top + "px";
-    button.style.width = buttonSize + "px";
-    button.style.height = buttonSize + "px";
-    button.src = "images/Execute.png";
-    button.onclick = onExecuteClick;
-    document.body.appendChild( button );
-    return button;
-}
-
 function onStopClick()
 {
     stopExecution();
-}
-
-function createStopButton()
-{
-    var button = document.createElement( "input" );
-    button.type = "image";
-    button.className = "stopButton";
-    var left = boardStyle.right + buttonsPadding * 2 + buttonSize;
-    var top = boardStyle.bottom + buttonsPadding;
-    button.style.left = left + "px";
-    button.style.top = top + "px";
-    button.style.width = buttonSize + "px";
-    button.style.height = buttonSize + "px";
-    button.src = "images/Stop.png";
-    button.onclick = onStopClick;
-    document.body.appendChild( button );
-    return button;
 }
 
 function onResetClick()
@@ -522,38 +427,24 @@ function onResetClick()
     clearMoves();
 }
 
-function createResetButton()
-{
-    var button = document.createElement( "input" );
-    button.type = "image";
-    button.className = "resetButton";
-    var left = boardStyle.right + buttonsPadding * 3 + buttonSize * 2;
-    var top = boardStyle.bottom + buttonsPadding;
-    button.style.left = left + "px";
-    button.style.top = top + "px";
-    button.style.width = buttonSize + "px";
-    button.style.height = buttonSize + "px";
-    button.src = "images/Reset.png";
-    button.onclick = onResetClick;
-    document.body.appendChild( button );
-    return button;
-}
-
 function initializeControlButtons()
 {
-    createExecuteButton();
-    createStopButton();
-    createResetButton();
+    startButton.onclick = onExecuteClick;
+    
+    stopButton.onclick = onStopClick;
+    
+    resetButton.onclick = onResetClick;
 }
+
 
 /* Rendering */
 
 function clear()
 {
-    context.save();
-    context.setTransform( 1, 0, 0, 1, 0, 0 );
-    context.clearRect( 0, 0, context.canvas.width, context.canvas.height );
-    context.restore();
+    boardContext.save();
+    boardContext.setTransform( 1, 0, 0, 1, 0, 0 );
+    boardContext.clearRect( 0, 0, boardContext.canvas.width, boardContext.canvas.height );
+    boardContext.restore();
 }
 
 function render()
@@ -561,9 +452,6 @@ function render()
     clear();
     drawBoard();
     updatePlayerImg();
-    
-    drawMoveQueue( moveQueueParams );
-    drawMoveQueue( possibleMoveQueueParams );
 }
 
 
@@ -571,11 +459,11 @@ function render()
 
 function main()
 {
+    setSizes();
     initializeBoard();
     initializePlayer();
     initializePossibleMovesQueue();
     initializeControlButtons();
-    resize();
     render();
 }
 

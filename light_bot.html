@@ -16,7 +16,16 @@
     
     <body>
 
-        <canvas id="canvas"></canvas>
+        <canvas id="boardCanvas"></canvas>
+        <div id="moveQueue" class="container"></div>
+
+        <div id="possibleMoveQueue" class="container"></div>
+
+        <div id="controlButtons">
+            <input id="start" class="controlButton" type="image" value="" src="images/Execute.png"></input>
+            <input id="stop" class="controlButton" type="image" value="" src="images/Stop.png"></input>
+            <input id="reset" class="controlButton" type="image" value="" src="images/Reset.png"></input>
+        </div>
 
         <script src="js/light_bot.js"></script>
 
