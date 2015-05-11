@@ -8,7 +8,7 @@ function onWindowResize()
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 	update();
-};
+}
 
 function getChar( event )
 {
@@ -24,18 +24,12 @@ function getChar( event )
 	{
 		return null;
 	}
-};
+}
 
 function generateRandomColor()
 {
-	var letters = '0123456789ABCDEF'.split( '' );
-    var color = '#';
-    for ( var i = 0; i < 6; i++ )
-	{
-        color += letters[ Math.floor( Math.random() * 16 ) ];
-    }
-    return color;
-};
+	return "#" + Math.round( Math.random() * 0xFFFFFF ).toString( 16 );
+}
 
 function getWidth()
 {
@@ -55,9 +49,9 @@ function addRandomPoint()
 	var y = Math.random() * getHeight();
 	var p = new Point( x, y ).convertFromWindow();
 	line.addPoint( p );
-	
+
 	update();
-};
+}
 
 function onKeyPress( event )
 {
@@ -77,9 +71,9 @@ function onKeyPress( event )
 		{
 			clearInterval( intervalVar );
 			intervalVar = null;
-		}	
+		}
 	}
-};
+}
 
 onWindowResize();
 window.addEventListener( "resize", onWindowResize );
@@ -91,7 +85,7 @@ function Midpoint( p1, p2 )
 	var x = ( p1.x + p2.x ) / 2;
 	var y = ( p1.y + p2.y ) / 2;
 	return new Point( x, y );
-};
+}
 
 function Point( x, y )
 {
@@ -184,6 +178,6 @@ addEventListener( "click", function( e )
 function update()
 {
 	ctx.clearRect( 0, 0, getWidth(), getHeight() );
-	
+
 	line.drawLine();
-};
+}
