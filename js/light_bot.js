@@ -81,6 +81,8 @@ var boardCellHeight = ( boardHeight - boardBorderThickness * ( boardRows - 1 ) )
 
 var boardStyle = getBoardStyle();
 
+var lightLocation;
+
 function initializeBoard()
 {
     board = [ ];
@@ -94,7 +96,13 @@ function initializeBoard()
     }
     var lightRow = Math.floor( Math.random() * boardRows );
     var lightColumn = Math.floor( Math.random() * boardColumns );
-    board[ lightRow ][ lightColumn ] = cellUnlitLight;
+    lightLocation = new Location( lightRow, lightColumn );
+    resetBoard();
+}
+
+function resetBoard()
+{
+    board[ lightLocation.row ][ lightLocation.column ] = cellUnlitLight;
 }
 
 function drawBoardCell( row, column )
@@ -413,18 +421,22 @@ function initializePossibleMovesQueue()
 function onExecuteClick()
 {
     executeMoves();
+    render();
 }
 
 function onStopClick()
 {
     stopExecution();
+    render();
 }
 
 function onResetClick()
 {
     stopExecution();
     initializePlayer();
+    resetBoard();
     clearMoves();
+    render();
 }
 
 function initializeControlButtons()
