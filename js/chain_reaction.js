@@ -289,7 +289,7 @@ function createMultipleExplosions()
     }
 }
 
-canvas.addEventListener( "touchStart", function( e )
+canvas.addEventListener( "touchstart", function( e )
 {
     if( e.touches.length == 1 )
     {
