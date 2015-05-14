@@ -1,5 +1,7 @@
 /* Document Elements */
 
+var mainContent = document.getElementById( "mainContent" );
+
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
@@ -30,8 +32,8 @@ function debounce( func, wait, immediate )
 
 function onWindowResize()
 {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = mainContent.clientWidth;
+    canvas.height = mainContent.clientHeight;
 }
 
 window.addEventListener( "resize", debounce( onWindowResize, 250 ) );
@@ -293,7 +295,9 @@ canvas.addEventListener( "touchstart", function( e )
 {
     if( e.touches.length == 1 )
     {
-        createTouchExplosion( e.touches[ 0 ].clientX, e.touches[ 0 ].clientY );
+        var x = e.touches[ 0 ].clientX - canvas.offsetLeft;
+        var y = e.touches[ 0 ].clientY - canvas.offsetTop;
+        createTouchExplosion( x, y );
     }
     else if( e.touches.length == 2 )
     {
@@ -303,7 +307,9 @@ canvas.addEventListener( "touchstart", function( e )
 
 canvas.addEventListener( "click", function( e )
 {
-    createTouchExplosion( e.x, e.y );
+    var x = e.x - canvas.offsetLeft;
+    var y = e.y - canvas.offsetTop;
+    createTouchExplosion( x, y );
 } );
 
 function getChar( event )

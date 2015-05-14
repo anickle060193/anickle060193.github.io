@@ -1,3 +1,7 @@
+/* Document Elements */
+
+var mainContent = document.getElementById( "mainContent" );
+
 var canvas = document.getElementById( "canvas" );
 var ctx = canvas.getContext( "2d" );
 ctx.translate( 0.5, 0.5 );
@@ -31,8 +35,8 @@ function debounce( func, wait, immediate )
 
 function onWindowResize()
 {
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+	canvas.width = mainContent.clientWidth;
+	canvas.height = mainContent.clientHeight;
 	update();
 }
 
@@ -62,12 +66,12 @@ function generateRandomColor()
 
 function getWidth()
 {
-	return ctx.canvas.width;
+	return canvas.width;
 }
 
 function getHeight()
 {
-	return ctx.canvas.height;
+	return canvas.height;
 }
 
 var intervalVar = null;
@@ -195,9 +199,11 @@ function Line()
 	};
 }
 
-addEventListener( "click", function( e )
+canvas.addEventListener( "click", function( e )
 {
-	line.addPoint( new Point( e.x, e.y ).convertFromWindow() );
+    var x = e.x - canvas.offsetLeft;
+    var y = e.y - canvas.offsetTop;
+	line.addPoint( new Point( x, y ).convertFromWindow() );
 	update();
 } );
 

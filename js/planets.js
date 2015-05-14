@@ -167,16 +167,19 @@ var bodies = [ ];
 var minPathDistance = 5;
 var maxPathPoints = 100;
 var maxSpeed = 50;
+var spawnPaddingPercent = 0.2;
 
 function Body( x, y )
 {
     if( x === undefined )
     {
-        x = random( canvas.width );
+        var widthPadding = canvas.width * spawnPaddingPercent;
+        x = random( widthPadding, canvas.width - widthPadding );
     }
-    if( y == undefined )
+    if( y === undefined )
     {
-        y = random( canvas.height );
+        var heightPadding = canvas.height * spawnPaddingPercent;
+        y = random( heightPadding, canvas.height - heightPadding );
     }
     
     this.position = new Vector( x, y );
@@ -314,30 +317,26 @@ function render()
 
 /* Input Handler */
 
-window.addEventListener( "click", function( e )
+canvas.addEventListener( "click", function( e )
 {
-    var body = new Body( e.x, e.y );
+    var x = e.x - canvas.offsetLeft;
+    var y = e.y - canvas.offsetTop;
+    var body = new Body( x, y );
     body.fixed = true;
     bodies.push( body );
 } );
+
 
 /* Main */
 
 function main()
 {
-    var body = new Body();
-    body.fixed = false;
-    bodies.push( body );
-    
-    body = new Body();
-    body.fixed = false;
-    bodies.push( body );
-    
-    body = new Body();
-    body.fixed = false;
-    bodies.push( body );
+    for( var i = 0; i < 3; i++ )
+    {
+        bodies.push( new Body() );
+    }
 
-    animate( 0.00001 );
+    animate( 0 );
 }
 
 main();
