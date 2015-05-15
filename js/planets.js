@@ -1,5 +1,9 @@
 /* Document Elements */
 
+var playButton = document.getElementById( "play" );
+playButton.style.display = "none";
+var pauseButton = document.getElementById( "pause" );
+
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 context.translate( 0.5, 0.5 );
@@ -68,11 +72,25 @@ function drawLines( c, points, strokeStyle )
     }
 }
 
+function drawRay( c, startX, startY, vector, color )
+{
+    c.strokeStyle = color;
+    c.beginPath();
+    c.moveTo( startX, startY );
+    c.lineTo( vector.x, vector.y );
+    c.stroke();
+}
+
 function distance( p1, p2 )
 {
     var xDiff = p1.x - p2.x;
     var yDiff = p1.y - p2.y;
-    var dist = Math.sqrt( xDiff * xDiff + yDiff * yDiff );
+    return Math.sqrt( xDiff * xDiff + yDiff * yDiff );
+}
+
+function distanceNonZero( p1, p2 )
+{
+    var dist = distance( p1, p2 );
     return dist != 0 ? dist : distanceEpsilon;
 }
 
@@ -132,7 +150,7 @@ function calculateGravitationForce( b1, b2 )
     var b1V = b1.position;
     var b2V = b2.position;
     
-    var dist = distance( b1V, b2V );
+    var dist = distanceNonZero( b1V, b2V );
     var radius = b1.radius + b2.radius;
     if( dist < radius )
     {
@@ -216,7 +234,7 @@ function Body( x, y )
     this.updatePath = function()
     {
         var lastPosition = this.path[ this.path.length - 1 ];
-        if( distance( lastPosition, this.position ) > 5 )
+        if( distanceNonZero( lastPosition, this.position ) > 5 )
         {
             this.path.push( this.position.copy() );
         }
@@ -284,6 +302,8 @@ function paintBodies( c )
         };
 }() );
 
+var paused = false;
+
 var lastTime = 0;
 function animate( time )
 {
@@ -291,7 +311,10 @@ function animate( time )
     lastTime = time;
 
     render();
-    updateBodies( elapsedTime / 1000 );
+    if( !paused )
+    {
+        updateBodies( elapsedTime / 1000 );
+    }
     window.requestAnimationFrame( animate );
 }
 
@@ -312,26 +335,117 @@ function render()
 {
     clear();
     paintBodies( context );
+    if( heldBody != null && heldRay != null )
+    {
+        drawRay( context, heldRay.x, heldRay.y, heldBody.position, "green" );
+        heldBody.paint();
+    }
 }
 
 
 /* Input Handler */
 
-canvas.addEventListener( "click", function( e )
+var inputMoveThreshold = 20;
+
+var heldBody = null;
+var heldRay = null;
+
+function onInputDown( x, y )
+{
+    if( heldBody == null )
+    {
+        heldBody = new Body( x, y );
+        heldRay = new Vector( x, y );
+    }
+}
+
+function onInputMoved( x, y )
+{
+    if( heldBody != null )
+    {
+        heldBody.position.x = x;
+        heldBody.position.y = y;
+    }
+}
+
+function onInputUp( x, y )
+{
+    if( heldBody == null )
+    {
+        return;
+    }
+    var dist = distance( heldBody.position, heldRay );
+    if( dist < inputMoveThreshold )
+    {
+        heldBody.fixed = true;
+        bodies.push( heldBody );
+    }
+    else
+    {
+        var xDiff = heldRay.x - heldBody.position.x;
+        var yDiff = heldRay.y - heldBody.position.y;
+        heldBody.speed.x = xDiff;
+        heldBody.speed.y = yDiff;
+        bodies.unshift( heldBody );
+    }
+    heldBody.path = [ heldBody.position.copy() ];
+    heldBody = null;
+    heldRay = null;
+}
+
+canvas.addEventListener( "mousedown", function( e )
 {
     var x = e.x - canvas.offsetLeft;
     var y = e.y - canvas.offsetTop;
-    var body = new Body( x, y );
-    body.fixed = true;
-    bodies.push( body );
+    onInputDown( x, y );
 } );
+
+canvas.addEventListener( "mousemove", function( e )
+{
+    var x = e.x - canvas.offsetLeft;
+    var y = e.y - canvas.offsetTop;
+    onInputMoved( x, y );
+} );
+
+canvas.addEventListener( "mouseout", function( e )
+{
+    var x = e.x - canvas.offsetLeft;
+    var y = e.y - canvas.offsetTop;
+    onInputUp( x, y );
+} );
+
+canvas.addEventListener( "mouseup", function( e )
+{
+    var x = e.x - canvas.offsetLeft;
+    var y = e.y - canvas.offsetTop;
+    onInputUp( x, y );
+} );
+
+function swapDisplay( e1, e2 )
+{
+    var display = e1.style.display;
+    e1.style.display = e2.style.display;
+    e2.style.display = display;
+}
+
+playButton.onclick = function()
+{
+    swapDisplay( playButton, pauseButton );
+    paused = false;
+};
+
+pauseButton.onclick = function()
+{
+    swapDisplay( playButton, pauseButton );
+    paused = true;
+};
 
 
 /* Main */
 
 function main()
 {
-    for( var i = 0; i < 3; i++ )
+    for( var i = 0; i < 0; i++ )
     {
         bodies.push( new Body() );
     }
