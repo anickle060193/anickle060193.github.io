@@ -1,12 +1,25 @@
 /* Document Elements */
 
 var mainContent = document.getElementById( "mainContent" );
+var randomizeButton = document.getElementById( "randomize" );
+var clearLinesButton = document.getElementById( "clearLines" );
 
 var canvas = document.getElementById( "canvas" );
 var ctx = canvas.getContext( "2d" );
 ctx.translate( 0.5, 0.5 );
 
-var line = new Line();
+function onWindowResize()
+{
+	canvas.width = mainContent.clientWidth;
+	canvas.height = mainContent.clientHeight;
+	update();
+}
+
+window.addEventListener( "resize", debounce( onWindowResize, 250 ) );
+onWindowResize();
+
+
+/* Utilities */
 
 // By David Walsh: http://davidwalsh.name/javascript-debounce-function
 function debounce( func, wait, immediate )
@@ -33,32 +46,6 @@ function debounce( func, wait, immediate )
 	};
 }
 
-function onWindowResize()
-{
-	canvas.width = mainContent.clientWidth;
-	canvas.height = mainContent.clientHeight;
-	update();
-}
-
-window.addEventListener( "resize", debounce( onWindowResize, 250 ) );
-onWindowResize();
-
-function getChar( event )
-{
-	if( event.which == null )
-	{
-		return String.fromCharCode( event.keyCode );
-	}
-	else if( event.which != 0 && event.charCode != 0 )
-	{
-		return String.fromCharCode( event.which );
-	}
-	else
-	{
-		return null;
-	}
-}
-
 function generateRandomColor()
 {
 	return "#" + Math.round( Math.random() * 0xFFFFFF ).toString( 16 );
@@ -74,7 +61,12 @@ function getHeight()
 	return canvas.height;
 }
 
-var intervalVar = null;
+function Midpoint( p1, p2 )
+{
+	var x = ( p1.x + p2.x ) / 2;
+	var y = ( p1.y + p2.y ) / 2;
+	return new Point( x, y );
+}
 
 function addRandomPoint()
 {
@@ -86,36 +78,85 @@ function addRandomPoint()
 	update();
 }
 
-function onKeyPress( event )
+
+/* Actions */
+
+var randomInterval = null;
+var randomGenerating = false;
+
+function startRandom()
 {
-	var char = getChar( event );
-	if( char == "c" )
+	randomizeButton.classList.remove( "btn-success" );
+	randomizeButton.classList.add( "btn-danger" );
+	randomizeButton.textContent = "Stop Generating Lines";
+	randomInterval = setInterval( addRandomPoint, 20 );
+}
+
+function stopRandom()
+{
+	randomizeButton.classList.add( "btn-success" );
+	randomizeButton.classList.remove( "btn-danger" );
+	randomizeButton.textContent = "Start Generating Lines";
+	clearInterval( randomInterval );
+	randomInterval = null;
+}
+
+function toggleRandom()
+{
+	randomGenerating = !randomGenerating;
+	if( randomGenerating )
 	{
-		line = new Line();
-		update();
+		startRandom();
 	}
-	else if( char == "r" )
+	else
 	{
-		if( intervalVar == null )
-		{
-			intervalVar = setInterval( addRandomPoint, 20 );
-		}
-		else
-		{
-			clearInterval( intervalVar );
-			intervalVar = null;
-		}
+		stopRandom();
 	}
 }
 
-window.addEventListener( "keypress", onKeyPress );
-
-function Midpoint( p1, p2 )
+function clearLine()
 {
-	var x = ( p1.x + p2.x ) / 2;
-	var y = ( p1.y + p2.y ) / 2;
-	return new Point( x, y );
+	line = new Line();
+	update();
 }
+
+function onAddPoint( x, y )
+{
+    x -= canvas.offsetLeft;
+    y -= canvas.offsetTop;
+	line.addPoint( new Point( x, y ).convertFromWindow() );
+	update();
+}
+
+
+/* Input Handler */
+
+randomizeButton.addEventListener( "click", toggleRandom );
+
+clearLinesButton.addEventListener( "click", clearLine );
+
+function setupInput()
+{
+	if( window.touch_screen )
+	{
+		canvas.addEventListener( "touchup", function( e )
+		{
+			onAddPoint( e.x, e.y );
+		} );
+	}
+	else
+	{
+		canvas.addEventListener( "click", function( e )
+		{
+			onAddPoint( e.x, e.y );
+		} );
+	}
+}
+
+
+/* Line */
+
+var line = new Line();
 
 function Point( x, y )
 {
@@ -199,17 +240,23 @@ function Line()
 	};
 }
 
-canvas.addEventListener( "click", function( e )
-{
-    var x = e.x - canvas.offsetLeft;
-    var y = e.y - canvas.offsetTop;
-	line.addPoint( new Point( x, y ).convertFromWindow() );
-	update();
-} );
-
 function update()
 {
 	ctx.clearRect( 0, 0, getWidth(), getHeight() );
 
-	line.drawLine();
+	if( line != null )
+	{
+		line.drawLine();
+	}
 }
+
+
+/* Main */
+
+function main()
+{
+	setupInput();
+	stopRandom();
+}
+
+main();
