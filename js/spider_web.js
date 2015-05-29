@@ -173,6 +173,7 @@ function Line( x, y, anchor )
         var end = toCanvasPoint( this.end, context );
 
         context.strokeStyle = this.color;
+        context.lineWidth = 2;
         context.beginPath();
         context.moveTo( start.x, start.y );
         context.lineTo( end.x, end.y );
