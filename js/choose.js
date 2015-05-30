@@ -227,7 +227,12 @@ var choicesUrlSeperator = "+";
 
 function getChoicesURL()
 {
-    var url = window.location.pathname;
+    var url = window.location.href;
+    var index = url.indexOf( choicesUrlBeginning );
+    if( index >= 0 )
+    {
+        url = url.substring( 0, url.indexOf( choicesUrlBeginning ) );
+    }
     url += choicesUrlBeginning;
     choices.forEach( function( choice )
     {
