@@ -13,6 +13,8 @@ function onResize()
     var minSize = Math.min( canvas.height, canvas.width );
 
     textHeight = minSize * 0.1;
+    textHeight *= Math.pow( 0.95, choices.length );
+
     textOffset = minSize * 0.05;
 
     render();
