@@ -44,19 +44,48 @@ saveChoicesButton.addEventListener( "click", function()
 
 /* Utilities */
 
-var seed = 1;
-function fixedRandom()
+function HSVtoRGB( h, s, v )
 {
-    var x = Math.sin( seed++ ) * 10000;
-    return x - Math.floor( x );
+    var r, g, b, i, f, p, q, t;
+    if( h === undefined )
+    {
+        h = 1.0;
+    }
+    if( s === undefined )
+    {
+        s = 1.0;
+    }
+    if( v === undefined )
+    {
+        v = 1.0;
+    }
+    i = Math.floor( h * 6 );
+    f = h * 6 - i;
+    p = v * ( 1 - s );
+    q = v * ( 1 - f * s );
+    t = v * ( 1 - ( 1 - f ) * s );
+    switch( i % 6 )
+    {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    r = Math.floor( r * 255 );
+    g = Math.floor( g * 255 );
+    b = Math.floor( b * 255 );
+    return "rgb( " + r + "," + g + "," + b + ")";
 }
 
+var goldenRatioConjugate = 0.618033988749895;
+var h = Math.random();
 function randomColor()
 {
-    var r = Math.floor( fixedRandom() * 256 );
-    var g = Math.floor( fixedRandom() * 256 );
-    var b = Math.floor( fixedRandom() * 256 );
-    return "rgb( " + r + "," + g + "," + b + ")";
+    h += goldenRatioConjugate;
+    h %= 1;
+    return HSVtoRGB( h, 0.85, 0.75 );
 }
 
 function random( min, max )
@@ -83,41 +112,23 @@ var first = true;
 
 function getFontSize( context, text, radius, textOffset, angle )
 {
-    var fontSize = Math.round( getChordLength( ( radius - textOffset ) / 2, angle ) );
-    var iterations = maxIterations;
-    if( first )
-        console.log( "Initial Radius: " + radius );
-    while( iterations > 0 )
+    var lastFontSize = 0;
+    var fontSize = lastFontSize + fontSizeStep;
+
+    var chordSize = getChordLength( radius - textOffset, angle );
+    while( chordSize > fontSize )
     {
-        if( first )
-            console.log( "Font Size: " + fontSize );
+        lastFontSize = fontSize;
+        fontSize += fontSizeStep;
         context.font = fontSize.toString() + "px Verdana";
         var size = context.measureText( text );
-        var subRadius = radius - textOffset - size.width;
-        if( first )
-            console.log( "Sub Radius: " + subRadius );
-        var chordLength = getChordLength( subRadius, angle );
-        if( first )
-            console.log( "Chord Length: " + chordLength );
-        if( chordLength > fontSize )
-        {
-            if( first )
-                console.log( "Final: " + fontSize );
-            first = false;
-            return fontSize;
-        }
-        else
-        {
-            fontSize -= fontSizeStep;
-        }
-        //iterations--;
+        chordSize = getChordLength( radius - textOffset - size.width, angle );
     }
-    first = false;
+    return lastFontSize;
 }
 
 function getChordLength( radius, angle )
 {
-    angle *= 180 / ( 2 * Math.PI );
     return Math.abs( 2 * Math.sin( angle / 2 ) * radius );
 }
 
@@ -135,7 +146,7 @@ function drawWheel( x, y, radius, segmentStrings )
 
     var segments = segmentStrings.length;
     var segmentAngle = 2 * Math.PI / segments;
-    var textOffset = radius * 0.1;
+    var textOffset = radius * 0.05;
     for( var i = 0; i < segments; i++ )
     {
         tempContext.beginPath();
@@ -150,14 +161,13 @@ function drawWheel( x, y, radius, segmentStrings )
 
         tempContext.rotate( -segmentAngle / 2 );
 
-        tempContext.fillStyle = "black";
-
         var text = segmentStrings[ i ];
-        var fontSize = getFontSize( tempContext, text, radius, textOffset, segmentAngle )
+        var fontSize = getFontSize( tempContext, text, radius, textOffset, segmentAngle );
         tempContext.font = fontSize.toString() + "px Verdana";
-
         var size = tempContext.measureText( text );
-        tempContext.fillText( text, radius - size.width - textOffset, fontSize / 3 );
+        tempContext.fillStyle = "#EEEEEE";
+        tempContext.textBaseline = "middle";
+        tempContext.fillText( text, radius - size.width - textOffset, 0 );
 
         tempContext.rotate( -segmentAngle / 2 );
     }
