@@ -10,13 +10,6 @@ function onResize()
     canvas.width = mainContent.clientWidth;
     canvas.height = mainContent.clientHeight;
 
-    var minSize = Math.min( canvas.height, canvas.width );
-
-    textHeight = minSize * 0.1;
-    textHeight *= Math.pow( 0.95, choices.length );
-
-    textOffset = minSize * 0.05;
-
     render();
 }
 
@@ -83,8 +76,55 @@ function fillCircle( c, x, y, radius, fillStyle )
 }
 
 var colors = [ ];
-var textHeight = 50;
-var textOffset = 0;
+var minFontSize = 10;
+var fontSizeStep = 10;
+var maxIterations = 20;
+var first = true;
+
+function getFontSize( context, text, radius, textOffset, angle )
+{
+    var fontSize = Math.round( getChordLength( ( radius - textOffset ) / 2, angle ) );
+    var iterations = maxIterations;
+    if( first )
+        console.log( "Initial Radius: " + radius );
+    while( iterations > 0 )
+    {
+        if( first )
+            console.log( "Font Size: " + fontSize );
+        context.font = fontSize.toString() + "px Verdana";
+        var size = context.measureText( text );
+        var subRadius = radius - textOffset - size.width;
+        if( first )
+            console.log( "Sub Radius: " + subRadius );
+        var chordLength = getChordLength( subRadius, angle );
+        if( first )
+            console.log( "Chord Length: " + chordLength );
+        if( chordLength > fontSize )
+        {
+            if( first )
+                console.log( "Final: " + fontSize );
+            first = false;
+            return fontSize;
+        }
+        else
+        {
+            fontSize -= fontSizeStep;
+        }
+        //iterations--;
+    }
+    first = false;
+}
+
+function getChordLength( radius, angle )
+{
+    angle *= 180 / ( 2 * Math.PI );
+    return Math.abs( 2 * Math.sin( angle / 2 ) * radius );
+}
+
+function getRadius()
+{
+    return Math.min( canvas.width, canvas.height ) / 2 * 0.8;
+}
 
 function drawWheel( x, y, radius, segmentStrings )
 {
@@ -95,6 +135,7 @@ function drawWheel( x, y, radius, segmentStrings )
 
     var segments = segmentStrings.length;
     var segmentAngle = 2 * Math.PI / segments;
+    var textOffset = radius * 0.1;
     for( var i = 0; i < segments; i++ )
     {
         tempContext.beginPath();
@@ -110,10 +151,13 @@ function drawWheel( x, y, radius, segmentStrings )
         tempContext.rotate( -segmentAngle / 2 );
 
         tempContext.fillStyle = "black";
-        tempContext.font = textHeight.toString() + "px Verdana";
+
         var text = segmentStrings[ i ];
+        var fontSize = getFontSize( tempContext, text, radius, textOffset, segmentAngle )
+        tempContext.font = fontSize.toString() + "px Verdana";
+
         var size = tempContext.measureText( text );
-        tempContext.fillText( text, radius - size.width - textOffset, textHeight / 2 );
+        tempContext.fillText( text, radius - size.width - textOffset, fontSize / 3 );
 
         tempContext.rotate( -segmentAngle / 2 );
     }
@@ -315,7 +359,7 @@ function clear()
 function render()
 {
     clear();
-    drawWheel( canvas.width / 2, canvas.height / 2, Math.min( canvas.width, canvas.height ) / 2 * 0.8, choices );
+    drawWheel( canvas.width / 2, canvas.height / 2, getRadius(), choices );
 }
 
 
