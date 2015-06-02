@@ -9,6 +9,12 @@ function onResize()
 {
     canvas.width = mainContent.clientWidth;
     canvas.height = mainContent.clientHeight;
+
+    var minSize = Math.min( canvas.height, canvas.width );
+
+    textHeight = minSize * 0.1;
+    textOffset = minSize * 0.05;
+
     render();
 }
 
@@ -19,19 +25,18 @@ window.addEventListener( "resize", function()
     resizeTimeout = setTimeout( onResize, 250 );
 } );
 
-var choicesForm = document.getElementById( "choicesForm" );
-var choiceDiv = document.getElementById( "choiceDiv" );
-choiceDiv.parentNode.removeChild( choiceDiv );
-choiceDiv.removeAttribute( "id" );
-
-var addChoiceButton = document.getElementById( "addChoice" );
-addChoiceButton.addEventListener( "click", function()
-{
-    addChoice();
-} );
-
 var spinWheelButton = document.getElementById( "spinWheel" );
 spinWheelButton.addEventListener( "click", spin );
+
+var choicesTextArea = document.getElementById( "choices" );
+
+window.onload = function()
+{
+    $( "#choicesModal" ).on( 'hidden.bs.modal', function()
+    {
+        updateChoices();
+    } );
+};
 
 var saveChoicesButton = document.getElementById( "saveChoices" );
 saveChoicesButton.addEventListener( "click", function()
@@ -44,11 +49,18 @@ saveChoicesButton.addEventListener( "click", function()
 
 /* Utilities */
 
+var seed = 1;
+function fixedRandom()
+{
+    var x = Math.sin( seed++ ) * 10000;
+    return x - Math.floor( x );
+}
+
 function randomColor()
 {
-    var r = Math.floor( Math.random() * 256 );
-    var g = Math.floor( Math.random() * 256 );
-    var b = Math.floor( Math.random() * 256 );
+    var r = Math.floor( fixedRandom() * 256 );
+    var g = Math.floor( fixedRandom() * 256 );
+    var b = Math.floor( fixedRandom() * 256 );
     return "rgb( " + r + "," + g + "," + b + ")";
 }
 
@@ -70,7 +82,7 @@ function fillCircle( c, x, y, radius, fillStyle )
 
 var colors = [ ];
 var textHeight = 50;
-var textOffset = 30;
+var textOffset = 0;
 
 function drawWheel( x, y, radius, segmentStrings )
 {
@@ -113,7 +125,7 @@ function drawWheel( x, y, radius, segmentStrings )
     context.drawImage( tempCanvas, -radius, -radius, radius * 2, radius * 2 );
 
     context.restore();
-    
+
     context.fillStyle = "black";
     context.beginPath();
     var arrowSize = 0.08;
@@ -145,11 +157,11 @@ var spinStart = 0;
 function spin()
 {
     updateChoices();
-    
+
     rotationSpeed = random( minRotationSpeed, maxRotationSpeed );
     rotationSpeedDecreaseDelay = random( minRotationSpeedDecreaseDelay, maxRotationSpeedDecreaseDelay );
     rotationSpeedDecreaseRate = random( minRotationSpeedDecreaseRate, maxRotationSpeedDecreaseRate );
-    
+
     spinStart = new Date().getTime();
 }
 
@@ -158,7 +170,7 @@ function update( elapsedTime )
     if( rotationSpeed > 0 )
     {
         rotationAngle += rotationSpeed * elapsedTime;
-        
+
         if( spinStart + rotationSpeedDecreaseDelay <= new Date().getTime() )
         {
             rotationSpeed -= rotationSpeedDecreaseRate * elapsedTime;
@@ -177,53 +189,23 @@ function update( elapsedTime )
 var choiceCount = 0;
 var choices = [ ];
 
-function addChoice( value )
-{
-    choiceCount++;
-    var choiceDivClone = choiceDiv.cloneNode( true );
-    
-    var id = "choiceDiv" + choiceCount;
-    choiceDivClone.setAttribute( "id", id );
-    
-    var input = choiceDivClone.querySelector( "#choiceInput" );
-    input.removeAttribute( "id" );
-    input.classList.add( "choiceInput" );
-    if( value )
-    {
-        input.value = value;
-    }
-    input.oninput = function()
-    {
-        updateChoices();
-    };
-    
-    var removeChoiceButton = choiceDivClone.querySelector( "#removeChoice" );
-    removeChoiceButton.removeAttribute( "id" );
-    removeChoiceButton.addEventListener( "click", function()
-    {
-        choicesForm.removeChild( choiceDivClone );
-        updateChoices();
-    } );
-    
-    choicesForm.appendChild( choiceDivClone );
-}
-
 function updateChoices()
 {
     choices = [ ];
-    var choiceInputs = document.getElementsByClassName( "choiceInput" );
-    for( var i = 0; i < choiceInputs.length; i++ )
+    var choicesText = choicesTextArea.value;
+    var choicesTextSplit = choicesText.split( choicesTextAreaSeperator );
+    for( var i = 0; i < choicesTextSplit.length; i++ )
     {
-        var value = choiceInputs[ i ].value;
-        if( value )
+        if( choicesTextSplit[ i ] )
         {
-            choices.push( choiceInputs[ i ].value );
+            choices.push( choicesTextSplit[ i ] );
         }
     }
 }
 
 var choicesUrlBeginning = "?";
 var choicesUrlSeperator = "+";
+var choicesTextAreaSeperator = "\n";
 
 function getChoicesURL()
 {
@@ -253,13 +235,9 @@ function readChoicesFromURL()
         {
             if( choice )
             {
-                addChoice( choice );
+                choicesTextArea.value += choice + choicesTextAreaSeperator;
             }
         } );
-    }
-    else
-    {
-        addChoice();
     }
     updateChoices();
 }
