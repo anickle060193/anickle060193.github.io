@@ -41,6 +41,9 @@ saveChoicesButton.addEventListener( "click", function()
     $( "#saveChoicesModal" ).modal( "show" );
 } );
 
+var winnerModal = document.getElementById( "winnerModal" );
+var winnerText = document.getElementById( "winner" );
+
 
 /* Utilities */
 
@@ -233,7 +236,6 @@ function update( elapsedTime )
             if( rotationSpeed < 0 )
             {
                 rotationSpeed = 0;
-                detectWinner();
             }
         }
     }
@@ -281,7 +283,7 @@ function getChoicesURL()
 
 function readChoicesFromURL()
 {
-    var url = window.location.href;
+    var url = decodeURIComponent( window.location.href );
     var index = url.indexOf( choicesUrlBeginning );
     if( index >= 0 )
     {
@@ -296,19 +298,6 @@ function readChoicesFromURL()
         } );
     }
     updateChoices();
-}
-
-function detectWinner()
-{
-    /*
-    var finalAngle = ( rotationAngle + Math.PI ) % ( 2 * Math.PI );
-    var segmentAngle = 2 * Math.PI / choices.length;
-    var choice = 2 * Math.PI - finalAngle / segmentAngle;
-    console.log( rotationAngle * 180 / ( 2 * Math.PI ) );
-    console.log( finalAngle * 180 / ( 2 * Math.PI ) );
-    console.log( choice );
-    console.log( choices[ Math.floor( choice ) ] );
-    */
 }
 
 
@@ -348,9 +337,11 @@ function animate( time )
 {
     var elapsedTime = time - lastTime;
     lastTime = time;
-
     render();
-    update( elapsedTime / 1000 );
+    if( elapsedTime < 100 )
+    {
+        update( elapsedTime / 1000 );
+    }
     window.requestAnimationFrame( animate );
 }
 
