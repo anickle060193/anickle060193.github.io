@@ -198,18 +198,18 @@ function drawWheel( x, y, radius, segmentStrings )
 
 var rotationAngle = 0;
 
-var maxRotationSpeed = 2 * Math.PI * 3.5;
-var minRotationSpeed = 2 * Math.PI * 2.8;
+var maxRotations = 15;
+var minRotations = 10;
 
 var maxRotationSpeedDecreaseDelay = 1000 * 1.2;
 var minRotationSpeedDecreaseDelay = 1000 * 0.8;
 
-var minRotationSpeedDecreaseRate = 2 * Math.PI * 0.9;
-var maxRotationSpeedDecreaseRate = 2 * Math.PI * 0.6;
+var minRotationSpeedDecreaseRate = 0.9;
+var maxRotationSpeedDecreaseRate = 0.6;
 
-var rotationSpeed = 0;
-var rotationSpeedDecreaseDelay = 0;
-var rotationSpeedDecreaseRate = 0;
+var rotationSpeed = 0; // Rotations Per Second
+var rotationSpeedDecreaseDelay = 0; // Seconds
+var rotationSpeedDecreaseRate = 0; // Rotaions Per Seconds Per Seconds
 
 var spinStart = 0;
 
@@ -217,9 +217,14 @@ function spin()
 {
     updateChoices();
 
-    rotationSpeed = random( minRotationSpeed, maxRotationSpeed );
     rotationSpeedDecreaseDelay = random( minRotationSpeedDecreaseDelay, maxRotationSpeedDecreaseDelay );
     rotationSpeedDecreaseRate = random( minRotationSpeedDecreaseRate, maxRotationSpeedDecreaseRate );
+
+    var rotations = random( minRotations, maxRotations );
+    rotationSpeed = Math.sqrt( 2 * rotationSpeedDecreaseRate * rotations );
+
+    rotationSpeedDecreaseRate *= 2 * Math.PI;
+    rotationSpeed *= 2 * Math.PI;
 
     spinStart = new Date().getTime();
 }
