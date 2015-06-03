@@ -198,8 +198,8 @@ function drawWheel( x, y, radius, segmentStrings )
 
 var rotationAngle = 0;
 
-var maxRotations = 15;
-var minRotations = 10;
+var maxRotations = 7;
+var minRotations = 4;
 
 var maxRotationSpeedDecreaseDelay = 1000 * 1.2;
 var minRotationSpeedDecreaseDelay = 1000 * 0.8;
