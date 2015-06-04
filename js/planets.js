@@ -24,6 +24,12 @@ window.addEventListener( "resize", function()
 } );
 onWindowResize();
 
+$( "#menu-toggle" ).click( function( e )
+{
+    e.preventDefault();
+    $( "#wrapper" ).toggleClass( "toggled" );
+} );
+
 
 /* Utilities */
 
@@ -103,7 +109,7 @@ function Vector( x, y )
 {
     this.x = x;
     this.y = y;
-    
+
     this.copy = function()
     {
         return new Vector( this.x, this.y );
@@ -149,7 +155,7 @@ function calculateGravitationForce( b1, b2 )
 {
     var b1V = b1.position;
     var b2V = b2.position;
-    
+
     var dist = distanceNonZero( b1V, b2V );
     var radius = b1.radius + b2.radius;
     if( dist < radius )
@@ -199,7 +205,7 @@ function Body( x, y )
         var heightPadding = canvas.height * spawnPaddingPercent;
         y = random( heightPadding, canvas.height - heightPadding );
     }
-    
+
     this.position = new Vector( x, y );
     this.radius = random( 30, 50 );
     this.speed = new Vector( random( -maxSpeed, maxSpeed ), random( -maxSpeed, maxSpeed ) );
@@ -228,7 +234,7 @@ function Body( x, y )
         this.speed = this.speed.add( deltaVelocity );
         var deltaPosition = this.speed.scalarMultiply( elapsedTime );
         this.position = this.position.add( deltaPosition );
-        
+
         this.updatePath();
     };
     this.updatePath = function()
