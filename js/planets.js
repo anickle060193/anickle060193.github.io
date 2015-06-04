@@ -183,7 +183,7 @@ function calculateTotalGravitationalForce( b1 )
 var bodies = [ ];
 
 var minPathDistance = 5;
-var maxPathPoints = 100;
+var maxPathPoints = 1000;
 var maxSpeed = 50;
 var spawnPaddingPercent = 0.2;
 
@@ -234,11 +234,11 @@ function Body( x, y )
     this.updatePath = function()
     {
         var lastPosition = this.path[ this.path.length - 1 ];
-        if( distanceNonZero( lastPosition, this.position ) > 5 )
+        if( distanceNonZero( lastPosition, this.position ) > minPathDistance )
         {
             this.path.push( this.position.copy() );
         }
-        if( this.path.length > 100 )
+        if( this.path.length > maxPathPoints )
         {
             this.path.shift();
         }
@@ -311,7 +311,7 @@ function animate( time )
     lastTime = time;
 
     render();
-    if( !paused )
+    if( !paused && elapsedTime < 100 )
     {
         updateBodies( elapsedTime / 1000 );
     }
