@@ -1,12 +1,22 @@
 /* Document Elements */
 
 var playButton = document.getElementById( "play" );
-playButton.style.display = "none";
+playButton.classList.add( "inactive" );
 var pauseButton = document.getElementById( "pause" );
 
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 context.translate( 0.5, 0.5 );
+
+// http://ironsummitmedia.github.io/startbootstrap-simple-sidebar/
+var menuToggleButton = document.getElementById( "menu-toggle" );
+var wrapper = document.getElementById( "wrapper" );
+
+menuToggleButton.addEventListener( "click", function( e )
+{
+    e.preventDefault();
+    wrapper.classList.toggle( "toggled" );
+} );
 
 var mainContent = document.getElementById( "mainContent" );
 
@@ -23,12 +33,6 @@ window.addEventListener( "resize", function()
     resizeTimer = setTimeout( onWindowResize, 250 );
 } );
 onWindowResize();
-
-$( "#menu-toggle" ).click( function( e )
-{
-    e.preventDefault();
-    $( "#wrapper" ).toggleClass( "toggled" );
-} );
 
 
 /* Utilities */
@@ -427,22 +431,17 @@ canvas.addEventListener( "mouseup", function( e )
     onInputUp( x, y );
 } );
 
-function swapDisplay( e1, e2 )
-{
-    var display = e1.style.display;
-    e1.style.display = e2.style.display;
-    e2.style.display = display;
-}
-
 playButton.onclick = function()
 {
-    swapDisplay( playButton, pauseButton );
+    playButton.classList.add( "inactive" );
+    pauseButton.classList.remove( "inactive" );
     paused = false;
 };
 
 pauseButton.onclick = function()
 {
-    swapDisplay( playButton, pauseButton );
+    playButton.classList.remove( "inactive" );
+    pauseButton.classList.add( "inactive" );
     paused = true;
 };
 

@@ -5,6 +5,11 @@ html, body
     height: 100%;
 }
 
+.inactive
+{
+    display: none;
+}
+
 #mainContent
 {
     width: 100%;
@@ -27,17 +32,17 @@ http://ironsummitmedia.github.io/startbootstrap-simple-sidebar/
 
 #wrapper.toggled
 {
-    padding-right: 250px;
+    padding-right: 400px;
 }
 
 #sidebar-wrapper
 {
     z-index: 1000;
     position: fixed;
-    right: 250px;
+    right: 400px;
     width: 0;
     height: 100%;
-    margin-right: -250px;
+    margin-right: -400px;
     overflow-y: auto;
     background: #CCCCCC;
     -webkit-transition: all 0.5s ease;
@@ -48,7 +53,7 @@ http://ironsummitmedia.github.io/startbootstrap-simple-sidebar/
 
 #wrapper.toggled #sidebar-wrapper
 {
-    width: 250px;
+    width: 400px;
 }
 
 #page-content-wrapper
@@ -61,5 +66,19 @@ http://ironsummitmedia.github.io/startbootstrap-simple-sidebar/
 #wrapper.toggled #page-content-wrapper
 {
     position: absolute;
-    margin-left: -250px;
+    margin-left: -400px;
+}
+
+.sidebar-container
+{
+    position: absolute;
+    top: 0px;
+    width: 400px;
+    padding: 15px 0px 15px 0px;
+    margin: 0px;
+}
+
+.sidebarPlanetCanvas
+{
+    width: 100%;
 }
