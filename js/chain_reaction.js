@@ -5,38 +5,13 @@ var mainContent = document.getElementById( "mainContent" );
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
-// By David Walsh: http://davidwalsh.name/javascript-debounce-function
-function debounce( func, wait, immediate )
-{
-	var timeout;
-	return function()
-    {
-		var context = this, args = arguments;
-		var later = function()
-        {
-			timeout = null;
-			if( !immediate )
-            {
-                func.apply( context, args );
-            }
-		};
-		var callNow = immediate && !timeout;
-		clearTimeout( timeout );
-		timeout = setTimeout( later, wait );
-		if( callNow )
-        {
-            func.apply( context, args );
-        }
-	};
-}
-
 function onWindowResize()
 {
     canvas.width = mainContent.clientWidth;
     canvas.height = mainContent.clientHeight;
 }
 
-window.addEventListener( "resize", debounce( onWindowResize, 250 ) );
+onDebouncedWindowResize( onWindowResize );
 onWindowResize();
 
 
@@ -44,11 +19,11 @@ onWindowResize();
 
 function Color( a, r, g, b )
 {
-    this.r = r !== undefined ? r : Math.floor( Math.random() * 256 );
-    this.g = g !== undefined ? g : Math.floor( Math.random() * 256 );
-    this.b = b !== undefined ? b : Math.floor( Math.random() * 256 );
+    this.r = r !== undefined ? r : Math.floor( random( 255 ) );
+    this.g = g !== undefined ? g : Math.floor( random( 255 ) );
+    this.b = b !== undefined ? b : Math.floor( random( 255 ) );
     this.a = a !== undefined ? a : 255;
-    
+
     this.RGB = function()
     {
         return "rgb(" + this.r + "," + this.g + "," + this.b + ")";
@@ -62,14 +37,6 @@ function Color( a, r, g, b )
 /* Explosions */
 
 var explosions = [ ];
-
-function fillCircle( centerX, centerY, radius, color )
-{
-    context.beginPath();
-    context.arc( centerX, centerY, radius, 0, 2 * Math.PI, false );
-    context.fillStyle = color;
-    context.fill();
-}
 
 var maxSpeed = 256;
 
@@ -93,13 +60,13 @@ var explosionShadowOffset = 1;
 
 function Explosion()
 {
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
-    this.radius = Math.random() * ( maxRadius - minRadius ) + minRadius;
-    this.maxExplosionRadius = this.radius + Math.random() * ( maxExplosionRadiusIncrease - minExplosionRadiusIncrease ) + minExplosionRadiusIncrease;
-    this.explosionRate = Math.random() * ( maxExplosionRate - minExplosionRate ) + minExplosionRate;
-    this.xSpeed = Math.random() * 2 * maxSpeed - maxSpeed;
-    this.ySpeed = Math.random() * 2 * maxSpeed - maxSpeed;
+    this.x = random( canvas.width );
+    this.y = random( canvas.height );
+    this.radius = random( minRadius, maxRadius );
+    this.maxExplosionRadius = this.radius + random( minExplosionRadiusIncrease, maxExplosionRadiusIncrease );
+    this.explosionRate = random( minExplosionRate, maxExplosionRate );
+    this.xSpeed = random( -maxSpeed, maxSpeed );
+    this.ySpeed = random( -maxSpeed, maxSpeed );
     this.color = new Color( 150 );
     this.state = state_normal;
     this.afterExplodingDelay = defaultAfterExplodingDelay;
@@ -167,8 +134,8 @@ function Explosion()
     {
         if( this.state != state_gone )
         {
-            fillCircle( this.x + explosionShadowOffset, this.y + explosionShadowOffset, this.radius, this.color.RGBA() );
-            fillCircle( this.x, this.y, this.radius, this.color.RGB() );
+            fillCircle( context, this.x + explosionShadowOffset, this.y + explosionShadowOffset, this.radius, this.color.RGBA() );
+            fillCircle( context, this.x, this.y, this.radius, this.color.RGB() );
         }
     };
     this.intersectsPoint = function( x, y )
@@ -256,19 +223,9 @@ function paintExplosions()
 
 /* Rendering */
 
-function clear()
-{
-    context.save();
-
-    context.setTransform( 1, 0, 0, 1, 0, 0 );
-    context.clearRect( 0, 0, canvas.width, canvas.height );
-
-    context.restore();
-}
-
 function render()
 {
-    clear();
+    clear( context );
     paintExplosions();
 }
 
@@ -338,48 +295,8 @@ addEventListener( "keypress", function( e )
 } );
 
 
-/* Animation */
-
-( function()
-{
-    var lastTime = 0;
-    var vendors = [ 'webkit', 'moz' ];
-    for( var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x )
-    {
-        window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
-        window.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ]
-                                   || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
-    }
-    if( !window.requestAnimationFrame )
-    {
-        window.requestAnimationFrame = function( callback, element )
-        {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
-            var id = window.setTimeout( function() { callback( currTime + timeToCall ); }, timeToCall );
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-    }
-
-    if( !window.cancelAnimationFrame )
-        window.cancelAnimationFrame = function( id )
-        {
-            clearTimeout( id );
-        };
-}() );
-
-var lastTime = 0;
-function animate( time )
-{
-    var elapsedTime = time - lastTime;
-    lastTime = time;
-
-    updateExplosions( elapsedTime / 1000 );
-    render();
-    window.requestAnimationFrame( animate );
-}
+/* Main */
 
 createMultipleExplosions();
 
-animate( 0 );
+startAnimation( updateExplosions, render );

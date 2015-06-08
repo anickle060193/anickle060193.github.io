@@ -13,12 +13,7 @@ function onResize()
     render();
 }
 
-var resizeTimeout;
-window.addEventListener( "resize", function()
-{
-    clearTimeout( resizeTimeout );
-    resizeTimeout = setTimeout( onResize, 250 );
-} );
+onDebouncedWindowResize( onResize );
 
 var spinWheelButton = document.getElementById( "spinWheel" );
 spinWheelButton.addEventListener( "click", spin );
@@ -45,67 +40,7 @@ var winnerModal = document.getElementById( "winnerModal" );
 var winnerText = document.getElementById( "winner" );
 
 
-/* Utilities */
-
-function HSVtoRGB( h, s, v )
-{
-    var r, g, b, i, f, p, q, t;
-    if( h === undefined )
-    {
-        h = 1.0;
-    }
-    if( s === undefined )
-    {
-        s = 1.0;
-    }
-    if( v === undefined )
-    {
-        v = 1.0;
-    }
-    i = Math.floor( h * 6 );
-    f = h * 6 - i;
-    p = v * ( 1 - s );
-    q = v * ( 1 - f * s );
-    t = v * ( 1 - ( 1 - f ) * s );
-    switch( i % 6 )
-    {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-    r = Math.floor( r * 255 );
-    g = Math.floor( g * 255 );
-    b = Math.floor( b * 255 );
-    return "rgb( " + r + "," + g + "," + b + ")";
-}
-
-var goldenRatioConjugate = 0.618033988749895;
-var h = Math.random();
-function randomColor()
-{
-    h += goldenRatioConjugate;
-    h %= 1;
-    return HSVtoRGB( h, 0.85, 0.75 );
-}
-
-function random( min, max )
-{
-    return Math.random() * ( max - min ) + min;
-}
-
-
 /* Wheel */
-
-function fillCircle( c, x, y, radius, fillStyle )
-{
-    c.beginPath();
-    c.arc( x, y, radius, 0, 2 * Math.PI, false );
-    c.fillStyle = fillStyle;
-    c.fill();
-}
 
 var colors = [ ];
 var minFontSize = 0;
@@ -158,7 +93,7 @@ function drawSegment( context, radius, angle, segmentNumber )
     context.beginPath();
     if( colors.length < segmentNumber + 1 )
     {
-        colors.push( randomColor() );
+        colors.push( randomDistributedColor() );
     }
     context.fillStyle = colors[ segmentNumber ];
     context.arc( 0, 0, radius, -angle, 0 );
@@ -182,9 +117,9 @@ function drawWheel( x, y, radius, segmentStrings )
         for( var i = 0; i < segments; i++ )
         {
             drawSegment( tempContext, radius, segmentAngle, i );
-    
+
             tempContext.rotate( -segmentAngle / 2 );
-    
+
             var text = segmentStrings[ i ];
             var fontSize = getFontSize( tempContext, text, radius, textOffset, segmentAngle );
             tempContext.font = fontSize.toString() + "px Verdana";
@@ -192,14 +127,14 @@ function drawWheel( x, y, radius, segmentStrings )
             tempContext.textBaseline = "middle";
             tempContext.textAlign = "end";
             tempContext.fillText( text, radius - textOffset, 0 );
-    
+
             tempContext.rotate( -segmentAngle / 2 );
         }
     }
     else
     {
         drawSegment( tempContext, radius, 2 * Math.PI, 0 );
-    
+
         tempContext.rotate( -segmentAngle / 2 );
 
         var textSingle = segmentStrings[ 0 ];
@@ -342,65 +277,11 @@ function readChoicesFromURL()
 }
 
 
-/* Animation */
-
-( function()
-{
-    var lastTime = 0;
-    var vendors = [ 'webkit', 'moz' ];
-    for( var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x )
-    {
-        window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
-        window.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ]
-                                   || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
-    }
-    if( !window.requestAnimationFrame )
-    {
-        window.requestAnimationFrame = function( callback, element )
-        {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
-            var id = window.setTimeout( function() { callback( currTime + timeToCall ); }, timeToCall );
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-    }
-
-    if( !window.cancelAnimationFrame )
-        window.cancelAnimationFrame = function( id )
-        {
-            clearTimeout( id );
-        };
-}() );
-
-var lastTime = 0;
-function animate( time )
-{
-    var elapsedTime = time - lastTime;
-    lastTime = time;
-    render();
-    if( elapsedTime < 100 )
-    {
-        update( elapsedTime / 1000 );
-    }
-    window.requestAnimationFrame( animate );
-}
-
 /* Rendering */
-
-function clear()
-{
-    context.save();
-
-    context.setTransform( 1, 0, 0, 1, 0, 0 );
-    context.clearRect( 0, 0, canvas.width, canvas.height );
-
-    context.restore();
-}
 
 function render()
 {
-    clear();
+    clear( context );
     drawWheel( canvas.width / 2, canvas.height / 2, getRadius(), choices );
 }
 
@@ -412,7 +293,7 @@ function main()
     readChoicesFromURL();
     onResize();
     render();
-    animate( 0 );
+    startAnimation( update, render );
 }
 
 main();

@@ -21,35 +21,10 @@ function onResize()
     render();
 }
 
-var resizeTimer;
-window.addEventListener( "resize", function()
-{
-    clearTimeout( resizeTimer );
-    resizeTimer = setTimeout( onResize, 250 );
-} );
+onDebouncedWindowResize( onResize );
 
 
 /* Utilities */
-
-function random( num1, num2 )
-{
-    if( num2 === undefined )
-    {
-        return Math.random() * num1;
-    }
-    else
-    {
-        return random( num2 - num1 ) + num1;
-    }
-}
-
-function randomColor()
-{
-    var r = Math.floor( random( 256 ) );
-    var g = Math.floor( random( 256 ) );
-    var b = Math.floor( random( 256 ) );
-    return "rgb(" + r + "," + g + "," + b + ")";
-}
 
 function toCanvasPoint( normalizedPoint )
 {
@@ -63,40 +38,6 @@ function fromCanvasPoint( canvasPoint )
     var x = canvasPoint.x / canvas.width;
     var y = canvasPoint.y / canvas.height;
     return new Point( x, y );
-}
-
-function fillCircle( center, radius, color )
-{
-    context.fillStyle = color;
-    context.beginPath();
-    context.arc( center.x, center.y, radius, 0, 2 * Math.PI );
-    context.fill();
-}
-
-function distance( p1, p2 )
-{
-    var xDiff = p1.x - p2.x;
-    var yDiff = p1.y - p2.y;
-    return Math.sqrt( xDiff * xDiff + yDiff * yDiff );
-}
-
-function drawPath( points, end, lineWidth, lineColor )
-{
-    if( points.length > 0 )
-    {
-        context.lineWidth = lineWidth;
-        context.strokeStyle = lineColor;
-        context.beginPath();
-        var first = toCanvasPoint( points[ 0 ] );
-        context.moveTo( first.x, first.y );
-        for( var i = 1; i < points.length; i++ )
-        {
-            var p = toCanvasPoint( points[ i ] );
-            context.lineTo( p.x, p.y );
-        }
-        context.lineTo( end.x, end.y );
-        context.stroke();
-    }
 }
 
 function calculateSlope( p1, p2 )
@@ -119,20 +60,14 @@ function findTouch( touchList, id )
 
 /* Supporting Classes */
 
-function Point( x, y )
-{
-    this.x = x;
-    this.y = y;
-}
-
 function Line( x, y, anchor )
 {
     this.start = new Point( 0, 0 );
     this.end = new Point( 0, 0 );
-    
+
     this.anchor = anchor;
-    this.color = randomColor();
-    
+    this.color = randomAbsoluteColor();
+
     this.move = function( x, y )
     {
         if( this.anchor == "left" )
@@ -164,7 +99,7 @@ function Line( x, y, anchor )
             throw "Invalid Anchor: " + anchor + "\nAnchor must be left, right, top, or bottom.";
         }
     };
-    
+
     this.move( x, y );
 
     this.draw = function()
@@ -179,7 +114,7 @@ function Line( x, y, anchor )
         context.lineTo( end.x, end.y );
         context.stroke();
     };
-    
+
     this.update = function( newCenter )
     {
         var m, b;
@@ -244,19 +179,19 @@ if( !window.touch_screen )
 {
     canvas.addEventListener( "mousedown", function ( e )
     {
-        downInput( e.x, e.y );
+        downInput( e );
     } );
-    
+
     canvas.addEventListener( "mousemove", function( e )
     {
-        moveInput( e.x, e.y );
+        moveInput( e );
     } );
-    
+
     canvas.addEventListener( "mouseup", function ( e )
     {
         upInput();
     } );
-    
+
     canvas.addEventListener( "mouseleave", function ( e )
     {
         cancelInput();
@@ -267,38 +202,38 @@ else
     canvas.addEventListener( "touchstart", function ( e )
     {
         e.preventDefault();
-        
+
         var touch = e.changedTouches[ 0 ];
         touchId = touch.identifier;
-        downInput( touch.clientX, touch.clientY );
+        downInput( e );
     } );
-    
+
     canvas.addEventListener( "touchmove", function( e )
     {
         e.preventDefault();
-        
+
         var touch = findTouch( e.changedTouches, touchId );
         if( touch != null )
         {
-            moveInput( touch.clientX, touch.clientY );
+            moveInput( e );
         }
     } );
-    
+
     canvas.addEventListener( "touchend", function ( e )
     {
         e.preventDefault();
-        
+
         var touch = findTouch( e.changedTouches, touchId );
         if( touch != null )
         {
             upInput();
         }
     } );
-    
+
     canvas.addEventListener( "touchcancel", function ( e )
     {
         e.preventDefault();
-        
+
         var touch = findTouch( e.changedTouches, touchId );
         if( touch != null )
         {
@@ -316,10 +251,11 @@ function addingLines()
     return currentAnchor != editCenterButton.id;
 }
 
-function downInput( x, y )
+function downInput( e )
 {
-    x = ( x - canvas.offsetLeft ) / canvas.width;
-    y = ( y - canvas.offsetTop ) / canvas.height;
+    var p = getRelativeCoordinates( e );
+    var x = p.x / canvas.width;
+    var y = p.y / canvas.height;
 
     inputDown = true;
     if( addingLines() )
@@ -332,13 +268,14 @@ function downInput( x, y )
     }
 }
 
-function moveInput( x, y )
+function moveInput( e )
 {
     if( inputDown )
     {
-        x = ( x - canvas.offsetLeft ) / canvas.width;
-        y = ( y - canvas.offsetTop ) / canvas.height;
-        
+        var p = getRelativeCoordinates( e );
+        var x = p.x / canvas.width;
+        var y = p.y / canvas.height;
+
         if( addingLines() )
         {
             newLine.move( x, y );
@@ -399,25 +336,15 @@ var lines = [ ];
 
 /* Rendering */
 
-function clear()
-{
-    context.save();
-
-    context.setTransform( 1, 0, 0, 1, 0, 0 );
-    context.clearRect( 0, 0, canvas.width, canvas.height );
-
-    context.restore();
-}
-
 function render()
 {
-    clear();
-    
+    clear( context );
+
     lines.forEach( function( line )
     {
         line.draw();
     } );
-    
+
     if( newLine != null )
     {
         newLine.draw();
@@ -425,7 +352,8 @@ function render()
 
     if( center != null )
     {
-        fillCircle( toCanvasPoint( center ), 5, "black" );
+        var canvasCenter = toCanvasPoint( center );
+        fillCircle( context, canvasCenter.x, canvasCenter.y, 5, "black" );
     }
 }
 
@@ -437,46 +365,6 @@ function update( elapsedTime )
 
 }
 
-( function()
-{
-    var lastTime = 0;
-    var vendors = [ 'webkit', 'moz' ];
-    for( var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x )
-    {
-        window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
-        window.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ]
-                                   || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
-    }
-    if( !window.requestAnimationFrame )
-    {
-        window.requestAnimationFrame = function( callback, element )
-        {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
-            var id = window.setTimeout( function() { callback( currTime + timeToCall ); }, timeToCall );
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-    }
-
-    if( !window.cancelAnimationFrame )
-        window.cancelAnimationFrame = function( id )
-        {
-            clearTimeout( id );
-        };
-}() );
-
-var lastTime = 0;
-function animate( time )
-{
-    var elapsedTime = time - lastTime;
-    lastTime = time;
-
-    update( elapsedTime / 1000 );
-    render();
-    window.requestAnimationFrame( animate );
-}
-
 
 /* Main */
 
@@ -484,7 +372,7 @@ function main()
 {
     onResize();
     render();
-    animate( 0 );
+    startAnimation( update, render );
 }
 
 main();

@@ -296,15 +296,15 @@ function executeMove( move )
         case turnLeftMove:
             executeTurnLeft();
             break;
-            
+
         case turnRightMove:
             executeTurnRight();
             break;
-            
+
         case forwardMove:
             executeMoveForward();
             break;
-            
+
         case lightUpMove:
             executeLightUp();
             break;
@@ -325,16 +325,16 @@ function executeMoves()
         {
             lastMoveButton.classList.remove( "currentMove" );
         }
-        
+
         if( currentMoveIndex >= moves.length )
         {
             stopExecution();
             return;
         }
-        
+
         lastMoveButton = moveButtons[ currentMoveIndex ];
         lastMoveButton.classList.add( "currentMove" );
-        
+
         executeMove( moves[ currentMoveIndex ] );
         currentMoveIndex++;
         render();
@@ -442,26 +442,18 @@ function onResetClick()
 function initializeControlButtons()
 {
     startButton.onclick = onExecuteClick;
-    
+
     stopButton.onclick = onStopClick;
-    
+
     resetButton.onclick = onResetClick;
 }
 
 
 /* Rendering */
 
-function clear()
-{
-    boardContext.save();
-    boardContext.setTransform( 1, 0, 0, 1, 0, 0 );
-    boardContext.clearRect( 0, 0, boardContext.canvas.width, boardContext.canvas.height );
-    boardContext.restore();
-}
-
 function render()
 {
-    clear();
+    clear( context );
     drawBoard();
     updatePlayerImg();
 }

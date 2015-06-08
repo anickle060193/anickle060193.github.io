@@ -15,41 +15,11 @@ function onWindowResize()
 	update();
 }
 
-window.addEventListener( "resize", debounce( onWindowResize, 250 ) );
+onDebouncedWindowResize( onWindowResize );
 onWindowResize();
 
 
 /* Utilities */
-
-// By David Walsh: http://davidwalsh.name/javascript-debounce-function
-function debounce( func, wait, immediate )
-{
-	var timeout;
-	return function()
-    {
-		var context = this, args = arguments;
-		var later = function()
-        {
-			timeout = null;
-			if( !immediate )
-            {
-                func.apply( context, args );
-            }
-		};
-		var callNow = immediate && !timeout;
-		clearTimeout( timeout );
-		timeout = setTimeout( later, wait );
-		if( callNow )
-        {
-            func.apply( context, args );
-        }
-	};
-}
-
-function generateRandomColor()
-{
-	return "#" + Math.round( Math.random() * 0xFFFFFF ).toString( 16 );
-}
 
 function getWidth()
 {
@@ -180,7 +150,7 @@ function Line()
 {
 	this.points = [ ];
 	this.childLine = null;
-	this.color = generateRandomColor();
+	this.color = randomAbsoluteColor();
 	this.addPoint = function( point )
 	{
 		this.points.push( point );
@@ -242,7 +212,7 @@ function Line()
 
 function update()
 {
-	ctx.clearRect( 0, 0, getWidth(), getHeight() );
+	clear( ctx );
 
 	if( line != null )
 	{

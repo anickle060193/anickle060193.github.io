@@ -21,12 +21,7 @@ function onWindowResize()
 }
 onWindowResize();
 
-var resizeTimer;
-window.addEventListener( "resize", function()
-{
-    clearTimeout( resizeTimer );
-    resizeTimer = setTimeout( onWindowResize, 250 );
-} );
+onDebouncedWindowResize( onWindowResize );
 
 
 /* Input Handling */
@@ -90,26 +85,6 @@ processButton.onclick = function()
 
 /* Utilities */
 
-function generateRandomColor()
-{
-    var r = Math.floor( Math.random() * 256 );
-    var g = Math.floor( Math.random() * 256 );
-    var b = Math.floor( Math.random() * 256 );
-    return "rgb(" + r + "," + g + "," + b + ")";
-}
-
-function random( x, y )
-{
-    if( y === undefined )
-    {
-        return Math.random() * x;
-    }
-    else
-    {
-        return random( y - x ) + x;
-    }
-}
-
 function isPowerOfTwo( num )
 {
     return ( num != 0 ) && ( ( num & ( num - 1 ) ) == 0 );
@@ -147,7 +122,7 @@ function Line( length, smoothness )
 {
     this.heightMap = [ ];
     this.toProcess = [ ];
-    this.color = generateRandomColor();
+    this.color = randomAbsoluteColor();
     this.smoothness = bound( smoothness, 0, 1 );
 
     length = isPowerOfTwo( length ) ? length : nextPowerOfTwo( length );
@@ -243,26 +218,16 @@ function Line( length, smoothness )
 
 var lineWidth = 2;
 
-function clear()
-{
-    context.save();
-
-    context.setTransform( 1, 0, 0, 1, 0, 0 );
-    context.clearRect( 0, 0, canvas.width, canvas.height );
-
-    context.restore();
-}
-
 function render()
 {
-    clear();
+    clear( context );
     if( line !== undefined )
     {
         line.drawLine();
     }
     else
     {
-        context.strokeStyle = generateRandomColor();
+        context.strokeStyle = randomAbsoluteColor();
         context.lineWidth = lineWidth;
         context.beginPath();
         context.moveTo( 0, canvas.height / 2 );

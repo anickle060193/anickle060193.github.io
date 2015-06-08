@@ -26,61 +26,10 @@ function onWindowResize()
     canvas.height = mainContent.clientHeight;
 }
 
-var resizeTimer;
-window.addEventListener( "resize", function()
-{
-    clearTimeout( resizeTimer );
-    resizeTimer = setTimeout( onWindowResize, 250 );
-} );
-onWindowResize();
+onDebouncedWindowResize( onWindowResize );
 
 
 /* Utilities */
-
-function random( x, y )
-{
-    if( y === undefined )
-    {
-        return Math.random() * x;
-    }
-    else
-    {
-        return random( y - x ) + x;
-    }
-}
-
-function randomColor()
-{
-    var r = Math.floor( random( 256 ) );
-    var g = Math.floor( random( 256 ) );
-    var b = Math.floor( random( 256 ) );
-    return "rgb(" + r + "," + g + "," + b + ")";
-}
-
-function fillCircle( c, centerX, centerY, radius, fillStyle )
-{
-    context.beginPath();
-    context.arc( centerX, centerY, radius, 0, 2 * Math.PI, false );
-    context.fillStyle = fillStyle;
-    context.fill();
-}
-
-function drawLines( c, points, strokeStyle )
-{
-    if( points.length > 1 )
-    {
-        c.strokeStyle = strokeStyle;
-        c.beginPath();
-        var p = points[ 0 ];
-        c.moveTo( p.x, p.y );
-        for( var i = 1; i < points.length; i++ )
-        {
-            var point = points[ i ];
-            c.lineTo( point.x, point.y );
-        }
-        c.stroke();
-    }
-}
 
 function drawRay( c, startX, startY, vector, color )
 {
@@ -89,13 +38,6 @@ function drawRay( c, startX, startY, vector, color )
     c.moveTo( startX, startY );
     c.lineTo( vector.x, vector.y );
     c.stroke();
-}
-
-function distance( p1, p2 )
-{
-    var xDiff = p1.x - p2.x;
-    var yDiff = p1.y - p2.y;
-    return Math.sqrt( xDiff * xDiff + yDiff * yDiff );
 }
 
 function distanceNonZero( p1, p2 )
@@ -191,6 +133,7 @@ function calculateTotalGravitationalForce( b1 )
 /* Bodies */
 
 var bodies = [ ];
+var paused = false;
 
 var minPathDistance = 5;
 var maxPathPoints = 1000;
@@ -214,8 +157,8 @@ function Body( x, y )
     this.radius = random( 30, 50 );
     this.speed = new Vector( random( -maxSpeed, maxSpeed ), random( -maxSpeed, maxSpeed ) );
     this.fixed = false;
-    this.color = randomColor();
-    this.pathColor = randomColor();
+    this.color = randomDistributedColor();
+    this.pathColor = randomDistributedColor();
     this.path = [ this.position.copy() ];
     this.lastGForce = new Vector( 0, 0 );
 
@@ -253,98 +196,38 @@ function Body( x, y )
             this.path.shift();
         }
     };
-    this.paint = function( c )
+    this.paint = function()
     {
-        drawLines( c, this.path, this.pathColor );
-        fillCircle( c, this.position.x, this.position.y, this.radius, this.color );
+        drawLines( context, this.path, this.pathColor );
+        fillCircle( context, this.position.x, this.position.y, this.radius, this.color );
     };
 }
 
 function updateBodies( elapsedTime )
 {
-    for( var i = 0; i < bodies.length; i++ )
+    if( !paused )
     {
-        bodies[ i ].calculateTotalGForce();
-    }
-    for( var i = 0; i < bodies.length; i++ )
-    {
-        bodies[ i ].applyTotalGForce( elapsedTime );
-    }
-}
-
-function paintBodies( c )
-{
-    for( var i = bodies.length - 1; i >= 0; i-- )
-    {
-        bodies[ i ].paint( c );
-    }
-}
-
-
-/* Animation */
-
-( function()
-{
-    var lastTime = 0;
-    var vendors = [ 'webkit', 'moz' ];
-    for( var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x )
-    {
-        window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
-        window.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ]
-                                   || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
-    }
-    if( !window.requestAnimationFrame )
-    {
-        window.requestAnimationFrame = function( callback, element )
+        for( var i = 0; i < bodies.length; i++ )
         {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
-            var id = window.setTimeout( function() { callback( currTime + timeToCall ); }, timeToCall );
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-    }
-
-    if( !window.cancelAnimationFrame )
-        window.cancelAnimationFrame = function( id )
+            bodies[ i ].calculateTotalGForce();
+        }
+        for( var i = 0; i < bodies.length; i++ )
         {
-            clearTimeout( id );
-        };
-}() );
-
-var paused = false;
-
-var lastTime = 0;
-function animate( time )
-{
-    var elapsedTime = time - lastTime;
-    lastTime = time;
-
-    render();
-    if( !paused && elapsedTime < 100 )
-    {
-        updateBodies( elapsedTime / 1000 );
+            bodies[ i ].applyTotalGForce( elapsedTime );
+        }
     }
-    window.requestAnimationFrame( animate );
 }
 
 
 /* Rendering */
 
-function clear()
-{
-    context.save();
-
-    context.setTransform( 1, 0, 0, 1, 0, 0 );
-    context.clearRect( 0, 0, canvas.width, canvas.height );
-
-    context.restore();
-}
-
 function render()
 {
-    clear();
-    paintBodies( context );
+    clear( context );
+    for( var i = bodies.length - 1; i >= 0; i-- )
+    {
+        bodies[ i ].paint();
+    }
     if( heldBody != null && heldRay != null )
     {
         drawRay( context, heldRay.x, heldRay.y, heldBody.position, "green" );
@@ -405,29 +288,33 @@ function onInputUp( x, y )
 
 canvas.addEventListener( "mousedown", function( e )
 {
-    var x = e.x - canvas.offsetLeft;
-    var y = e.y - canvas.offsetTop;
+    var loc = getRelativeCoordinates( e );
+    var x = loc.x;
+    var y = loc.y;
     onInputDown( x, y );
 } );
 
 canvas.addEventListener( "mousemove", function( e )
 {
-    var x = e.x - canvas.offsetLeft;
-    var y = e.y - canvas.offsetTop;
+    var loc = getRelativeCoordinates( e );
+    var x = loc.x;
+    var y = loc.y;
     onInputMoved( x, y );
 } );
 
 canvas.addEventListener( "mouseout", function( e )
 {
-    var x = e.x - canvas.offsetLeft;
-    var y = e.y - canvas.offsetTop;
+    var loc = getRelativeCoordinates( e );
+    var x = loc.x;
+    var y = loc.y;
     onInputUp( x, y );
 } );
 
 canvas.addEventListener( "mouseup", function( e )
 {
-    var x = e.x - canvas.offsetLeft;
-    var y = e.y - canvas.offsetTop;
+    var loc = getRelativeCoordinates( e );
+    var x = loc.x;
+    var y = loc.y;
     onInputUp( x, y );
 } );
 
@@ -450,12 +337,8 @@ pauseButton.onclick = function()
 
 function main()
 {
-    for( var i = 0; i < 0; i++ )
-    {
-        bodies.push( new Body() );
-    }
-
-    animate( 0 );
+    onWindowResize();
+    startAnimation( updateBodies, render );
 }
 
 main();
