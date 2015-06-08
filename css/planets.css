@@ -59,8 +59,9 @@ http://ironsummitmedia.github.io/startbootstrap-simple-sidebar/
 #page-content-wrapper
 {
     width: 100%;
+    height: 100%;
     position: absolute;
-    padding: 15px;
+    padding: 0px;
 }
 
 #wrapper.toggled #page-content-wrapper
