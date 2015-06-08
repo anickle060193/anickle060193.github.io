@@ -108,26 +108,39 @@ function fillCircle( c, x, y, radius, fillStyle )
 }
 
 var colors = [ ];
-var minFontSize = 10;
-var fontSizeStep = 10;
-var maxIterations = 20;
-var first = true;
+var minFontSize = 0;
+var fontSizeStep = 1;
+var textColor = "#EEEEEE";
+
+function getFontSizeOneChoice( context, text, radius, padding )
+{
+    var diameter = radius * 2;
+    var fontSize = diameter + 1;
+    var textWidth = 0;
+    while( ( diameter > fontSize || diameter < ( padding * 2 + textWidth ) ) && fontSize > minFontSize )
+    {
+        fontSize -= fontSizeStep;
+        context.font = fontSize.toString() + "px Verdana";
+        textWidth = context.measureText( text ).width;
+    }
+    fontSize = fontSize > minFontSize ? fontSize : minFontSize;
+    return fontSize;
+}
 
 function getFontSize( context, text, radius, textOffset, angle )
 {
-    var lastFontSize = 0;
-    var fontSize = lastFontSize + fontSizeStep;
-
-    var chordSize = getChordLength( radius - textOffset, angle );
-    while( chordSize > fontSize )
+    var fontSize = getChordLength( radius - textOffset, angle );
+    var chordLength = 0;
+    var textWidth = radius;
+    while( ( chordLength < fontSize || radius < ( textOffset + textWidth ) ) && fontSize > minFontSize )
     {
-        lastFontSize = fontSize;
-        fontSize += fontSizeStep;
+        fontSize -= fontSizeStep;
         context.font = fontSize.toString() + "px Verdana";
-        var size = context.measureText( text );
-        chordSize = getChordLength( radius - textOffset - size.width, angle );
+        textWidth = context.measureText( text ).width;
+        chordLength = getChordLength( radius - textOffset - textWidth, angle );
     }
-    return lastFontSize;
+    fontSize = fontSize > minFontSize ? fontSize : minFontSize;
+    return fontSize;
 }
 
 function getChordLength( radius, angle )
@@ -140,6 +153,19 @@ function getRadius()
     return Math.min( canvas.width, canvas.height ) / 2 * 0.8;
 }
 
+function drawSegment( context, radius, angle, segmentNumber )
+{
+    context.beginPath();
+    if( colors.length < segmentNumber + 1 )
+    {
+        colors.push( randomColor() );
+    }
+    context.fillStyle = colors[ segmentNumber ];
+    context.arc( 0, 0, radius, -angle, 0 );
+    context.lineTo( 0, 0 );
+    context.fill();
+}
+
 function drawWheel( x, y, radius, segmentStrings )
 {
     var tempCanvas = document.createElement( "canvas" );
@@ -148,31 +174,41 @@ function drawWheel( x, y, radius, segmentStrings )
     tempContext.translate( radius, radius );
 
     var segments = segmentStrings.length;
-    var segmentAngle = 2 * Math.PI / segments;
     var textOffset = radius * 0.05;
-    for( var i = 0; i < segments; i++ )
+
+    if( segments > 1 )
     {
-        tempContext.beginPath();
-        if( colors.length < i + 1 )
+        var segmentAngle = 2 * Math.PI / segments;
+        for( var i = 0; i < segments; i++ )
         {
-            colors.push( randomColor() );
+            drawSegment( tempContext, radius, segmentAngle, i );
+    
+            tempContext.rotate( -segmentAngle / 2 );
+    
+            var text = segmentStrings[ i ];
+            var fontSize = getFontSize( tempContext, text, radius, textOffset, segmentAngle );
+            tempContext.font = fontSize.toString() + "px Verdana";
+            tempContext.fillStyle = textColor;
+            tempContext.textBaseline = "middle";
+            tempContext.textAlign = "end";
+            tempContext.fillText( text, radius - textOffset, 0 );
+    
+            tempContext.rotate( -segmentAngle / 2 );
         }
-        tempContext.fillStyle = colors[ i ];
-        tempContext.arc( 0, 0, radius, -segmentAngle, 0 );
-        tempContext.lineTo( 0, 0 );
-        tempContext.fill();
-
+    }
+    else
+    {
+        drawSegment( tempContext, radius, 2 * Math.PI, 0 );
+    
         tempContext.rotate( -segmentAngle / 2 );
 
-        var text = segmentStrings[ i ];
-        var fontSize = getFontSize( tempContext, text, radius, textOffset, segmentAngle );
-        tempContext.font = fontSize.toString() + "px Verdana";
-        var size = tempContext.measureText( text );
-        tempContext.fillStyle = "#EEEEEE";
+        var textSingle = segmentStrings[ 0 ];
+        var fontSizeSingle = getFontSizeOneChoice( tempContext, textSingle, radius, textOffset );
+        tempContext.font = fontSizeSingle.toString() + "px Verdana";
+        tempContext.fillStyle = textColor;
         tempContext.textBaseline = "middle";
-        tempContext.fillText( text, radius - size.width - textOffset, 0 );
-
-        tempContext.rotate( -segmentAngle / 2 );
+        tempContext.textAlign = "center";
+        tempContext.fillText( textSingle, 0, 0 );
     }
 
     context.save();
