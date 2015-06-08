@@ -86,7 +86,7 @@ function animate( time )
     var elapsedTime = time - animator.lastTime;
     animator.lastTime = time;
     animator.renderer();
-    if( elapsedTime < 100 )
+    if( 0 < elapsedTime && elapsedTime < 100 )
     {
         animator.updater( elapsedTime / 1000 );
     }
