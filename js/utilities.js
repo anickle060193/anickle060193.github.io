@@ -117,23 +117,30 @@ function clear( context )
 
 /* Utility Functions */
 
-function getRelativeCoordinates( e )
+function setRelativeCoordinates( e )
 {
-    if( e.offsetX !== undefined && e.offsetY !== undefined )
+    var x = 0;
+    var y = 0;
+    if( e.clientX !== undefined && e.clientY !== undefined )
     {
-        return new Point( e.offsetX, e.offsetY );
+        x = e.clientX;
+        y = e.clientY;
+    }
+    else if( e.offsetX !== undefined && e.offsetY !== undefined )
+    {
+        x = e.offsetX;
+        y = e.offsetY;
     }
     else if( e.layerX !== undefined && e.layerY !== undefined )
     {
-        return new Point( e.layerX, e.layerY );
+        x = e.layerX;
+        y = e.layerY;
     }
     else
     {
         var totalOffsetX = 0;
         var totalOffsetY = 0;
-        var x = 0;
-        var y = 0;
-        var currentElement = e.currentElement;
+        var currentElement = e.currentElement || e.srcElement || e.target;
 
         do
         {
@@ -144,9 +151,9 @@ function getRelativeCoordinates( e )
 
         x = event.pageX - totalOffsetX;
         y = event.pageY - totalOffsetY;
-
-        return new Point( x, y );
     }
+    e.x = x;
+    e.y = y;
 }
 
 function random( x, y )

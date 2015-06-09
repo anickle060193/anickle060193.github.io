@@ -105,23 +105,10 @@ randomizeButton.addEventListener( "click", toggleRandom );
 
 clearLinesButton.addEventListener( "click", clearLine );
 
-function setupInput()
+window.addEventListener( "pointerup", function( e )
 {
-	if( window.touch_screen )
-	{
-		canvas.addEventListener( "touchup", function( e )
-		{
-			onAddPoint( e.x, e.y );
-		} );
-	}
-	else
-	{
-		canvas.addEventListener( "click", function( e )
-		{
-			onAddPoint( e.x, e.y );
-		} );
-	}
-}
+	onAddPoint( e.clientX, e.clientY );
+} );
 
 
 /* Line */
@@ -225,7 +212,6 @@ function update()
 
 function main()
 {
-	setupInput();
 	stopRandom();
 }
 

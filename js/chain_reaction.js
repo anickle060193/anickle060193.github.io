@@ -1,14 +1,12 @@
 /* Document Elements */
 
-var mainContent = document.getElementById( "mainContent" );
-
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
 function onWindowResize()
 {
-    canvas.width = mainContent.clientWidth;
-    canvas.height = mainContent.clientHeight;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 }
 
 onDebouncedWindowResize( onWindowResize );
@@ -248,55 +246,17 @@ function createMultipleExplosions()
     }
 }
 
-canvas.addEventListener( "touchstart", function( e )
-{
-    if( e.touches.length == 1 )
-    {
-        var x = e.touches[ 0 ].clientX - canvas.offsetLeft;
-        var y = e.touches[ 0 ].clientY - canvas.offsetTop;
-        createTouchExplosion( x, y );
-    }
-    else if( e.touches.length == 2 )
-    {
-        createMultipleExplosions();
-    }
-} );
-
 canvas.addEventListener( "click", function( e )
 {
-    var x = e.x - canvas.offsetLeft;
-    var y = e.y - canvas.offsetTop;
-    createTouchExplosion( x, y );
-} );
-
-function getChar( event )
-{
-	if( event.which == null )
-	{
-		return String.fromCharCode( event.keyCode );
-	}
-	else if( event.which != 0 && event.charCode != 0 )
-	{
-		return String.fromCharCode( event.which );
-	}
-	else
-	{
-		return null;
-	}
-}
-
-addEventListener( "keypress", function( e )
-{
-    var char = getChar( e );
-    if( char == "e" )
-    {
-        createMultipleExplosions();
-    }
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    createTouchExplosion( e.x, e.y );
+    console.dir( e );
 } );
 
 
 /* Main */
 
-createMultipleExplosions();
+//createMultipleExplosions();
 
 startAnimation( updateExplosions, render );
