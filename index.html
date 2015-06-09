@@ -17,7 +17,7 @@
         <link href="css/navbar_page.css" rel="stylesheet"></link>
 
         <!-- Custom styles for this template -->
-        <!-- <link href="css/index.css" rel="stylesheet"></link> -->
+        <link href="css/index.css" rel="stylesheet"></link>
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -44,102 +44,100 @@
             </div>
         </div>
 
-        <div class="container">
-            <div class="row">
-                <div class="col-xs-12 col-md-8 col-md-offset-2">
+        <div id="grid" data-columns>
 
-                    <!-- Line Thingy -->
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <img src="images/line_thingy_thumbnail.png" alt="Line Thingy">
-                            <h2>Line Thingy</h2>
-                            <p>A simple line drawing program that auto-generates new lines that connect the midpoints the segments of its parent's lines.</p>
-                            <p>
-                                <a class="btn btn-default" href="line_thingy.html" role="button">View Line Thingy!</a>
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Planets -->
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <img src="images/planets_thumbnail.png" alt="Planets">
-                            <h2>Planets</h2>
-                            <p>A simple planetary simulator.</p>
-                            <p>
-                                <a class="btn btn-default" href="planets.html" role="button">View Planets!</a>
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Midpoint Displacement -->
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <img src="images/midpoint_displacement_thumbnail.png" alt="Midpoint Displacement">
-                            <h2>Midpoint Displacement</h2>
-                            <p>A simple midpoint displacement visualizer.</p>
-                            <p>
-                                <a class="btn btn-default" href="midpoint_displacement.html" role="button">View Midpoint Displacement!</a>
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Chain Reaction -->
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <img src="images/chain_reaction_thumbnail.png" alt="Chain Reaction">
-                            <h2>Chain Reaction</h2>
-                            <p>A simple chain reaction explosion game.</p>
-                            <p>
-                                <a class="btn btn-default" href="chain_reaction.html" role="button">View Chain Reaction!</a>
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Spider Web -->
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <img src="images/spider_web_thumbnail.png" alt="Spider Web">
-                            <h2>Spider Web</h2>
-                            <p>A simple spider web generator.</p>
-                            <p>
-                                <a class="btn btn-default" href="spider_web.html" role="button">View Spider Web!</a>
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Choose -->
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <img src="images/choose_thumbnail.png" alt="Choose">
-                            <h2>Choose</h2>
-                            <p>A simple decision wheel.</p>
-                            <p>
-                                <a class="btn btn-default" href="choose.html?1+2+3+4+5+6+7+" role="button">View Choose!</a>
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- LightBot -->
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <img src="images/light_bot_thumbnail.png" alt="Light Bot">
-                            <h2>LightBot</h2>
-                            <p>A simple game where you control a simple robot and attempt to navigate the board and light up all the light blocks.</p>
-                            <p>
-                                <a class="btn btn-default" href="light_bot.html" role="button">View LightBot!</a>
-                            </p>
-                        </div>
-                    </div>
-
+            <!-- Line Thingy -->
+            <div class="thumbnail">
+                <img src="images/line_thingy_thumbnail.png" alt="Line Thingy">
+                <div class="caption">
+                    <h2>Line Thingy</h2>
+                    <p>A simple line drawing program that auto-generates new lines that connect the midpoints the segments of its parent's lines.</p>
+                    <p>
+                        <a class="btn btn-default" href="line_thingy.html" role="button">View Line Thingy!</a>
+                    </p>
                 </div>
             </div>
+
+            <!-- Planets -->
+            <div class="thumbnail">
+                <img src="images/planets_thumbnail.png" alt="Planets">
+                <div class="caption">
+                    <h2>Planets</h2>
+                    <p>A simple planetary simulator.</p>
+                    <p>
+                        <a class="btn btn-default" href="planets.html" role="button">View Planets!</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Midpoint Displacement -->
+            <div class="thumbnail">
+                <img src="images/midpoint_displacement_thumbnail.png" alt="Midpoint Displacement">
+                <div class="caption">
+                    <h2>Midpoint Displacement</h2>
+                    <p>A simple midpoint displacement visualizer.</p>
+                    <p>
+                        <a class="btn btn-default" href="midpoint_displacement.html" role="button">View Midpoint Displacement!</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Chain Reaction -->
+            <div class="thumbnail">
+                <img src="images/chain_reaction_thumbnail.png" alt="Chain Reaction">
+                <div class="caption">
+                    <h2>Chain Reaction</h2>
+                    <p>A simple chain reaction explosion game.</p>
+                    <p>
+                        <a class="btn btn-default" href="chain_reaction.html" role="button">View Chain Reaction!</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Choose -->
+            <div class="thumbnail">
+                <img src="images/choose_thumbnail.png" alt="Choose">
+                <div class="caption">
+                    <h2>Choose</h2>
+                    <p>A simple decision wheel.</p>
+                    <p>
+                        <a class="btn btn-default" href="choose.html?1+2+3+4+5+6+7+" role="button">View Choose!</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Spider Web -->
+            <div class="thumbnail">
+                <img src="images/spider_web_thumbnail.png" alt="Spider Web">
+                <div class="caption">
+                    <h2>Spider Web</h2>
+                    <p>A simple spider web generator.</p>
+                    <p>
+                        <a class="btn btn-default" href="spider_web.html" role="button">View Spider Web!</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- LightBot -->
+            <div class="thumbnail">
+                <img src="images/light_bot_thumbnail.png" alt="Light Bot">
+                <div class="caption">
+                    <h2>LightBot</h2>
+                    <p>A simple game where you control a simple robot and attempt to navigate the board and light up all the light blocks.</p>
+                    <p>
+                        <a class="btn btn-default" href="light_bot.html" role="button">View LightBot!</a>
+                    </p>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Bootstrap core JavaScript==================================================- ->
+        <!-- Bootstrap core JavaScript==================================================-->
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
+        <!-- Salvattore core JavaScript==================================================-->
+        <script src="js/salvattore.min.js"></script>
     </body>
 
 </html>
