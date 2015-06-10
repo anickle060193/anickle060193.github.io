@@ -1,7 +1,5 @@
 /* Document Elements */
 
-var mainContent = document.getElementById( "mainContent" );
-
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 context.translate( 0.5, 0.5 );
@@ -15,8 +13,8 @@ var clearLinesButton = document.getElementById( "clearLines" );
 
 function onResize()
 {
-    canvas.width = mainContent.clientWidth;
-    canvas.height = mainContent.clientHeight;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
     render();
 }
@@ -175,72 +173,31 @@ clearLinesButton.addEventListener( "click", function()
     lines = [ ];
 } );
 
-if( !window.touch_screen )
+canvas.addEventListener( "pointerdown", function ( e )
 {
-    canvas.addEventListener( "mousedown", function ( e )
-    {
-        downInput( e );
-    } );
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    downInput( e._x, e._y );
+} );
 
-    canvas.addEventListener( "mousemove", function( e )
-    {
-        moveInput( e );
-    } );
-
-    canvas.addEventListener( "mouseup", function ( e )
-    {
-        upInput();
-    } );
-
-    canvas.addEventListener( "mouseleave", function ( e )
-    {
-        cancelInput();
-    } );
-}
-else
+canvas.addEventListener( "pointermove", function( e )
 {
-    canvas.addEventListener( "touchstart", function ( e )
-    {
-        e.preventDefault();
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    moveInput( e._x, e._y );
+} );
 
-        var touch = e.changedTouches[ 0 ];
-        touchId = touch.identifier;
-        downInput( e );
-    } );
+canvas.addEventListener( "pointerup", function ( e )
+{
+    e.preventDefault();
+    upInput();
+} );
 
-    canvas.addEventListener( "touchmove", function( e )
-    {
-        e.preventDefault();
-
-        var touch = findTouch( e.changedTouches, touchId );
-        if( touch != null )
-        {
-            moveInput( e );
-        }
-    } );
-
-    canvas.addEventListener( "touchend", function ( e )
-    {
-        e.preventDefault();
-
-        var touch = findTouch( e.changedTouches, touchId );
-        if( touch != null )
-        {
-            upInput();
-        }
-    } );
-
-    canvas.addEventListener( "touchcancel", function ( e )
-    {
-        e.preventDefault();
-
-        var touch = findTouch( e.changedTouches, touchId );
-        if( touch != null )
-        {
-            cancelInput();
-        }
-    } );
-}
+canvas.addEventListener( "pointerleave", function ( e )
+{
+    e.preventDefault();
+    cancelInput();
+} );
 
 var inputDown = false;
 
@@ -251,11 +208,10 @@ function addingLines()
     return currentAnchor != editCenterButton.id;
 }
 
-function downInput( e )
+function downInput( x, y )
 {
-    var p = getRelativeCoordinates( e );
-    var x = p.x / canvas.width;
-    var y = p.y / canvas.height;
+    x /= canvas.width;
+    y /= canvas.height;
 
     inputDown = true;
     if( addingLines() )
@@ -268,13 +224,12 @@ function downInput( e )
     }
 }
 
-function moveInput( e )
+function moveInput( x, y )
 {
     if( inputDown )
     {
-        var p = getRelativeCoordinates( e );
-        var x = p.x / canvas.width;
-        var y = p.y / canvas.height;
+        x /= canvas.width;
+        y /= canvas.height;
 
         if( addingLines() )
         {

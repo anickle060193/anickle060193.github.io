@@ -1,17 +1,16 @@
 /* Document Elements */
 
-var mainContent = document.getElementById( "mainContent" );
 var randomizeButton = document.getElementById( "randomize" );
 var clearLinesButton = document.getElementById( "clearLines" );
 
 var canvas = document.getElementById( "canvas" );
-var ctx = canvas.getContext( "2d" );
-ctx.translate( 0.5, 0.5 );
+var context = canvas.getContext( "2d" );
+context.translate( 0.5, 0.5 );
 
 function onWindowResize()
 {
-	canvas.width = mainContent.clientWidth;
-	canvas.height = mainContent.clientHeight;
+	canvas.width = canvas.clientWidth;
+	canvas.height = canvas.clientHeight;
 	update();
 }
 
@@ -92,8 +91,6 @@ function clearLine()
 
 function onAddPoint( x, y )
 {
-    x -= canvas.offsetLeft;
-    y -= canvas.offsetTop;
 	line.addPoint( new Point( x, y ).convertFromWindow() );
 	update();
 }
@@ -105,9 +102,11 @@ randomizeButton.addEventListener( "click", toggleRandom );
 
 clearLinesButton.addEventListener( "click", clearLine );
 
-window.addEventListener( "pointerup", function( e )
+canvas.addEventListener( "pointerup", function( e )
 {
-	onAddPoint( e.clientX, e.clientY );
+	e.preventDefault();
+	setRelativeCoordinates( e );
+	onAddPoint( e._x, e._y );
 } );
 
 
@@ -169,19 +168,19 @@ function Line()
 	};
 	this.drawLine = function()
 	{
-		ctx.beginPath();
+		context.beginPath();
 		if( this.points.length > 0 )
 		{
 			var start = this.points[ 0 ].convertToWindow();
-			ctx.moveTo( start.x, start.y );
+			context.moveTo( start.x, start.y );
 		}
 		for( var i = 0; i < this.points.length; i++ )
 		{
 			var p = this.points[ i ].convertToWindow();
-			ctx.lineTo( p.x, p.y );
+			context.lineTo( p.x, p.y );
 		}
-		ctx.strokeStyle = this.color;
-		ctx.stroke();
+		context.strokeStyle = this.color;
+		context.stroke();
 		if( this.childLine != null )
 		{
 			this.childLine.drawLine();
@@ -199,7 +198,7 @@ function Line()
 
 function update()
 {
-	clear( ctx );
+	clear( context );
 
 	if( line != null )
 	{

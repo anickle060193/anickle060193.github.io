@@ -1,14 +1,13 @@
 /* Document Elements */
 
-var mainContent = document.getElementById( "mainContent" );
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 context.translate( 0.5, 0.5 );
 
 function onResize()
 {
-    canvas.width = mainContent.clientWidth;
-    canvas.height = mainContent.clientHeight;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
     render();
 }

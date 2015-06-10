@@ -59,7 +59,7 @@ function onDebouncedWindowResize( onWindowResize, delay )
     }
     if( !window.requestAnimationFrame )
     {
-        window.requestAnimationFrame = function( callback, element )
+        window.requestAnimationFrame = function( callback )
         {
             var currTime = new Date().getTime();
             var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
@@ -121,23 +121,21 @@ function setRelativeCoordinates( e )
 {
     var x = 0;
     var y = 0;
-    if( e.clientX !== undefined && e.clientY !== undefined )
-    {
-        x = e.clientX;
-        y = e.clientY;
-    }
-    else if( e.offsetX !== undefined && e.offsetY !== undefined )
+    
+    if( e.offsetX !== undefined && e.offsetY !== undefined )
     {
         x = e.offsetX;
         y = e.offsetY;
     }
     else if( e.layerX !== undefined && e.layerY !== undefined )
     {
+        console.log( "layer" );
         x = e.layerX;
         y = e.layerY;
     }
     else
     {
+        console.log( "custom" );
         var totalOffsetX = 0;
         var totalOffsetY = 0;
         var currentElement = e.currentElement || e.srcElement || e.target;
@@ -152,8 +150,8 @@ function setRelativeCoordinates( e )
         x = event.pageX - totalOffsetX;
         y = event.pageY - totalOffsetY;
     }
-    e.x = x;
-    e.y = y;
+    e._x = x;
+    e._y = y;
 }
 
 function random( x, y )

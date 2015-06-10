@@ -8,22 +8,10 @@ var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 context.translate( 0.5, 0.5 );
 
-// http://ironsummitmedia.github.io/startbootstrap-simple-sidebar/
-var menuToggleButton = document.getElementById( "menu-toggle" );
-var wrapper = document.getElementById( "wrapper" );
-
-menuToggleButton.addEventListener( "click", function( e )
-{
-    e.preventDefault();
-    wrapper.classList.toggle( "toggled" );
-} );
-
-var mainContent = document.getElementById( "mainContent" );
-
 function onWindowResize()
 {
-    canvas.width = mainContent.clientWidth;
-    canvas.height = mainContent.clientHeight;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 }
 
 onDebouncedWindowResize( onWindowResize );
@@ -286,36 +274,32 @@ function onInputUp( x, y )
     heldRay = null;
 }
 
-canvas.addEventListener( "mousedown", function( e )
+canvas.addEventListener( "pointerdown", function( e )
 {
-    var loc = getRelativeCoordinates( e );
-    var x = loc.x;
-    var y = loc.y;
-    onInputDown( x, y );
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    onInputDown( e._x, e._y );
 } );
 
-canvas.addEventListener( "mousemove", function( e )
+canvas.addEventListener( "pointermove", function( e )
 {
-    var loc = getRelativeCoordinates( e );
-    var x = loc.x;
-    var y = loc.y;
-    onInputMoved( x, y );
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    onInputMoved( e._x, e._y );
 } );
 
-canvas.addEventListener( "mouseout", function( e )
+canvas.addEventListener( "pointerout", function( e )
 {
-    var loc = getRelativeCoordinates( e );
-    var x = loc.x;
-    var y = loc.y;
-    onInputUp( x, y );
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    onInputUp( e._x, e._y );
 } );
 
-canvas.addEventListener( "mouseup", function( e )
+canvas.addEventListener( "pointerup", function( e )
 {
-    var loc = getRelativeCoordinates( e );
-    var x = loc.x;
-    var y = loc.y;
-    onInputUp( x, y );
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    onInputUp( e._x, e._y );
 } );
 
 playButton.onclick = function()
