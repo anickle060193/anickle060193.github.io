@@ -129,13 +129,11 @@ function setRelativeCoordinates( e )
     }
     else if( e.layerX !== undefined && e.layerY !== undefined )
     {
-        console.log( "layer" );
         x = e.layerX;
         y = e.layerY;
     }
     else
     {
-        console.log( "custom" );
         var totalOffsetX = 0;
         var totalOffsetY = 0;
         var currentElement = e.currentElement || e.srcElement || e.target;

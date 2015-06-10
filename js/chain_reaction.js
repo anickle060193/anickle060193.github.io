@@ -246,17 +246,16 @@ function createMultipleExplosions()
     }
 }
 
-canvas.addEventListener( "click", function( e )
+canvas.addEventListener( "pointerup", function( e )
 {
     e.preventDefault();
     setRelativeCoordinates( e );
-    createTouchExplosion( e.x, e.y );
-    console.dir( e );
+    createTouchExplosion( e._x, e._y );
 } );
 
 
 /* Main */
 
-//createMultipleExplosions();
+createMultipleExplosions();
 
 startAnimation( updateExplosions, render );
