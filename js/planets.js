@@ -1,3 +1,8 @@
+/* Includes */
+
+/// <reference path="utilities.js" />
+
+
 /* Document Elements */
 
 var playButton = document.getElementById( "play" );
