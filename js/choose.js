@@ -1,7 +1,7 @@
 /* Includes */
 
+/// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="utilities.js" />
-
 
 /* Document Elements */
 

@@ -223,6 +223,16 @@ function distance( p1, p2 )
     return Math.sqrt( xDiff * xDiff + yDiff * yDiff );
 }
 
+function removeAllWhiteSpace( text )
+{
+    return text.replace( /\s*/g, "" );
+}
+
+function validHexColorString( color )
+{
+    return /^#[0-9a-f]{6}$/i.exec( removeAllWhiteSpace( color ) );
+}
+
 
 /* Drawing */
 

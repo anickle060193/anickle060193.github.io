@@ -2,7 +2,6 @@
 
 /// <reference path="utilities.js" />
 
-
 /* Document Elements */
 
 var canvas = document.getElementById( "canvas" );

@@ -72,25 +72,89 @@
                     <div class="modal-body">
                         <form>
                             <div class="form-group">
-                                <label for="recipient-name" class="control-label">Planet Radius (km):</label>
+                                <label for="newPlanetPreset" class="control-label">Planet Presets:</label>
+                                <div class="input-group">
+                                    <div class="btn-group" id="newPlanetPreset">
+                                        <button type="button" id="newPlanetPresetButton" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"></button>
+                                        <ul id="presetsList" class="dropdown-menu" role="menu"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                                
+                            <div id="radiusGroup" class="form-group">
+                                <label for="newPlanetRadius" class="control-label">Planet Radius (km):</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="newPlanetRadius" placeholder="6371.0">
                                     <span class="input-group-btn">
-                                        <button class="btn btn-default" type="button">
+                                        <a tabindex="-1" class="btn btn-default" role="button" data-toggle="popover" data-trigger="focus" data-container="body" data-html="true"
+                                            title="Planet Radius"
+                                            data-content="
+<pre>
+Examples (ignores whitespace):
+    6371.0
+    6.3710x10^3
+    6.3710 x 10 ^ 3
+    6.3710e3
+    6.3710 e 3
+    6.3710E3
+    6.3710 E 3
+</pre>
+                                            ">
                                             <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                                        </button>
+                                        </a>
                                     </span>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="message-text" class="control-label">Planet Mass (kg):</label>
-                                <input type="text" class="form-control" id="newPlanetMass" placeholder="5.97219x10^24"></input>
+                            
+                            <div id="massGroup" class="form-group">
+                                <label for="newPlanetMass" class="control-label">Planet Mass (kg):</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="newPlanetMass" placeholder="5.97219x10^24">
+                                    <span class="input-group-btn">
+                                        <a tabindex="-1" class="btn btn-default" role="button" data-toggle="popover" data-trigger="focus" data-container="body" data-html="true"
+                                            data-title="Planet Mass"
+                                            data-content="
+<pre>
+Examples (ignores whitespace):
+    5972190000000000000000000
+    5.97219x10^24
+    5.97219 x 10 ^ 24
+    5.97219e24
+    5.97219 e 24
+    5.97219E24
+    5.97219 E 24
+</pre>
+                                            ">
+                                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                        </a>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div id="colorGroup" class="form-group">
+                                <label for="newPlanetColor" class="control-label">Planet Mass (kg):</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="newPlanetColor" placeholder="#000000">
+                                    <span class="input-group-btn">
+                                        <a tabindex="-1" class="btn btn-default" role="button" data-toggle="popover" data-trigger="focus" data-container="body" data-html="true"
+                                            data-title="Planet Color"
+                                            data-content="
+<pre>
+Examples:
+    #5FD62C
+    #5fd62c
+</pre>
+                                            ">
+                                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                                        </a>
+                                    </span>
+                                </div>
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary">Create Planet</button>
+                        <button type="button" class="btn btn-primary" id="createPlanet">Create Planet</button>
                     </div>
                 </div>
             </div>
