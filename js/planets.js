@@ -56,13 +56,14 @@ var presets = [
     new Preset( "Mercury", "2439.64", "3.3022x10^23", "#511800" ),
     defaultPreset,
     new Preset( "Venus", "6051.59", "4.8690x10^24", "#A49800" ),
-    new Preset( "Moon", "1737.1", "7.3477x10^27", "#7A7A7A" ),
+    new Preset( "Moon", "1737.1", "7.3477x10^22", "#7A7A7A" ),
     new Preset( "Mars", "3397.00", "6.4191x10^23", "#A51D08" ),
     new Preset( "Jupiter", "71492.68", "1.8987x10^27", "#BF250D" ),
     new Preset( "Saturn", "60267.14", "5.6851x10^26", "#C8CF19" ),
     new Preset( "Uranus", "25557.25", "8.6849x10^25", "#8EE3FA" ),
     new Preset( "Neptune", "24766.36", "1.0244x10^26", "#1212FF" ),
-    new Preset( "Pluto", "1184", "1.3x10^22", "#424242" )
+    new Preset( "Pluto", "1184", "1.3x10^22", "#424242" ),
+    new Preset( "Black Hole", "10x10^3", "2.0x10^33", "#0F0036" )
 ];
 
 function setPresetButtonText( name )
