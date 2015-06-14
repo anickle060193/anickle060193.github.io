@@ -27,6 +27,21 @@ var zoomInButton = document.getElementById( "zoomIn" );
 var moveButton = document.getElementById( "move" );
 var doneButton = document.getElementById( "done" );
 
+var timeFactor = 1000;
+
+var timeFactorInput = document.getElementById( "timeFactor" );
+timeFactorInput.value = timeFactor;
+var updateTimeFactor = document.getElementById( "updateTimeFactor" );
+var timeFactorGroup = document.getElementById( "timeFactorGroup" );
+
+updateTimeFactor.addEventListener( "click", function()
+{
+    if( validateTimeFactor() )
+    {
+        timeFactor = getTimeFactor();
+    }
+} );
+
 function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
@@ -37,6 +52,27 @@ function onWindowResize()
 onDebouncedWindowResize( onWindowResize );
 
 $( '[ data-toggle="popover" ]' ).popover();
+
+function setupValidator( input, group, validatorFunc )
+{
+    input.addEventListener( "input", function()
+    {
+    setPresetButtonText( "Custom" );
+        if( !validatorFunc() )
+        {
+            group.classList.add( "has-error" );
+        }
+        else
+        {
+            group.classList.remove( "has-error" );
+        }
+    } );
+}
+
+setupValidator( newPlanetRadius, radiusGroup, validateRadius );
+setupValidator( newPlanetMass, massGroup, validateMass );
+setupValidator( newPlanetColor, colorGroup, validateColor );
+setupValidator( timeFactorInput, timeFactorGroup, validateTimeFactor );
 
 
 /* Presets */
@@ -103,26 +139,6 @@ function addPresets()
     presetDropdown.appendChild( li );
     addPresetElement( new Preset( "Custom", "0", "0", "#000000" ) );
 }
-
-function setupValidator( input, group, validatorFunc )
-{
-    input.addEventListener( "input", function()
-    {
-    setPresetButtonText( "Custom" );
-        if( !validatorFunc() )
-        {
-            group.classList.add( "has-error" );
-        }
-        else
-        {
-            group.classList.remove( "has-error" );
-        }
-    } );
-}
-
-setupValidator( newPlanetRadius, radiusGroup, validateRadius );
-setupValidator( newPlanetMass, massGroup, validateMass );
-setupValidator( newPlanetColor, colorGroup, validateColor );
 
 
 /* Utilities */
@@ -320,7 +336,7 @@ function updateBodies( elapsedTime )
 {
     if( !paused )
     {
-        elapsedTime *= 1000;
+        elapsedTime *= timeFactor;
         for( var i = 0; i < bodies.length; i++ )
         {
             bodies[ i ].calculateTotalGForce();
@@ -352,7 +368,6 @@ function render()
 var translation = new Vector( 0, 0 );
 function translate( x, y )
 {
-    console.log( "translate" );
     translation.x += x;
     translation.y += y;
     
@@ -361,7 +376,6 @@ function translate( x, y )
 var scaled = new Vector( 1, 1 );
 function scale( x, y )
 {
-    console.log( "scale" );
     scaled.x *= x;
     scaled.y *= y;
     
@@ -385,7 +399,8 @@ function getEnteredRadius()
 
 function validateRadius()
 {
-    return !isNaN( getEnteredRadius() );
+    var radius = getEnteredRadius();
+    return !isNaN( radius ) && radius > 0;
 }
 
 function getEnteredMass()
@@ -395,7 +410,8 @@ function getEnteredMass()
 
 function validateMass()
 {
-    return !isNaN( getEnteredMass() );
+    var mass = getEnteredMass();
+    return !isNaN( mass ) && mass > 0;
 }
 
 function getEnteredColor()
@@ -409,6 +425,17 @@ function getEnteredColor()
     {
         return null;
     }
+}
+
+function getTimeFactor()
+{
+    return Number( timeFactorInput.value );
+}
+
+function validateTimeFactor()
+{
+    var timeFactor = getTimeFactor();
+    return !isNaN( timeFactor );
 }
 
 function validateColor()
