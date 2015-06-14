@@ -11,7 +11,26 @@ var pauseButton = document.getElementById( "pause" );
 
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
-context.translate( 0.5, 0.5 );
+context.translateX = 0;
+context.translateY = 0;
+function translate( x, y )
+{
+    console.log( "translate" );
+    context.translateX += x;
+    context.translateY += y;
+    
+    context.translate( x, y );
+};
+context.scaleX = 1;
+context.scaleY = 1;
+function scale( x, y )
+{
+    console.log( "scale" );
+    context.scaleX *= x;
+    context.scaleY *= y;
+    
+    context.scale( x, y );
+};
 
 var presetButton = document.getElementById( "newPlanetPresetButton" );
 var presetDropdown = document.getElementById( "presetsList" );
@@ -23,13 +42,25 @@ var colorGroup = document.getElementById( "colorGroup" );
 var newPlanetColor = document.getElementById( "newPlanetColor" );
 
 var createPlanetButton = document.getElementById( "createPlanet" );
+var zoomOutButton = document.getElementById( "zoomOut" );
+var zoomInButton = document.getElementById( "zoomIn" );
+var moveButton = document.getElementById( "move" );
+var doneButton = document.getElementById( "done" );
 
 function onWindowResize()
 {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-    
-    context.setTransform( 1, 0, 0, 1, 0.5 + canvas.width / 2, 0.5 + canvas.height / 2 );
+    console.log( "onWindowResize" );
+    context.save();
+    context.transform( 1, 0, 0, 1, 0, 0 );
+    if( canvas.width < canvas.clientWidth )
+    {
+        canvas.width = canvas.clientWidth;
+    }
+    if( canvas.height < canvas.clientHeight )
+    {
+        canvas.height = canvas.clientHeight;
+    }
+    context.restore();
 }
 
 onDebouncedWindowResize( onWindowResize );
@@ -339,11 +370,14 @@ function render()
     {
         bodies[ i ].paint();
     }
-    if( heldBody != null && heldRay != null )
+    if( createdPlanet != null && heldRay != null )
     {
-        drawRay( context, heldRay.toPixels(), heldBody.position.toPixels(), "green" );
-        heldBody.paint();
+        drawRay( context, heldRay.toPixels(), createdPlanet.position.toPixels(), "green" );
+        createdPlanet.paint();
     }
+    fillCircle( context, 0, 0, 10, "black" );
+    fillCircle( context, 100, 100, 20, "green" );
+    fillCircle( context, -100, -100, 20, "red" );
 }
 
 
@@ -407,6 +441,7 @@ function createPlanet()
         createdPlanet.radius = radius * 1000;
         createdPlanet.mass = mass;
         createdPlanet.color = color;
+        setCurrentAction( creatingPlanetAction );
         return true;
     }
     return false;
@@ -423,95 +458,183 @@ createPlanetButton.addEventListener( "click", function()
 
 /* Input Handler */
 
+var noAction = "noAction";
+var zoomInAction = zoomInButton.id;
+var zoomOutAction = zoomOutButton.id;
+var moveAction = moveButton.id;
+var creatingPlanetAction = "creatingPlanet";
+
+var currentAction;
+setCurrentAction( noAction );
+
+function setCurrentAction( action )
+{
+    currentAction = action;
+    switch( currentAction )
+    {
+        case zoomInAction:
+            canvas.style.cursor = "zoom-in";
+            break;
+        case zoomOutAction:
+            canvas.style.cursor = "zoom-out";
+            break;
+        case moveAction:
+            canvas.style.cursor = "move";
+            break;
+        default:
+            canvas.style.cursor = "auto";
+            break;
+    }
+}
+
+function onActionButtonClick( e )
+{
+    setCurrentAction( e.target.id );
+}
+
+zoomInButton.onchange = onActionButtonClick;
+zoomOutButton.onchange = onActionButtonClick;
+moveButton.onchange = onActionButtonClick;
+doneButton.onchange = onActionButtonClick;
+
 var inputMoveThreshold = 20;
 
-var heldBody = null;
+var down = false;
+var lastX = 0;
+var lastY = 0;
 var heldRay = null;
 
-function onInputDown( x, y )
+function onInputDown( e, x, y )
 {
-    if( heldBody == null )
+    down = true;
+    if( currentAction == creatingPlanetAction )
     {
-        x = ( x - canvas.width / 2 ) * pixelToMeter;
-        y = ( y - canvas.height / 2 ) * pixelToMeter;
-        if( createdPlanet != null )
-        {
-            heldBody = createdPlanet;
-            createdPlanet = null;
-        }
-        else
-        {
-            heldBody = new Body( 0, 0 );
-        }
-        heldBody.position.x = x;
-        heldBody.position.y = y;
+        x = x * pixelToMeter;
+        y = y * pixelToMeter;
+        createdPlanet.position.x = x;
+        createdPlanet.position.y = y;
         heldRay = new Vector( x, y );
     }
-}
-
-function onInputMoved( x, y )
-{
-    if( heldBody != null )
+    else if( currentAction == moveAction )
     {
-        heldBody.position.x = ( x - canvas.width / 2 ) * pixelToMeter;
-        heldBody.position.y = ( y - canvas.height / 2 ) * pixelToMeter;
+        lastX = e.screenX;
+        lastY = e.screenY;
     }
 }
 
-function onInputUp( x, y )
+function onInputMoved( e, x, y )
 {
-    if( heldBody == null )
+    if( down )
     {
-        return;
+        if( currentAction == creatingPlanetAction )
+        {
+            createdPlanet.position.x = x * pixelToMeter;
+            createdPlanet.position.y = y * pixelToMeter;
+        }
+        else if( currentAction == moveAction )
+        {
+            translate( e.screenX - lastX, e.screenY - lastY );
+            lastX = e.screenX;
+            lastY = e.screenY;
+        }
     }
-    var rayPixelLoc = heldRay.toPixels();
-    var bodyPixelLoc = heldBody.position.toPixels();
-    var dist = distance( bodyPixelLoc, rayPixelLoc );
-    if( dist < inputMoveThreshold )
+}
+
+function onInputUp( e, x, y )
+{
+    if( down )
     {
-        heldBody.fixed = true;
-        heldBody.speed = new Vector( 0, 0 );
-        bodies.push( heldBody );
+        down = false;
+        if( currentAction == creatingPlanetAction )
+        {
+            var rayPixelLoc = heldRay.toPixels();
+            var bodyPixelLoc = createdPlanet.position.toPixels();
+            var dist = distance( bodyPixelLoc, rayPixelLoc );
+            if( dist < inputMoveThreshold )
+            {
+                createdPlanet.fixed = true;
+                createdPlanet.speed = new Vector( 0, 0 );
+                bodies.push( createdPlanet );
+            }
+            else
+            {
+                var xDiff = rayPixelLoc.x - bodyPixelLoc.x;
+                var yDiff = rayPixelLoc.y - bodyPixelLoc.y;
+                createdPlanet.speed.x = maxSpeed / canvas.width * xDiff;
+                createdPlanet.speed.y = maxSpeed / canvas.height * yDiff;
+                bodies.unshift( createdPlanet );
+                createdPlanet.updatePath();
+            }
+            createdPlanet = null;
+            heldRay = null;
+            setCurrentAction( noAction );
+        }
+        else if( currentAction == zoomOutAction )
+        {
+            scale( 0.5, 0.5 );
+        }
+        else if( currentAction == zoomInAction )
+        {
+            scale( 2, 2 );
+        }
     }
-    else
+}
+
+function onInputCancel( e, x, y )
+{
+    down = false;
+    if( currentAction == creatingPlanetAction )
     {
-        var xDiff = rayPixelLoc.x - bodyPixelLoc.x;
-        var yDiff = rayPixelLoc.y - bodyPixelLoc.y;
-        heldBody.speed.x = maxSpeed / canvas.width * xDiff;
-        heldBody.speed.y = maxSpeed / canvas.height * yDiff;
-        bodies.unshift( heldBody );
-        heldBody.updatePath();
+        createdPlanet = null;
+        heldRay = null;
+        setCurrentAction( noAction );
     }
-    heldBody = null;
-    heldRay = null;
+}
+
+function convertForContext( e )
+{
+    e._x = ( e._x - context.translateX ) / context.scaleX;
+    e._y = ( e._y - context.translateY ) / context.scaleY;
 }
 
 canvas.addEventListener( "pointerdown", function( e )
 {
     e.preventDefault();
     setRelativeCoordinates( e );
-    onInputDown( e._x, e._y );
+    convertForContext( e );
+    onInputDown( e, e._x, e._y );
 } );
 
 canvas.addEventListener( "pointermove", function( e )
 {
     e.preventDefault();
     setRelativeCoordinates( e );
-    onInputMoved( e._x, e._y );
-} );
-
-canvas.addEventListener( "pointerout", function( e )
-{
-    e.preventDefault();
-    setRelativeCoordinates( e );
-    onInputUp( e._x, e._y );
+    convertForContext( e );
+    onInputMoved( e, e._x, e._y );
 } );
 
 canvas.addEventListener( "pointerup", function( e )
 {
     e.preventDefault();
     setRelativeCoordinates( e );
-    onInputUp( e._x, e._y );
+    convertForContext( e );
+    onInputUp( e, e._x, e._y );
+} );
+
+canvas.addEventListener( "pointerout", function( e )
+{
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    convertForContext( e );
+    onInputCancel( e, e._x, e._y );
+} );
+
+canvas.addEventListener( "pointercancel", function( e )
+{
+    e.preventDefault();
+    setRelativeCoordinates( e );
+    convertForContext( e );
+    onInputCancel( e, e._x, e._y );
 } );
 
 playButton.onclick = function()
@@ -534,6 +657,7 @@ pauseButton.onclick = function()
 function main()
 {
     onWindowResize();
+    translate( 0.5 + canvas.width / 2, 0.5 + canvas.height / 2 );
     addPresets();
     onPresetElementClick( defaultPreset );
     startAnimation( updateBodies, render );

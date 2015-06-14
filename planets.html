@@ -46,14 +46,37 @@
 
                 <div class="collapse navbar-collapse" role="group" id="navbar-collapse">
                     <div class="navbar-right">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-default navbar-btn">
+                                <input type="radio" autocomplete="off" aria-label="Zoom Out" id="zoomOut">
+                                    <span class="glyphicon glyphicon-zoom-out" aria-hidden="true"></span>
+                                </input>
+                            </label>
+                            <label class="btn btn-default navbar-btn">
+                                <input type="radio" autocomplete="off" aria-label="Zoom In" id="zoomIn">
+                                    <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
+                                </input>
+                            </label>
+                            <label class="btn btn-default navbar-btn">
+                                <input type="radio" autocomplete="off" aria-label="Move" id="move">
+                                    <span class="glyphicon glyphicon-move" aria-hidden="true"></span>
+                                </input>
+                            </label>
+                            <label class="btn btn-default navbar-btn active">
+                                <input type="radio" autocomplete="off" aria-label="Done" id="done" checked>
+                                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                                </input>
+                            </label>
+                        </div>
+                        
+                        <button type="button" class="btn btn-info navbar-btn" aria-label="New Planet" data-toggle="modal" data-target="#newPlanetModal">
+                            New Planet <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        </button>
                         <button type="button" class="btn btn-success navbar-btn inactive" id="play" aria-label="Play">
                             <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
                         </button>
                         <button type="button" class="btn btn-danger navbar-btn" id="pause" aria-label="Pause">
                             <span class="glyphicon glyphicon-pause" aria-hidden="true"></span>
-                        </button>
-                        <button type="button" class="btn btn-default navbar-btn" aria-label="New Planet" data-toggle="modal" data-target="#newPlanetModal">
-                            New Planet <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         </button>
                     </div>
                 </div>
