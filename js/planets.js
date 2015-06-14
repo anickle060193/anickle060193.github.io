@@ -11,26 +11,6 @@ var pauseButton = document.getElementById( "pause" );
 
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
-context.translateX = 0;
-context.translateY = 0;
-function translate( x, y )
-{
-    console.log( "translate" );
-    context.translateX += x;
-    context.translateY += y;
-    
-    context.translate( x, y );
-};
-context.scaleX = 1;
-context.scaleY = 1;
-function scale( x, y )
-{
-    console.log( "scale" );
-    context.scaleX *= x;
-    context.scaleY *= y;
-    
-    context.scale( x, y );
-};
 
 var presetButton = document.getElementById( "newPlanetPresetButton" );
 var presetDropdown = document.getElementById( "presetsList" );
@@ -49,18 +29,9 @@ var doneButton = document.getElementById( "done" );
 
 function onWindowResize()
 {
-    console.log( "onWindowResize" );
-    context.save();
-    context.transform( 1, 0, 0, 1, 0, 0 );
-    if( canvas.width < canvas.clientWidth )
-    {
-        canvas.width = canvas.clientWidth;
-    }
-    if( canvas.height < canvas.clientHeight )
-    {
-        canvas.height = canvas.clientHeight;
-    }
-    context.restore();
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    context.setTransform( scaled.x, 0, 0, scaled.y, translation.x, translation.y );
 }
 
 onDebouncedWindowResize( onWindowResize );
@@ -264,7 +235,7 @@ var bodies = [ ];
 var paused = false;
 
 var minPathDistance = 5;
-var maxPathPoints = 1000;
+var maxPathPoints = 100000;
 
 var minSpeed = 5477.8; // m/s, Speed of Neptune around the Sun
 var maxSpeed = 47872.5; // m/s, Speed of Mercury around the Sun
@@ -375,10 +346,26 @@ function render()
         drawRay( context, heldRay.toPixels(), createdPlanet.position.toPixels(), "green" );
         createdPlanet.paint();
     }
-    fillCircle( context, 0, 0, 10, "black" );
-    fillCircle( context, 100, 100, 20, "green" );
-    fillCircle( context, -100, -100, 20, "red" );
 }
+
+var translation = new Vector( 0, 0 );
+function translate( x, y )
+{
+    console.log( "translate" );
+    translation.x += x;
+    translation.y += y;
+    
+    context.setTransform( scaled.x, 0, 0, scaled.y, translation.x, translation.y );
+};
+var scaled = new Vector( 1, 1 );
+function scale( x, y )
+{
+    console.log( "scale" );
+    scaled.x *= x;
+    scaled.y *= y;
+    
+    context.setTransform( scaled.x, 0, 0, scaled.y, translation.x, translation.y );
+};
 
 
 /* Planet Creation */
@@ -533,7 +520,9 @@ function onInputMoved( e, x, y )
         }
         else if( currentAction == moveAction )
         {
-            translate( e.screenX - lastX, e.screenY - lastY );
+            var xDiff = ( e.screenX - lastX );
+            var yDiff = ( e.screenY - lastY );
+            translate( xDiff, yDiff );
             lastX = e.screenX;
             lastY = e.screenY;
         }
@@ -593,8 +582,8 @@ function onInputCancel( e, x, y )
 
 function convertForContext( e )
 {
-    e._x = ( e._x - context.translateX ) / context.scaleX;
-    e._y = ( e._y - context.translateY ) / context.scaleY;
+    e._x = ( e._x - translation.x ) / scaled.x;
+    e._y = ( e._y - translation.y ) / scaled.y;
 }
 
 canvas.addEventListener( "pointerdown", function( e )
