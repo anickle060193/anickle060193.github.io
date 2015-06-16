@@ -253,8 +253,8 @@ function createMultipleExplosions()
 canvas.addEventListener( "pointerup", function( e )
 {
     e.preventDefault();
-    setRelativeCoordinates( e );
-    createTouchExplosion( e._x, e._y );
+    var p = getRelativeCoordinates( e );
+    createTouchExplosion( p.x, p.y );
 } );
 
 

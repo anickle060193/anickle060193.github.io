@@ -35,28 +35,9 @@ function toCanvasPoint( normalizedPoint )
     return new Point( x, y );
 }
 
-function fromCanvasPoint( canvasPoint )
-{
-    var x = canvasPoint.x / canvas.width;
-    var y = canvasPoint.y / canvas.height;
-    return new Point( x, y );
-}
-
 function calculateSlope( p1, p2 )
 {
     return ( p2.y - p1.y ) / ( p2.x - p1.x );
-}
-
-function findTouch( touchList, id )
-{
-    for( var i = 0; i < touchList.length; i++ )
-    {
-        if( touchList[ i ].identifier == id )
-        {
-            return touchList[ i ];
-        }
-    }
-    return null;
 }
 
 
@@ -180,15 +161,15 @@ clearLinesButton.addEventListener( "click", function()
 canvas.addEventListener( "pointerdown", function ( e )
 {
     e.preventDefault();
-    setRelativeCoordinates( e );
-    downInput( e._x, e._y );
+    var p = getRelativeCoordinates( e );
+    downInput( p.x, p.y );
 } );
 
 canvas.addEventListener( "pointermove", function( e )
 {
     e.preventDefault();
-    setRelativeCoordinates( e );
-    moveInput( e._x, e._y );
+    var p = getRelativeCoordinates( e );
+    moveInput( p.x, p.y );
 } );
 
 canvas.addEventListener( "pointerup", function ( e )

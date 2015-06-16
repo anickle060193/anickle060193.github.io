@@ -46,7 +46,6 @@ function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    context.setTransform( scaled.x, 0, 0, scaled.y, translation.x, translation.y );
 }
 
 onDebouncedWindowResize( onWindowResize );
@@ -365,23 +364,6 @@ function render()
     }
 }
 
-var translation = new Vector( 0, 0 );
-function translate( x, y )
-{
-    translation.x += x;
-    translation.y += y;
-    
-    context.setTransform( scaled.x, 0, 0, scaled.y, translation.x, translation.y );
-};
-var scaled = new Vector( 1, 1 );
-function scale( x, y )
-{
-    scaled.x *= x;
-    scaled.y *= y;
-    
-    context.setTransform( scaled.x, 0, 0, scaled.y, translation.x, translation.y );
-};
-
 
 /* Planet Creation */
 
@@ -515,50 +497,61 @@ doneButton.onchange = onActionButtonClick;
 var inputMoveThreshold = 20;
 
 var down = false;
-var lastX = 0;
-var lastY = 0;
 var heldRay = null;
+var dragStart;
+var lastX, lastY;
 
-function onInputDown( e, x, y )
+canvas.addEventListener( "pointerdown", function( e )
 {
+    e.preventDefault();
+    var p = getRelativeCoordinates( e );
+    lastX = p.x;
+    lastY = p.y;
+    p = context.transformedPoint( p.x, p.y );
+    
     down = true;
     if( currentAction == creatingPlanetAction )
     {
-        x = x * pixelToMeter;
-        y = y * pixelToMeter;
+        var x = p.x * pixelToMeter;
+        var y = p.y * pixelToMeter;
         createdPlanet.position.x = x;
         createdPlanet.position.y = y;
         heldRay = new Vector( x, y );
     }
     else if( currentAction == moveAction )
     {
-        lastX = e.screenX;
-        lastY = e.screenY;
+        dragStart = p;
     }
-}
+} );
 
-function onInputMoved( e, x, y )
+canvas.addEventListener( "pointermove", function( e )
 {
+    e.preventDefault();
+    var p = getRelativeCoordinates( e );
+    lastX = p.x;
+    lastY = p.y;
+    p = context.transformedPoint( p.x, p.y );
+    
     if( down )
     {
         if( currentAction == creatingPlanetAction )
         {
-            createdPlanet.position.x = x * pixelToMeter;
-            createdPlanet.position.y = y * pixelToMeter;
+            createdPlanet.position.x = p.x * pixelToMeter;
+            createdPlanet.position.y = p.y * pixelToMeter;
         }
         else if( currentAction == moveAction )
         {
-            var xDiff = ( e.screenX - lastX );
-            var yDiff = ( e.screenY - lastY );
-            translate( xDiff, yDiff );
-            lastX = e.screenX;
-            lastY = e.screenY;
+            context.translate( p.x - dragStart.x, p.y - dragStart.y );
         }
     }
-}
+} );
 
-function onInputUp( e, x, y )
+canvas.addEventListener( "pointerup", function( e )
 {
+    e.preventDefault();
+    var p = getRelativeCoordinates( e );
+    p = context.transformedPoint( p.x, p.y );
+    
     if( down )
     {
         down = false;
@@ -588,16 +581,16 @@ function onInputUp( e, x, y )
         }
         else if( currentAction == zoomOutAction )
         {
-            scale( 0.5, 0.5 );
+            zoom( -1 );
         }
         else if( currentAction == zoomInAction )
         {
-            scale( 2, 2 );
+            zoom( 1 );
         }
     }
-}
+} );
 
-function onInputCancel( e, x, y )
+function inputCancel()
 {
     down = false;
     if( currentAction == creatingPlanetAction )
@@ -608,50 +601,20 @@ function onInputCancel( e, x, y )
     }
 }
 
-function convertForContext( e )
-{
-    e._x = ( e._x - translation.x ) / scaled.x;
-    e._y = ( e._y - translation.y ) / scaled.y;
-}
-
-canvas.addEventListener( "pointerdown", function( e )
-{
-    e.preventDefault();
-    setRelativeCoordinates( e );
-    convertForContext( e );
-    onInputDown( e, e._x, e._y );
-} );
-
-canvas.addEventListener( "pointermove", function( e )
-{
-    e.preventDefault();
-    setRelativeCoordinates( e );
-    convertForContext( e );
-    onInputMoved( e, e._x, e._y );
-} );
-
-canvas.addEventListener( "pointerup", function( e )
-{
-    e.preventDefault();
-    setRelativeCoordinates( e );
-    convertForContext( e );
-    onInputUp( e, e._x, e._y );
-} );
-
 canvas.addEventListener( "pointerout", function( e )
 {
     e.preventDefault();
     setRelativeCoordinates( e );
-    convertForContext( e );
-    onInputCancel( e, e._x, e._y );
+    
+    inputCancel()
 } );
 
 canvas.addEventListener( "pointercancel", function( e )
 {
     e.preventDefault();
     setRelativeCoordinates( e );
-    convertForContext( e );
-    onInputCancel( e, e._x, e._y );
+    
+    inputCancel()
 } );
 
 playButton.onclick = function()
@@ -674,7 +637,7 @@ pauseButton.onclick = function()
 function main()
 {
     onWindowResize();
-    translate( 0.5 + canvas.width / 2, 0.5 + canvas.height / 2 );
+    trackTransforms( context );
     addPresets();
     onPresetElementClick( defaultPreset );
     startAnimation( updateBodies, render );

@@ -109,8 +109,8 @@ clearLinesButton.addEventListener( "click", clearLine );
 canvas.addEventListener( "pointerup", function( e )
 {
 	e.preventDefault();
-	setRelativeCoordinates( e );
-	onAddPoint( e._x, e._y );
+	var p = getRelativeCoordinates( e );
+	onAddPoint( p.x, p.y );
 } );
 
 
