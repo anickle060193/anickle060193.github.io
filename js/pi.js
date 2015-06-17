@@ -23,11 +23,11 @@ onDebouncedWindowResize( onWindowResize );
 
 /* Line */
 
-function Line( start, end )
+function Line( start, end, color )
 {
     this.start = start;
     this.end = end;
-    this.color = randomDistributedColor();
+    this.color = color;
     this.lineWidth = 0.1;
     this.draw = function()
     {
@@ -49,12 +49,12 @@ var minDigitLength = 1;
 
 var circleRadiusPercentage = 0.95 / 2;
 
-function generatePositionNames( iterationsRemaining, prefix, positionNames )
+function generateNames( iterationsRemaining, prefix, positionNames )
 {
     if( prefix === undefined && positionNames === undefined )
     {
         positionNames = [ ];
-        generatePositionNames( iterationsRemaining, "", positionNames );
+        generateNames( iterationsRemaining, "", positionNames );
         return positionNames;
     }
     else if( iterationsRemaining == 0 )
@@ -65,16 +65,16 @@ function generatePositionNames( iterationsRemaining, prefix, positionNames )
     {
         for( var i = 0; i <= 9; i++ )
         {
-            generatePositionNames( iterationsRemaining - 1, prefix + i.toString(), positionNames );
+            generateNames( iterationsRemaining - 1, prefix + i.toString(), positionNames );
         }
     }
 }
 
-function generatePositions( digitLength )
+function generateNameData( digitLength )
 {
     digitLength = Math.max( minDigitLength, Math.min( digitLength, maxDigitLength ) );
 
-    var positionNames = generatePositionNames( digitLength );
+    var positionNames = generateNames( digitLength );
     var positionCount = positionNames.length;
     var segmentAngle = 2 * Math.PI / positionCount;
     var positions = { };
@@ -84,33 +84,28 @@ function generatePositions( digitLength )
         var angle = segmentAngle * i;
         var x = Math.sin( angle ) * circleRadiusPercentage;
         var y = Math.cos( angle ) * circleRadiusPercentage;
-        positions[ positionNames[ i ] ] = new Point( x, y );
+        positions[ positionNames[ i ] ] = {
+            p: new Point( x, y ),
+            color: randomDistributedColor()
+        };
     }
     return positions;
 }
 
 function generateLines( digitLength, piLength )
 {
-    var positions = generatePositions( digitLength );
+    var positions = generateNameData( digitLength );
     var lines = [ ];
 
     var iter = PI.iter( digitLength, piLength );
     var prev = iter.next();
     while( iter.hasNext() )
     {
-        console.log( prev );
         var next = iter.next();
         var start = positions[ prev ];
         var end = positions[ next ];
-        if( start === undefined )
-        {
-            console.log( prev );
-        }
-        if( end === undefined )
-        {
-            console.log( next );
-        }
-        lines.push( new Line( start, end ) );
+        var line = new Line( start.p, end.p, start.color );
+        lines.push( line );
         prev = next;
     }
     return { positions: positions, lines: lines };
