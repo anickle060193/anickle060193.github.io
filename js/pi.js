@@ -13,7 +13,7 @@ function onWindowResize()
     canvas.width = canvas.clientWidth;
     canvas.height= canvas.clientHeight
 
-    context.setTransform( 1, 0, 0, 1, canvas.width / 2, canvas.height / 2 );
+    context.setTransform( 1, 0, 0, 1, Math.round( canvas.width / 2 ) + 0.5, Math.round( canvas.height / 2 ) + 0.5 );
 
     render();
 }
@@ -27,15 +27,17 @@ function Line( start, end )
 {
     this.start = start;
     this.end = end;
-    this.color = generateRandomDistributedColor();
+    this.color = randomDistributedColor();
+    this.lineWidth = 0.1;
     this.draw = function()
     {
         var s = toCanvas( this.start );
         var e = toCanvas( this.end );
         context.beginPath();
-        context.moveTo( s.x, e.y );
+        context.moveTo( s.x, s.y );
         context.lineTo( e.x, e.y );
         context.strokeStyle = this.color;
+        context.lineWidth = this.lineWidth;
         context.stroke();
     };
 }
@@ -45,7 +47,7 @@ function Line( start, end )
 var maxDigitLength = 3;
 var minDigitLength = 1;
 
-var circleRadiusPercentage = 0.8 / 2;
+var circleRadiusPercentage = 0.95 / 2;
 
 function generatePositionNames( iterationsRemaining, prefix, positionNames )
 {
@@ -73,7 +75,7 @@ function generatePositions( digitLength )
     digitLength = Math.max( minDigitLength, Math.min( digitLength, maxDigitLength ) );
 
     var positionNames = generatePositionNames( digitLength );
-    var positionCount = Math.pow( 9, digitLength );
+    var positionCount = positionNames.length;
     var segmentAngle = 2 * Math.PI / positionCount;
     var positions = { };
 
@@ -89,17 +91,35 @@ function generatePositions( digitLength )
 
 function generateLines( digitLength, piLength )
 {
-    var positions = generatePositions( 1 );
+    var positions = generatePositions( digitLength );
     var lines = [ ];
 
     var iter = PI.iter( digitLength, piLength );
-
+    var prev = iter.next();
+    while( iter.hasNext() )
+    {
+        console.log( prev );
+        var next = iter.next();
+        var start = positions[ prev ];
+        var end = positions[ next ];
+        if( start === undefined )
+        {
+            console.log( prev );
+        }
+        if( end === undefined )
+        {
+            console.log( next );
+        }
+        lines.push( new Line( start, end ) );
+        prev = next;
+    }
+    return { positions: positions, lines: lines };
 }
 
 
 /* Data */
 
-
+var data = generateLines( 2, 10000 );
 
 /* Rendering */
 
@@ -111,12 +131,18 @@ function toCanvas( p )
 
 function render()
 {
-    var scale = 200;
-    for( var key in positions )
+    clear( context );
+    /*
+    for( var key in data.positions )
     {
-        var p = toCanvas( positions[ key ] );
-        fillCircle( context, p.x, p.y, 10, "black" );
+        var position = toCanvas( data.positions[ key ] );
+        context.fillText( key, position.x, position.y );
     }
+    */
+    data.lines.forEach( function( line )
+    {
+        line.draw();
+    } );
 }
 
 
