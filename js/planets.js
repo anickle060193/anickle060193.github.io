@@ -438,6 +438,7 @@ function createPlanet()
         createdPlanet.radius = radius * 1000;
         createdPlanet.mass = mass;
         createdPlanet.color = color;
+        $( "#done" ).click();
         setCurrentAction( creatingPlanetAction );
         return true;
     }
@@ -508,7 +509,7 @@ canvas.addEventListener( "pointerdown", function( e )
     lastX = p.x;
     lastY = p.y;
     p = context.transformedPoint( p.x, p.y );
-    
+
     down = true;
     if( currentAction == creatingPlanetAction )
     {
@@ -531,7 +532,7 @@ canvas.addEventListener( "pointermove", function( e )
     lastX = p.x;
     lastY = p.y;
     p = context.transformedPoint( p.x, p.y );
-    
+
     if( down )
     {
         if( currentAction == creatingPlanetAction )
@@ -551,7 +552,7 @@ canvas.addEventListener( "pointerup", function( e )
     e.preventDefault();
     var p = getRelativeCoordinates( e );
     p = context.transformedPoint( p.x, p.y );
-    
+
     if( down )
     {
         down = false;
@@ -604,16 +605,12 @@ function inputCancel()
 canvas.addEventListener( "pointerout", function( e )
 {
     e.preventDefault();
-    setRelativeCoordinates( e );
-    
     inputCancel()
 } );
 
 canvas.addEventListener( "pointercancel", function( e )
 {
     e.preventDefault();
-    setRelativeCoordinates( e );
-    
     inputCancel()
 } );
 
