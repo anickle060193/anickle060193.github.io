@@ -15,6 +15,7 @@ var irrationalLengthInput = document.getElementById( "irrationalLength" );
 var irrationalLengthGroup = document.getElementById( "irrationalLengthGroup" );
 var lineWidthInput = document.getElementById( "lineWidth" );
 var lineWidthGroup = document.getElementById( "lineWidthGroup" );
+var irrationalSelect = document.getElementById( "irrational" );
 
 run.addEventListener( "click", function()
 {
@@ -39,12 +40,31 @@ onDebouncedWindowResize( onWindowResize );
 
 /* Variables */
 
-var irrational = PI;
+var irrationals = {
+    "PI" : PI,
+    "e" : e,
+    "Phi" : phi,
+    "Square Root of 2" : sqrt_2
+};
+
+var irrational = irrationals[ irrationalSelect.value ];
 
 var maxDigitLength = 4;
 var minDigitLength = 1;
-var maxIrrationalLength = irrational.length;
+var maxIrrationalLength = 100000;
 var minIrrationalLength = 1;
+
+var data;
+
+function setData()
+{
+    var digitLength = Number( digitLengthInput.value );
+    var irrationalLength = Number( irrationalLengthInput.value );
+    irrational = irrationals[ irrationalSelect.value ];
+    data = generateLines( digitLength, irrationalLength );
+    lineWidth = Number( lineWidthInput.value );
+    render();
+}
 
 
 /* Validations */
@@ -126,7 +146,7 @@ function generateNameData( digitLength )
         var y = Math.cos( angle ) * circleRadiusPercentage;
         positions[ positionNames[ i ] ] = {
             p: new Point( x, y ),
-            color: randomDistributedColor()
+            color: randomSetDistributedColor()
         };
     }
     return positions;
@@ -151,19 +171,6 @@ function generateLines( digitLength, irrationalLength )
     return { positions: positions, lines: lines };
 }
 
-
-/* Data */
-
-var data;
-
-function setData()
-{
-    var digitLength = Number( digitLengthInput.value );
-    var irrationalLength = Number( irrationalLengthInput.value );
-    data = generateLines( digitLength, irrationalLength );
-    lineWidth = Number( lineWidthInput.value );
-    render();
-}
 
 /* Rendering */
 

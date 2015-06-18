@@ -121,7 +121,7 @@ function getRelativeCoordinates( e )
 {
     var x = 0;
     var y = 0;
-    
+
     if( e.offsetX !== undefined && e.offsetY !== undefined )
     {
         x = e.offsetX;
@@ -215,6 +215,14 @@ function randomDistributedColor()
     return HSVtoRGB( h, 0.85, 0.75 );
 }
 
+var h_absolute = 0.91018206932939563879;
+function randomSetDistributedColor()
+{
+    h_absolute += goldenRatioConjugate;
+    h_absolute %= 1;
+    return HSVtoRGB( h_absolute, 0.85, 0.75 );
+}
+
 function distance( p1, p2 )
 {
     var xDiff = p1.x - p2.x;
@@ -272,7 +280,7 @@ function trackTransforms( ctx )
     {
         return xform;
     };
-	
+
 	var savedTransforms = [ ];
 	var save = ctx.save;
 	ctx.save = function()
@@ -368,7 +376,7 @@ function Validator( input, inputGroup, validatorFunction )
     } )( this );
 }
 
-var validation = 
+var validation =
 {
     validators : { },
     updateValidity: function( validator )
