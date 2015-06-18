@@ -27,7 +27,7 @@ function PiIter( digitLength, max )
     this.hasNext = function()
     {
         var nextCurr = this.current + this.digitLength;
-        return nextCurr < this.max && nextCurr < PI.length;
+        return nextCurr <= this.max && nextCurr <= PI.length;
     };
     this.next = function()
     {

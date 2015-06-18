@@ -39,7 +39,7 @@ onDebouncedWindowResize( onWindowResize );
 
 /* Validations */
 
-var maxDigitLength = 3;
+var maxDigitLength = 4;
 var minDigitLength = 1;
 var maxPiLength = PI.length;
 var minPiLength = 1;

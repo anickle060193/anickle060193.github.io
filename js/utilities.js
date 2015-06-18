@@ -386,17 +386,17 @@ var validation =
     {
         var validator = new Validator( input, inputGroup, validatorFunction );
         this.removeValidator( validator.input );
-        this.validators[ validator.input ] = validator;
+        this.validators[ validator.input.id ] = validator;
         input.addEventListener( "input", validator.onInput );
         this.updateValidity( validator );
     },
     removeValidator: function( input )
     {
-        var validator = this.validators[ input ];
+        var validator = this.validators[ input.id ];
         if( validator !== undefined )
         {
             validator.input.removeEventListener( "input", validator.onInput );
-            delete this.validators[ input ];
+            delete this.validators[ input.id ];
         }
     },
     allValid: function()
