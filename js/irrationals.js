@@ -1,7 +1,7 @@
 /* Includes */
 
 /// <reference path="utilities.js" />
-/// <reference path="pi_data.js" />
+/// <reference path="irrationals_data.js" />
 
 /* Document Elements */
 
@@ -11,8 +11,8 @@ var context = canvas.getContext( "2d" );
 var run = document.getElementById( "run" );
 var digitLengthInput = document.getElementById( "digitLength" );
 var digitLengthGroup = document.getElementById( "digitLengthGroup" );
-var piLengthInput = document.getElementById( "piLength" );
-var piLengthGroup = document.getElementById( "piLengthGroup" );
+var irrationalLengthInput = document.getElementById( "irrationalLength" );
+var irrationalLengthGroup = document.getElementById( "irrationalLengthGroup" );
 var lineWidthInput = document.getElementById( "lineWidth" );
 var lineWidthGroup = document.getElementById( "lineWidthGroup" );
 
@@ -37,22 +37,27 @@ function onWindowResize()
 onDebouncedWindowResize( onWindowResize );
 
 
-/* Validations */
+/* Variables */
+
+var irrational = PI;
 
 var maxDigitLength = 4;
 var minDigitLength = 1;
-var maxPiLength = PI.length;
-var minPiLength = 1;
+var maxIrrationalLength = irrational.length;
+var minIrrationalLength = 1;
+
+
+/* Validations */
 
 validation.addValidater( digitLengthInput, digitLengthGroup, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && minDigitLength <= num && num <= maxDigitLength;
 } );
-validation.addValidater( piLengthInput, piLengthGroup, function( input )
+validation.addValidater( irrationalLengthInput, irrationalLengthGroup, function( input )
 {
     var num = Number( input.value );
-    return isFinite( num ) && minPiLength <= num && num <= maxPiLength;
+    return isFinite( num ) && minIrrationalLength <= num && num <= maxIrrationalLength;
 } );
 validation.addValidater( lineWidthInput, lineWidthGroup, function( input )
 {
@@ -127,12 +132,12 @@ function generateNameData( digitLength )
     return positions;
 }
 
-function generateLines( digitLength, piLength )
+function generateLines( digitLength, irrationalLength )
 {
     var positions = generateNameData( digitLength );
     var lines = [ ];
 
-    var iter = PI.iter( digitLength, piLength );
+    var iter = irrational.iter( digitLength, irrationalLength );
     var prev = iter.next();
     while( iter.hasNext() )
     {
@@ -154,8 +159,8 @@ var data;
 function setData()
 {
     var digitLength = Number( digitLengthInput.value );
-    var piLength = Number( piLengthInput.value );
-    data = generateLines( digitLength, piLength );
+    var irrationalLength = Number( irrationalLengthInput.value );
+    data = generateLines( digitLength, irrationalLength );
     lineWidth = Number( lineWidthInput.value );
     render();
 }
