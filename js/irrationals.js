@@ -141,7 +141,7 @@ function generateNameData( digitLength )
 
     for( var i = 0; i < positionCount; i++ )
     {
-        var angle = segmentAngle * i;
+        var angle = segmentAngle * i + Math.PI / 2;
         var x = Math.sin( angle ) * circleRadiusPercentage;
         var y = Math.cos( angle ) * circleRadiusPercentage;
         positions[ positionNames[ i ] ] = {
@@ -185,13 +185,7 @@ function toCanvas( p )
 function render()
 {
     clear( context );
-    /*
-    for( var key in data.positions )
-    {
-        var position = toCanvas( data.positions[ key ] );
-        context.fillText( key, position.x, position.y );
-    }
-    */
+
     context.lineWidth = lineWidth;
     if( data !== undefined )
     {
@@ -207,7 +201,6 @@ function render()
 
 ( function main()
 {
-    trackTransforms( context );
     onWindowResize();
     setData();
 } )();
