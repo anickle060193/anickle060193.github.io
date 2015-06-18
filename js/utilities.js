@@ -237,7 +237,7 @@ function removeAllWhiteSpace( text )
 
 function validHexColorString( color )
 {
-    return /^#[0-9a-f]{6}$/i.exec( removeAllWhiteSpace( color ) );
+    return /^#[0-9a-f]{6}$/i.test( removeAllWhiteSpace( color ) );
 }
 
 

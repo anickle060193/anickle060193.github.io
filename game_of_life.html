@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="description" content="Game of Life">
+        <meta name="author" content="staticnickle">
+        <title>Game of Life</title>
+
+        <!-- Bootstrap core CSS -->
+        <link href="css/bootstrap.min.css" rel="stylesheet"></link>
+
+        <!-- Navigation Bar Stytes -->
+        <link href="css/navbar_page.css" rel="stylesheet"></link>
+
+        <!-- Canvas Styles -->
+        <link href="css/canvas.css" rel="stylesheet"></link>
+
+        <!-- Custom styles for this template -->
+        <link href="css/game_of_life.css" rel="stylesheet"></link>
+
+        <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+            <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+
+                    <a class="navbar-brand unselectable" href="index.html">Adam's Web Projects</a>
+                </div>
+
+                <div class="collapse navbar-collapse" role="group" id="navbar-collapse">
+                    <div class="navbar-right">
+                        <button type="button" class="btn btn-default navbar-btn" data-toggle="modal" data-target="#controlsModal">Edit Settings</button>
+
+                        <button type="button" class="btn btn-success navbar-btn inactive" id="play" aria-label="Play">
+                            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger navbar-btn" id="pause" aria-label="Pause">
+                            <span class="glyphicon glyphicon-pause" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="modal fade" id="controlsModal" tabindex="-1" role="dialog" aria-labelledby="controlsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="controlsModalLabel">Settings</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div id="widthGroup" class="form-group">
+                                <label for="width" class="control-label">Cell Width:</label>
+                                <input type="text" class="form-control" id="width" value="20">
+                            </div>
+                            <div id="heightGroup" class="form-group">
+                                <label for="rows" class="control-label">Cell Height:</label>
+                                <input type="text" class="form-control" id="height" value="20">
+                            </div>
+
+                            <div id="verionGroup" class="form-group">
+                                <label for="version" class="control-label">Version:</label>
+                                <select class="form-control" id="version">
+                                    <option>Standard (B3/S23)</option>
+                                    <option>Highlife (B36/S23)</option>
+                                    <option>Sierpinkski (B1/S12)</option>
+                                    <option>Seeds (B2/S)</option>
+                                    <option>Custom</option>
+                                </select>
+                            </div>
+
+                            <div class="collapse" id="numbersCollapse">
+
+                                <label for="bornGroup" class="control-label">Born Numbers:</label>
+                                <div class="form-group" id="bornGroup">
+                                    <label for="b1" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b1">1
+                                    </label>
+                                    <label for="b2" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b2">2
+                                    </label>
+                                    <label for="b3" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b3">3
+                                    </label>
+                                    <label for="b4" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b4">4
+                                    </label>
+                                    <label for="b5" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b5">5
+                                    </label>
+                                    <label for="b6" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b6">6
+                                    </label>
+                                    <label for="b7" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b7">7
+                                    </label>
+                                    <label for="b8" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b8">8
+                                    </label>
+                                    <label for="b9" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="b9">9
+                                    </label>
+                                </div>
+
+                                <label for="stayAliveGroup" class="control-label">Stay Alive Numbers:</label>
+                                <div class="form-group" id="stayAliveGroup">
+                                    <label for="s1" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s1">1
+                                    </label>
+                                    <label for="s2" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s2">2
+                                    </label>
+                                    <label for="s3" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s3">3
+                                    </label>
+                                    <label for="s4" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s4">4
+                                    </label>
+                                    <label for="s5" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s5">5
+                                    </label>
+                                    <label for="s6" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s6">6
+                                    </label>
+                                    <label for="s7" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s7">7
+                                    </label>
+                                    <label for="s8" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s8">8
+                                    </label>
+                                    <label for="s9" class="control-label checkbox-inline">
+                                        <input type="checkbox" id="s9">9
+                                    </label>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="update">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+
+        <!-- Bootstrap core JavaScript==================================================-->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+
+        <script src="js/hand.min.js"></script>
+        <script src="js/utilities.js"></script>
+        <script src="js/game_of_life.js"></script>
+    </body>
+
+</html>
