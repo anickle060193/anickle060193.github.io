@@ -56,7 +56,7 @@ function setupValidator( input, group, validatorFunc )
 {
     input.addEventListener( "input", function()
     {
-    setPresetButtonText( "Custom" );
+        setPresetButtonText( "Custom" );
         if( !validatorFunc() )
         {
             group.classList.add( "has-error" );

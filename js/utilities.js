@@ -347,3 +347,67 @@ function zoom( clicks )
     context.scale( factor, factor );
     context.translate( -p.x, -p.y );
 }
+
+
+/* Input Validation */
+
+function Validator( input, inputGroup, validatorFunction )
+{
+    this.input = input;
+    this.inputGroup = inputGroup;
+    this.valid = function()
+    {
+        return validatorFunction( this.input );
+    };
+    this.onInput = ( function( validator )
+    {
+        return function()
+        {
+            validation.updateValidity( validator );
+        };
+    } )( this );
+}
+
+var validation = 
+{
+    validators : { },
+    updateValidity: function( validator )
+    {
+        if( validator.valid() )
+        {
+            validator.inputGroup.classList.remove( "has-error" );
+        }
+        else
+        {
+            validator.inputGroup.classList.add( "has-error" );
+        }
+    },
+    addValidater: function( input, inputGroup, validatorFunction )
+    {
+        var validator = new Validator( input, inputGroup, validatorFunction );
+        this.removeValidator( validator.input );
+        this.validators[ validator.input ] = validator;
+        input.addEventListener( "input", validator.onInput );
+        this.updateValidity( validator );
+    },
+    removeValidator: function( input )
+    {
+        var validator = this.validators[ input ];
+        if( validator !== undefined )
+        {
+            validator.input.removeEventListener( "input", validator.onInput );
+            delete this.validators[ input ];
+        }
+    },
+    allValid: function()
+    {
+        for( var key in this.validators )
+        {
+            if( !this.validators[ key ].valid() )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+};

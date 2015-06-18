@@ -8,10 +8,26 @@
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
+var run = document.getElementById( "run" );
+var digitLengthInput = document.getElementById( "digitLength" );
+var digitLengthGroup = document.getElementById( "digitLengthGroup" );
+var piLengthInput = document.getElementById( "piLength" );
+var piLengthGroup = document.getElementById( "piLengthGroup" );
+var lineWidthInput = document.getElementById( "lineWidth" );
+var lineWidthGroup = document.getElementById( "lineWidthGroup" );
+
+run.addEventListener( "click", function()
+{
+    if( validation.allValid() )
+    {
+        setData();
+    }
+} );
+
 function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
-    canvas.height= canvas.clientHeight
+    canvas.height= canvas.clientHeight;
 
     context.setTransform( 1, 0, 0, 1, Math.round( canvas.width / 2 ) + 0.5, Math.round( canvas.height / 2 ) + 0.5 );
 
@@ -21,6 +37,30 @@ function onWindowResize()
 onDebouncedWindowResize( onWindowResize );
 
 
+/* Validations */
+
+var maxDigitLength = 3;
+var minDigitLength = 1;
+var maxPiLength = PI.length;
+var minPiLength = 1;
+
+validation.addValidater( digitLengthInput, digitLengthGroup, function( input )
+{
+    var num = Number( input.value );
+    return isFinite( num ) && minDigitLength <= num && num <= maxDigitLength;
+} );
+validation.addValidater( piLengthInput, piLengthGroup, function( input )
+{
+    var num = Number( input.value );
+    return isFinite( num ) && minPiLength <= num && num <= maxPiLength;
+} );
+validation.addValidater( lineWidthInput, lineWidthGroup, function( input )
+{
+    var num = Number( input.value );
+    return isFinite( num ) && 0 < num;
+} );
+
+
 /* Line */
 
 function Line( start, end, color )
@@ -28,7 +68,6 @@ function Line( start, end, color )
     this.start = start;
     this.end = end;
     this.color = color;
-    this.lineWidth = 0.1;
     this.draw = function()
     {
         var s = toCanvas( this.start );
@@ -37,15 +76,11 @@ function Line( start, end, color )
         context.moveTo( s.x, s.y );
         context.lineTo( e.x, e.y );
         context.strokeStyle = this.color;
-        context.lineWidth = this.lineWidth;
         context.stroke();
     };
 }
 
 /* Digit Position */
-
-var maxDigitLength = 3;
-var minDigitLength = 1;
 
 var circleRadiusPercentage = 0.95 / 2;
 
@@ -114,9 +149,20 @@ function generateLines( digitLength, piLength )
 
 /* Data */
 
-var data = generateLines( 2, 10000 );
+var data;
+
+function setData()
+{
+    var digitLength = Number( digitLengthInput.value );
+    var piLength = Number( piLengthInput.value );
+    data = generateLines( digitLength, piLength );
+    lineWidth = Number( lineWidthInput.value );
+    render();
+}
 
 /* Rendering */
+
+var lineWidth = 0.5;
 
 function toCanvas( p )
 {
@@ -134,10 +180,14 @@ function render()
         context.fillText( key, position.x, position.y );
     }
     */
-    data.lines.forEach( function( line )
+    context.lineWidth = lineWidth;
+    if( data !== undefined )
     {
-        line.draw();
-    } );
+        data.lines.forEach( function( line )
+        {
+            line.draw();
+        } );
+    }
 }
 
 
@@ -147,4 +197,5 @@ function render()
 {
     trackTransforms( context );
     onWindowResize();
+    setData();
 } )();
