@@ -13,6 +13,7 @@ var heightInput = document.getElementById( "height" );
 var heightGroup = document.getElementById( "heightGroup" );
 var versionSelect = document.getElementById( "version" );
 var updateButton = document.getElementById( "update" );
+var editSettingsButton = document.getElementById( "editSettings" );
 var bornCheckboxes = [ ];
 var stayAliveCheckboxes = [ ];
 
@@ -24,28 +25,30 @@ for( var i = 1; i <= 9; i++ )
 
 $( ".collapse" ).collapse();
 
-function setNumbersState( version )
+function setSettingsFormState( version )
 {
-    if( version.custom )
+    versionSelect.value = version.name;
+    var custom = version.custom;
+    if( custom )
     {
         $( "#numbersCollapse" ).collapse( "show" );
-        for( var i = 1; i <= 9; i++ )
-        {
-            bornCheckboxes[ i ].disabled = version.custom != true;
-            bornCheckboxes[ i ].checked = bornNumbers[ i ];
-            stayAliveCheckboxes[ i ].disabled = version.custom != true;
-            stayAliveCheckboxes[ i ].checked = stayAiveNumbers[ i ];
-        }
     }
     else
     {
         $( "#numbersCollapse" ).collapse( "hide" );
     }
+    for( var i = 1; i <= 9; i++ )
+    {
+        bornCheckboxes[ i ].disabled = !custom;
+        bornCheckboxes[ i ].checked = bornNumbers[ i ];
+        stayAliveCheckboxes[ i ].disabled = !custom;
+        stayAliveCheckboxes[ i ].checked = stayAiveNumbers[ i ];
+    }
 }
 
 versionSelect.addEventListener( "input", function()
 {
-    setNumbersState( versionSelect.value == "Custom" );
+    setSettingsFormState( versions[ versionSelect.value ] );
 } );
 
 updateButton.addEventListener( "click", function()
@@ -81,16 +84,17 @@ var cellHeight = 20;
 var bornNumbers = [ ];
 var stayAiveNumbers = [ ];
 
-var version = {
-	"Standard (B3/S23)": new Version( "B2/S23" ),
-	"Highlife (B36/S23)": new Version( "B36/S23" ),
-	"Sierpinkski (B1/S12)": new Version( "B1/S12" ),
-	"Seeds (B2/S)": new Version( "B2/S" ),
-	"Custom": new Version( "B/S", true )
+var versions = {
+	"Standard (B3/S23)": new Version( "Standard (B3/S23)", "B2/S23" ),
+	"Highlife (B36/S23)": new Version( "Highlife (B36/S23)", "B36/S23" ),
+	"Sierpinkski (B1/S12)": new Version( "Sierpinkski (B1/S12)", "B1/S12" ),
+	"Seeds (B2/S)": new Version( "Seeds (B2/S)", "B2/S" ),
+	"Custom": new Version( "Custom", "B/S", true )
 };
 
-function Version( versionString, custom )
+function Version( name, versionString, custom )
 {
+    this.name = name;
     this.born = [ ];
     this.stayAlive = [ ];
     this.custom = custom == true;
@@ -136,5 +140,5 @@ function updateNumbers()
 ( function()
 {
     updateNumbers();
-    setNumbersState( false );
+    setSettingsFormState( versions[ Object.keys( versions )[ 0 ] ] );
 } )();
