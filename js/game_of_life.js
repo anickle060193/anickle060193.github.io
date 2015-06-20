@@ -5,10 +5,6 @@
 
 /* Document Elements */
 
-var playButton = document.getElementById( "play" );
-playButton.classList.add( "inactive" );
-var pauseButton = document.getElementById( "pause" );
-
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 context.translate( 0.5, 0.5 );
@@ -22,6 +18,12 @@ var timeGroup = document.getElementById( "timeGroup" );
 var versionSelect = document.getElementById( "version" );
 var updateButton = document.getElementById( "update" );
 var editSettingsButton = document.getElementById( "editSettings" );
+
+var playButton = document.getElementById( "play" );
+playButton.classList.add( "inactive" );
+var pauseButton = document.getElementById( "pause" );
+var clearButton = document.getElementById( "clear" );
+
 var bornCheckboxes = [ ];
 var stayAliveCheckboxes = [ ];
 
@@ -355,6 +357,12 @@ updateButton.addEventListener( "click", function()
         }
         resizeBoard();
     }
+} );
+
+clearButton.addEventListener( "click", function()
+{
+    board = new Board( board.rows, board.columns );
+    render();
 } );
 
 
