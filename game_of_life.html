@@ -16,6 +16,9 @@
         <!-- Navigation Bar Stytes -->
         <link href="css/navbar_page.css" rel="stylesheet"></link>
 
+        <!-- Bootstrap Color Picker CSS -->
+        <link href="css/bootstrap-colorpicker.min.css" rel="stylesheet"></link>
+
         <!-- Canvas Styles -->
         <link href="css/canvas.css" rel="stylesheet"></link>
 
@@ -79,6 +82,22 @@
                             <div id="timeGroup" class="form-group">
                                 <label for="time" class="control-label">Iteration Delay (s):</label>
                                 <input type="text" class="form-control" id="time" value="0.5">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="deadColor" class="control-label">Dead Color:</label>
+                                <div id="deadColor" class="input-group">
+                                    <input type="text" value="" class="form-control"/>
+                                    <span class="input-group-addon"><i></i></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="aliveColor" class="control-label">Alive Color:</label>
+                                <div id="aliveColor" class="input-group">
+                                    <input type="text" value="" class="form-control"/>
+                                    <span class="input-group-addon"><i></i></span>
+                                </div>
                             </div>
 
                             <div id="verionGroup" class="form-group">
@@ -167,6 +186,7 @@
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
+        <script src="js/bootstrap-colorpicker.min.js"></script>
 
         <script src="js/hand.min.js"></script>
         <script src="js/utilities.js"></script>

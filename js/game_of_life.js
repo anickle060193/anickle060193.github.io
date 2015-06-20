@@ -33,6 +33,9 @@ for( var i = 1; i <= 8; i++ )
 
 $( ".collapse" ).collapse();
 
+$( "#deadColor" ).colorpicker();
+$( "#aliveColor" ).colorpicker();
+
 function setSettingsFormState( version )
 {
     versionSelect.value = version.name;
@@ -87,17 +90,13 @@ validation.addValidater( timeInput, timeGroup, function( input )
 } );
 
 
-/* Variables */
-
-var cellWidth = 20;
-var cellHeight = 20;
-var version;
+/* Versions */
 
 var versions = {
-	"Standard (B3/S23)": new Version( "Standard (B3/S23)", "B3/S23" ),
-	"Highlife (B36/S23)": new Version( "Highlife (B36/S23)", "B36/S23" ),
-	"Sierpinkski (B1/S12)": new Version( "Sierpinkski (B1/S12)", "B1/S12" ),
-	"Seeds (B2/S)": new Version( "Seeds (B2/S)", "B2/S" ),
+	"Standard (B3/S23)": new Version( "Standard (B3/S23)", "B3/S23", false ),
+	"Highlife (B36/S23)": new Version( "Highlife (B36/S23)", "B36/S23", false ),
+	"Sierpinkski (B1/S12)": new Version( "Sierpinkski (B1/S12)", "B1/S12", false ),
+	"Seeds (B2/S)": new Version( "Seeds (B2/S)", "B2/S", false ),
 	"Custom": new Version( "Custom", "B/S", true )
 };
 
@@ -252,7 +251,6 @@ function resizeBoard()
 /* Update */
 
 var paused = false;
-var iterationDelay = 500;
 var timePassed = 0;
 
 function update( elapsedTime )
@@ -342,6 +340,10 @@ updateButton.addEventListener( "click", function()
         cellWidth = Number( widthInput.value );
         cellHeight = Number( heightInput.value );
         iterationDelay = Number( timeInput.value ) * 1000;
+        
+        boardColors[ alive ] = $( "#aliveColor" ).colorpicker( "getValue", "black" );
+        boardColors[ dead ] = $( "#deadColor" ).colorpicker( "getValue", "gray" );
+        
         version = versions[ versionSelect.value ];
         if( version.custom )
         {
@@ -384,15 +386,18 @@ function render()
     }
 }
 
+/* Variables */
+
+var cellWidth = 10;
+var cellHeight = 10;
+var iterationDelay = 200;
+var version;
+
 
 /* Main */
 ( function()
 {
-    cellWidth = 5;
-    cellHeight = 5;
-    iterationDelay = 100;
-    
-    version = versions[ Object.keys( versions )[ 2 ] ];
+    version = versions[ Object.keys( versions )[ 0 ] ];
     setSettingsFormState( version );
     widthInput.value = cellWidth;
     heightInput.value = cellHeight;
