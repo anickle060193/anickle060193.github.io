@@ -148,7 +148,7 @@ function getRelativeCoordinates( e )
         x = event.pageX - totalOffsetX;
         y = event.pageY - totalOffsetY;
     }
-    return { x: x, y: y };
+    return new Point( x, y );
 }
 
 function random( x, y )
