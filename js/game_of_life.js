@@ -25,7 +25,7 @@ var editSettingsButton = document.getElementById( "editSettings" );
 var bornCheckboxes = [ ];
 var stayAliveCheckboxes = [ ];
 
-for( var i = 1; i <= 9; i++ )
+for( var i = 1; i <= 8; i++ )
 {
     bornCheckboxes[ i ] = document.getElementById( "b" + i.toString() );
     stayAliveCheckboxes[ i ] = document.getElementById( "s" + i.toString() );
@@ -45,7 +45,7 @@ function setSettingsFormState( version )
     {
         $( "#numbersCollapse" ).collapse( "hide" );
     }
-    for( var i = 1; i <= 9; i++ )
+    for( var i = 1; i <= 8; i++ )
     {
         bornCheckboxes[ i ].checked = version.born[ i ];
         bornCheckboxes[ i ].disabled = !custom;
@@ -143,7 +143,7 @@ function Version( name, versionString, custom )
             this.stayAlive[ Number( sNums[ i ] ) ] = true;
         }
     }
-    for( var i = 0; i <= 9; i++ )
+    for( var i = 0; i <= 8; i++ )
     {
         if( this.born[ i ] === undefined )
         {
@@ -267,6 +267,7 @@ function update( elapsedTime )
         timePassed = 0;
         updateBoard();
     }
+    render();
 }
 
 function updateBoard()
@@ -311,6 +312,7 @@ canvas.addEventListener( "pointerup", function( e )
     var row = Math.floor( p.y / cellHeight );
     var column = Math.floor( p.x / cellWidth );
     board.set( row, column, alive );
+    render();
 } );
 
 playButton.onclick = function()
@@ -343,7 +345,7 @@ updateButton.addEventListener( "click", function()
         version = versions[ versionSelect.value ];
         if( version.custom )
         {
-            for( var i = 1; i <= 9; i++ )
+            for( var i = 1; i <= 8; i++ )
             {
                 version.born[ i ] = bornCheckboxes[ i ].checked;
                 version.stayAlive[ i ] = stayAliveCheckboxes[ i ].checked;
@@ -397,5 +399,5 @@ function render()
     timeInput.value = iterationDelay / 1000;
     
     onWindowResize();
-    startAnimation( update, render );
+    startAnimation( update, function() { } );
 } )();
