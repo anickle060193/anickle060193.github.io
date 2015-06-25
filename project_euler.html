@@ -40,7 +40,7 @@
             <div class="accordionContainer">
                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                     
-                    <div class="panel panel-default">
+                    <div id="testingPanel" class="panel panel-default">
                         <div class="panel-heading" role="tab" id="testingHeading">
                             <h4 class="panel-title">
                                 <a role="button" data-toggle="collapse" data-parent="#accordion" href="#testing" aria-expanded="true" aria-controls="testing">
@@ -51,6 +51,24 @@
                         <div id="testing" class="panel-collapse collapse in" role="tabpanel" aria-labeledby="testingHeading">
                             <div class="panel-body">
                                 <script src="js/project_euler_testing.js"></script>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="heading2">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#problem2" aria-expanded="true" aria-controls="problem2">
+                                    Problem 2 - Even Fibonacci Numbers <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="problem2" class="panel-collapse collapse" role="tabpanel" aria-labeledby="heading2">
+                            <div class="panel-body">
+                                <div class="well well-sm">
+                                    <strong>Output:</strong> 4613732
+                                </div>
+                                <script src="https://gist.github.com/anickle060193/1c01bc4970a7713515fd.js"></script>
                             </div>
                         </div>
                     </div>

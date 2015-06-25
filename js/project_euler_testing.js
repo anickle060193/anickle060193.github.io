@@ -1,37 +1,27 @@
-var max = 1000;
-var multiples = [ 3, 5 ];
-var sum = 0;
-
-// Sort multiples
-multiples.sort( function( a, b )
+if( true )
 {
-	return a - b;
-} );
-
-// Remove any multiples of smaller multiples
-for( var i = multiples.length - 1; i >= 0; i-- )
-{
-	for( var j = 0; j < i; j++ )
-	{
-		if( multiples[ i ] % multiples[ j ] == 0 )
-		{
-			multiples.splice( i, 1 );
-		}
-	}
+	var div = document.getElementById( "testingPanel" );
+	div.parentNode.removeChild( div );
 }
-
-// Check all numbers up to max for multiple
-for( var i = 1; i < max; i++ )
+else 
 {
-	for( var j = 0; j < multiples.length; j++ )
+	var max = 4000000;
+	var sum = 0;
+	
+	var prev = 1;
+	var curr = 1;
+	
+	while( curr < max )
 	{
-		if( i % multiples[ j ] == 0 )
+		if( curr % 2 == 0 )
 		{
-			sum += i;
-			break;
+			sum += curr;
 		}
+		var temp = curr;
+		curr += prev;
+		prev = temp;
 	}
+	
+	// Output
+	document.write( sum.toString() );
 }
-
-// Output
-document.write( sum.toString() );
