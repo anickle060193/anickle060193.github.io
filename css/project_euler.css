@@ -1,4 +1,9 @@
+body
+{
+	padding-top: 70px;
+}
+
 .accordionContainer
 {
-	padding: 40px 15px;
+	padding: 0px 15px;
 }
