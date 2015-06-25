@@ -5,20 +5,35 @@ if( true )
 }
 else
 {
-	var number = 600851475143;
+var min = 100;
+var max = 999;
 
-	var num = number;
-	for( var i = 2; i < Math.sqrt( number ); i++ )
+var maxPalindrome = 0;
+
+function isPalindrome( number )
+{
+	var str = number.toString();
+	var len = str.length;
+	for( var i = 0; i < len / 2; i++ )
 	{
-		if( num == i )
+		if( str[ i ] != str[ len - i - 1 ] )
 		{
-			break;
-		}
-		if( num % i == 0 )
-		{
-			num /= i;
-			i--;
+			return false;
 		}
 	}
-	document.write( num.toString() );
+	return true;
+}
+
+for( var i = max; i >= min; i-- )
+{
+	for( var j = max; j >= min; j-- )
+	{
+		var product = i * j;
+		if( product > maxPalindrome && isPalindrome( product ) )
+		{
+			maxPalindrome = product;
+		}
+	}
+}
+document.write( maxPalindrome );
 }
