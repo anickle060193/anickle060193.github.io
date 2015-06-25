@@ -3,25 +3,22 @@ if( true )
 	var div = document.getElementById( "testingPanel" );
 	div.parentNode.removeChild( div );
 }
-else 
+else
 {
-	var max = 4000000;
-	var sum = 0;
-	
-	var prev = 1;
-	var curr = 1;
-	
-	while( curr < max )
+	var number = 600851475143;
+
+	var num = number;
+	for( var i = 2; i < Math.sqrt( number ); i++ )
 	{
-		if( curr % 2 == 0 )
+		if( num == i )
 		{
-			sum += curr;
+			break;
 		}
-		var temp = curr;
-		curr += prev;
-		prev = temp;
+		if( num % i == 0 )
+		{
+			num /= i;
+			i--;
+		}
 	}
-	
-	// Output
-	document.write( sum.toString() );
+	document.write( num.toString() );
 }
