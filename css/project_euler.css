@@ -7,3 +7,14 @@ body
 {
 	padding: 0px 15px;
 }
+
+.red
+{
+	color: red;
+}
+
+.monospace
+{
+	font-family: "Lucida Console";
+    font-weight: bold;
+}
