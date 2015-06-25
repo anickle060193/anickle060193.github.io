@@ -6,9 +6,9 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-        <meta name="description" content="Game of Life">
-        <meta name="author" content="staticnickle">
-        <title>Game of Life</title>
+        <meta name="description" content="Project Euler">
+        <meta name="author" content="anickle060193">
+        <title>Project Euler</title>
 
         <!-- Bootstrap core CSS -->
         <link href="css/bootstrap.min.css" rel="stylesheet"></link>
@@ -41,49 +41,34 @@
                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                     
                     <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="testingHeading">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#testing" aria-expanded="true" aria-controls="testing">
+                                    Testing
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="testing" class="panel-collapse collapse in" role="tabpanel" aria-labeledby="testingHeading">
+                            <div class="panel-body">
+                                <script src="js/project_euler_testing.js"></script>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel panel-default">
                         <div class="panel-heading" role="tab" id="heading1">
                             <h4 class="panel-title">
                                 <a role="button" data-toggle="collapse" data-parent="#accordion" href="#problem1" aria-expanded="true" aria-controls="problem1">
-                                    Problem 1
+                                    Problem 1 - Multiples of 3 and 5 <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
                                 </a>
                             </h4>
                         </div>
-                        <div id="problem1" class="panel-collapse collapse in" role="tabpanel" aria-labeledby="heading1">
+                        <div id="problem1" class="panel-collapse collapse" role="tabpanel" aria-labeledby="heading1">
                             <div class="panel-body">
-                                <script src="https://gist.github.com/anickle060193/7d8ee2b7978481e36176.js"></script>
-                            </div>
-                            <div class="panel-footer">
-                                Test
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="heading2">
-                            <h4 class="panel-title">
-                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#problem2" aria-expanded="false" aria-controls="problem2">
-                                    Problem 2
-                                </a>
-                            </h4>
-                        </div>
-                        <div id="problem2" class="panel-collapse collapse" role="tabpanel" aria-labeledby="heading2">
-                            <div class="panel-body">
-                                Body
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="heading3">
-                            <h4 class="panel-title">
-                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#problem3" aria-expanded="false" aria-controls="problem3">
-                                    Problem 3
-                                </a>
-                            </h4>
-                        </div>
-                        <div id="problem3" class="panel-collapse collapse" role="tabpanel" aria-labeledby="heading3">
-                            <div class="panel-body">
-                                Body
+                                <div class="well well-sm">
+                                    <strong>Output:</strong> 233168
+                                </div>
+                                <script src="https://gist.github.com/anickle060193/a2cf4b39277fa81c340f.js"></script>
                             </div>
                         </div>
                     </div>
