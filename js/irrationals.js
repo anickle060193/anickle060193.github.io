@@ -8,7 +8,7 @@
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
-var run = document.getElementById( "run" );
+var update = document.getElementById( "update" );
 var digitLengthInput = document.getElementById( "digitLength" );
 var digitLengthGroup = document.getElementById( "digitLengthGroup" );
 var irrationalLengthInput = document.getElementById( "irrationalLength" );
@@ -17,11 +17,13 @@ var lineWidthInput = document.getElementById( "lineWidth" );
 var lineWidthGroup = document.getElementById( "lineWidthGroup" );
 var irrationalSelect = document.getElementById( "irrational" );
 
-run.addEventListener( "click", function()
+update.addEventListener( "click", function()
 {
     if( validation.allValid() )
     {
         setData();
+        
+        $( ".modal" ).modal( "hide" );
     }
 } );
 
