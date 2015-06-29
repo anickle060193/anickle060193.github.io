@@ -120,6 +120,7 @@ function Spirograph( l, k, R, color, lineWidth, step, iterations )
 	this._c = l * k;
 	
 	this.createPath();
+	console.log( this );
 }
 
 Spirograph.prototype.getPoint = function( t )
@@ -137,9 +138,11 @@ Spirograph.prototype.createPath = function()
 	this._b = this._a / this.k;
 	this._c = this.l * this.k;
 	
-	for( var t = 0; t < this.iterations; t += this.step )
+	var t = 0;
+	for( var i = 0; i < this.iterations; i++ )
 	{
 		this.path.push( this.getPoint( t ) );
+		t += this.step;
 	}
 };
 
