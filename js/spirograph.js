@@ -74,52 +74,72 @@ function setupValidators()
 
 /* Spirograph */
 
+var increment = 0.1;
+var tolerance = 1;
+
+var spirograph = null;
+
+function Spirograph( l, k, R, color, lineWidth )
+{
+	this.color = color;
+	this.lineWidth = lineWidth;
+	
+	this.path = [ ];
+	this.l = l;
+	this.k = k;
+	this.R = R;
+	
+	this._a = 1 - this.k;
+	this._b = this._a / this.k;
+	this._c = l * k;
+}
+
+Spirograph.prototype.getPoint = function( t )
+{
+	var x = this.R * ( this._a * Math.cos( t ) + this._c * Math.cos( this._b * t ) );
+	var y = this.R * ( this._a * Math.sin( t ) - this._c * Math.sin( this._b * t ) );
+	return new Point( x, y );
+};
+
+Spirograph.prototype.createPath = function()
+{
+	this.path = [ ];
+	
+	this._a = 1 - this.k;
+	this._b = this._a / this.k;
+	this._c = l * k;
+	
+	var t = 0;
+	var start = this.getPoint( t );
+	var p;
+	this.path.push( start );
+	do
+	{
+		t += increment;
+		p = this.getPoint( t );
+		this.path.push( p );
+	}
+	while( !equalWithin( start, p, tolerance ) );
+};
+
+Spirograph.prototype.draw = function()
+{
+	context.strokeStyle = this.color;
+	context.lineWidth = this.lineWidth;
+	for( var i = 0; i < this.path.length; i++ )
+	{
+		var p = this.path[ i ];
+		context.lineTo( p.x, p.y );
+	}
+	context.stroke();
+};
+
 function equalWithin( p1, p2, tolerance )
 {
 	var xDiff = p1.x - p2.x;
 	var yDiff = p1.y - p2.y;
 	var dist = Math.sqrt( xDiff * xDiff + yDiff + yDiff );
 	return dist < tolerance;
-}
-
-var l = 0.4;
-var k = 0.8;
-var R = 200;
-
-var color = "#0011FF";
-var lineWidth = 1;
-
-var increment = 0.1;
-var tolerance = 0.1;
-
-var spirograph = null;
-
-function getPoint( t )
-{
-	var x = R * ( ( 1 - k ) * Math.cos( t ) + l * k * Math.cos( ( 1 - k ) / k * t ) );
-	var y = R * ( ( 1 - k ) * Math.sin( t ) - l * k * Math.sin( ( 1 - k ) / k * t ) );
-	return new Point( x, y );
-}
-
-function createSpirograph()
-{
-	var path = new Path();
-	path.strokeColor = color;
-	
-	var t = 0;
-	var start = getPoint( t );
-	var p;
-	path.add( start );
-	do
-	{
-		t += increment;
-		p = getPoint( t );
-		path.add( p );
-	}
-	while( !equalWithin( start, p, tolerance ) );
-	path.closed = true;
-	path.smooth();
-	return path;
 }
 
 /* Input */
@@ -137,16 +157,25 @@ function getColor()
     }
 }
 
+function createSpirograph()
+{
+	var l = Number( lInput.value );
+	var k = Number( kInput.value );
+	var R = Number( Rinput.value );
+	var lineWidth = Number( lineWidthInput.value );
+	var color = getColor();
+	
+	spirograph = new Spirograph( l, k, R, color, lineWidth );
+	console.log( spirograph );
+}
+
 draw.addEventListener( "click", function()
 {
 	if( validation.allValid() )
 	{
-		l = Number( lInput.value );
-		k = Number( kInput.value );
-		R = Number( Rinput.value );
-		lineWidth = Number( lineWidthInput.value );
 		$( ".modal" ).modal( "hide" );
-		spirograph = createSpirograph();
+		
+		createSpirograph();
 	}
 } );
 
@@ -157,21 +186,10 @@ function render()
 {
 	clear( context );
 	
-	var t = 0;
-	var start = getPoint( t );
-	var p;
-	context.strokeStyle = color;
-	context.lineWidth = lineWidth;
-	context.beginPath();
-	context.moveTo( start.x, start.y );
-	do
+	if( spirograph != null )
 	{
-		t += increment;
-		p = getPoint( t );
-		context.lineTo( p.x, p.y );
+		spirograph.draw();
 	}
-	while( !equalWithin( start, p, tolerance ) );
-	context.stroke();
 }
 
 
@@ -181,12 +199,7 @@ function render()
 	onWindowResize();
 	render();
 	
-	kInput.value = k;
-	lInput.value = l;
-	Rinput.value = R;
-	colorInput.value = color;
-	lineWidthInput.value = lineWidth;
-	spirograph = createSpirograph();
+	createSpirograph();
 	
 	setupValidators();
 } )();

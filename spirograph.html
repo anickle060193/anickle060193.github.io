@@ -70,23 +70,23 @@
                         <form>
                             <div id="kGroup" class="form-group">
                                 <label for="k" class="control-label"><var>k</var> = <var>r</var> / <var>R</var> :</label>
-                                <input type="text" class="form-control" id="k">
+                                <input type="text" class="form-control" id="k" value="0.6">
                             </div>
 
                             <div id="lGroup" class="form-group">
                                 <label for="l" class="control-label"><var>l</var> = <var>p</var> / <var>r</var> :</label>
-                                <input type="text" class="form-control" id="l">
+                                <input type="text" class="form-control" id="l" value="0.3">
                             </div>
 
                             <div id="Rgroup" class="form-group">
                                 <label for="R" class="control-label"><var>R</var> :</label>
-                                <input type="text" class="form-control" id="R">
+                                <input type="text" class="form-control" id="R" value="400">
                             </div>
                             
                             <div id="colorGroup" class="form-group">
                                 <label for="color" class="control-label">Line Color:</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="color">
+                                    <input type="text" class="form-control" id="color" value="#0011FF">
                                     <span class="input-group-btn">
                                         <a tabindex="-1" class="btn btn-default" role="button" data-toggle="popover" data-trigger="focus" data-container="body" data-html="true"
                                             data-title="Planet Color"
@@ -105,7 +105,7 @@ Examples:
 
                             <div id="lineWidthGroup" class="form-group">
                                 <label for="lineWidth" class="control-label">Line Width:</label>
-                                <input type="text" class="form-control" id="lineWidth">
+                                <input type="text" class="form-control" id="lineWidth" value="1">
                             </div>
 
                         </form>
@@ -122,9 +122,9 @@ Examples:
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
-
-        <script src="js/paper-full.js"></script>
-        <script type="text/paperscript" src="js/spirograph.js" data-paper-canvas="canvas"></script>
+        
+        <script src="js/utilities.js"></script>
+        <script src="js/spirograph.js"></script>
     </body>
 
 </html>
