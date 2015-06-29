@@ -31,7 +31,6 @@ function onWindowResize()
 	canvas.height = canvas.clientHeight;
 	
 	context.setTransform( 1, 0, 0, 1, canvas.width / 2, canvas.height / 2 );
-	context.translate( 0.5, 0.5 );
 	
 	render();
 }
@@ -79,6 +78,14 @@ var tolerance = 1;
 
 var spirograph = null;
 
+function equalWithin( p1, p2, tolerance )
+{
+	var xDiff = p1.x - p2.x;
+	var yDiff = p1.y - p2.y;
+	var dist = Math.sqrt( xDiff * xDiff + yDiff + yDiff );
+	return dist < tolerance;
+}
+
 function Spirograph( l, k, R, color, lineWidth )
 {
 	this.color = color;
@@ -92,6 +99,8 @@ function Spirograph( l, k, R, color, lineWidth )
 	this._a = 1 - this.k;
 	this._b = this._a / this.k;
 	this._c = l * k;
+	
+	this.createPath();
 }
 
 Spirograph.prototype.getPoint = function( t )
@@ -107,7 +116,7 @@ Spirograph.prototype.createPath = function()
 	
 	this._a = 1 - this.k;
 	this._b = this._a / this.k;
-	this._c = l * k;
+	this._c = this.l * this.k;
 	
 	var t = 0;
 	var start = this.getPoint( t );
@@ -126,6 +135,7 @@ Spirograph.prototype.draw = function()
 {
 	context.strokeStyle = this.color;
 	context.lineWidth = this.lineWidth;
+	context.beginPath();
 	for( var i = 0; i < this.path.length; i++ )
 	{
 		var p = this.path[ i ];
@@ -134,13 +144,6 @@ Spirograph.prototype.draw = function()
 	context.stroke();
 };
 
-function equalWithin( p1, p2, tolerance )
-{
-	var xDiff = p1.x - p2.x;
-	var yDiff = p1.y - p2.y;
-	var dist = Math.sqrt( xDiff * xDiff + yDiff + yDiff );
-	return dist < tolerance;
-}
 
 /* Input */
 
@@ -166,7 +169,6 @@ function createSpirograph()
 	var color = getColor();
 	
 	spirograph = new Spirograph( l, k, R, color, lineWidth );
-	console.log( spirograph );
 }
 
 draw.addEventListener( "click", function()
@@ -197,9 +199,7 @@ function render()
 ( function()
 {
 	onWindowResize();
-	render();
-	
 	createSpirograph();
-	
 	setupValidators();
+	render();
 } )();
