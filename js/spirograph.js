@@ -31,13 +31,15 @@ var iterationsGroup = document.getElementById( "iterationsGroup" );
 
 var draw = document.getElementById( "draw" );
 
+var saveSettingsInput = document.getElementById( "saveSettings" );
+
 function onWindowResize()
 {
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
-	
+
 	context.setTransform( 1, 0, 0, 1, canvas.width / 2, canvas.height / 2 );
-	
+
 	render();
 }
 
@@ -106,21 +108,20 @@ function Spirograph( l, k, R, color, lineWidth, step, iterations )
 {
 	this.color = color;
 	this.lineWidth = lineWidth;
-	
+
 	this.step = step;
 	this.iterations = iterations;
-	
+
 	this.path = [ ];
 	this.l = l;
 	this.k = k;
 	this.R = R;
-	
+
 	this._a = 1 - this.k;
 	this._b = this._a / this.k;
 	this._c = l * k;
-	
+
 	this.createPath();
-	console.log( this );
 }
 
 Spirograph.prototype.getPoint = function( t )
@@ -133,11 +134,11 @@ Spirograph.prototype.getPoint = function( t )
 Spirograph.prototype.createPath = function()
 {
 	this.path = [ ];
-	
+
 	this._a = 1 - this.k;
 	this._b = this._a / this.k;
 	this._c = this.l * this.k;
-	
+
 	var t = 0;
 	for( var i = 0; i < this.iterations; i++ )
 	{
@@ -159,8 +160,82 @@ Spirograph.prototype.draw = function()
 	context.stroke();
 };
 
+function createSpirograph()
+{
+	var l = Number( lInput.value );
+	var k = Number( kInput.value );
+	var R = Number( Rinput.value );
+	var lineWidth = Number( lineWidthInput.value );
+	var color = getColor();
+	var step = Number( stepInput.value );
+	var iterations = Number( iterationsInput.value );
+
+	saveSettings.value = createURL();
+
+	spirograph = new Spirograph( l, k, R, color, lineWidth, step, iterations );
+	render();
+}
+
 
 /* Input */
+
+var url_k = "k";
+var url_l = "l";
+var url_R = "R";
+var url_color = "c";
+var url_lineWidth = "lw";
+var url_step = "s";
+var url_iterations = "i";
+
+// From: http://stackoverflow.com/a/2880929
+var urlParams;
+( function getUrlParams()
+{
+    var match;
+	var pl = /\+/g;  // Regex for replacing addition symbol with a space
+    var search = /([^&=]+)=?([^&]*)/g;
+	var decode = function( s )
+	{
+		return decodeURIComponent( s.replace( pl, " " ) );
+	};
+    var query = window.location.search.substring( 1 );
+
+    urlParams = { };
+    while( match = search.exec( query ) )
+	{
+       urlParams[ decode( match[ 1 ] ) ] = decode( match[ 2 ] );
+	}
+} )();
+
+// From: http://stackoverflow.com/a/111545
+function encodeQueryData( data )
+{
+	var ret = [ ];
+	for ( var d in data )
+	{
+		ret.push( encodeURIComponent( d ) + "=" + encodeURIComponent( data[ d ] ) );
+	}
+	return ret.join( "&" );
+}
+
+function createURL()
+{
+	var url = [ location.protocol, '//', location.host, location.pathname ].join( '' );
+	if( validation.allValid() )
+	{
+		var data = { };
+		data[ url_k ] = Number( kInput.value );
+		data[ url_l ] = Number( lInput.value );
+		data[ url_R ] = Number( Rinput.value );
+		data[ url_color ] = getColor();
+		data[ url_lineWidth ] = Number( lineWidthInput.value );
+		data[ url_step ] = Number( stepInput.value );
+		data[ url_iterations ] = Number( iterationsInput.value );
+
+		url += "?" + encodeQueryData( data );
+	}
+	return url;
+}
 
 function getColor()
 {
@@ -175,29 +250,47 @@ function getColor()
     }
 }
 
-function createSpirograph()
-{
-	var l = Number( lInput.value );
-	var k = Number( kInput.value );
-	var R = Number( Rinput.value );
-	var lineWidth = Number( lineWidthInput.value );
-	var color = getColor();
-	var step = Number( stepInput.value );
-	var iterations = Number( iterationsInput.value );
-	
-	spirograph = new Spirograph( l, k, R, color, lineWidth, step, iterations );
-	render();
-}
-
 draw.addEventListener( "click", function()
 {
 	if( validation.allValid() )
 	{
 		$( ".modal" ).modal( "hide" );
-		
+
 		createSpirograph();
 	}
 } );
+
+function setInputs( data )
+{
+	if( data[ url_k ] !== undefined )
+	{
+		kInput.value = data[ url_k ];
+	}
+	if( data[ url_l ] !== undefined )
+	{
+		lInput.value = data[ url_l ];
+	}
+	if( data[ url_R ] !== undefined )
+	{
+		Rinput.value = data[ url_R ];
+	}
+	if( data[ url_color ] !== undefined )
+	{
+		colorInput.value = data[ url_color ];
+	}
+	if( data[ url_lineWidth ] !== undefined )
+	{
+		lineWidth.value = data[ url_lineWidth ];
+	}
+	if( data[ url_step ] !== undefined )
+	{
+		stepInput.value = data[ url_step ];
+	}
+	if( data[ url_iterations ] !== undefined )
+	{
+		iterationsInput.value = data[ url_iterations ];
+	}
+}
 
 
 /* Render */
@@ -205,7 +298,7 @@ draw.addEventListener( "click", function()
 function render()
 {
 	clear( context );
-	
+
 	if( spirograph != null )
 	{
 		spirograph.draw();
@@ -214,9 +307,11 @@ function render()
 
 
 /* Main */
+
 ( function()
 {
 	onWindowResize();
+	setInputs( urlParams )
 	createSpirograph();
 	setupValidators();
 	render();

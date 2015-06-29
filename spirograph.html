@@ -46,6 +46,9 @@
 
                 <div class="collapse navbar-collapse" role="group" id="navbar-collapse">
                     <div class="navbar-right">
+                        <button type="button" class="btn btn-default navbar-btn" aria-label="Save Settings" data-toggle="modal" data-target="#saveSettingsModal">
+                            Save Settings
+                        </button>
                         <button type="button" class="btn btn-info navbar-btn" aria-label="Settings" data-toggle="modal" data-target="#settings">
                             Settings
                         </button>
@@ -64,9 +67,9 @@
                         <h4 class="modal-title" id="settingsTitle">Settings</h4>
                     </div>
                     <div class="modal-body">
-                        
+
                         <img src="images/spirograph_diagram.png" class="img-responsive center-block" alt="Spirograph Diagram" width="300" height="300">
-                        
+
                         <form>
                             <div id="kGroup" class="form-group">
                                 <label for="k" class="control-label"><var>k</var> = <var>r</var> / <var>R</var> :</label>
@@ -82,7 +85,7 @@
                                 <label for="R" class="control-label"><var>R</var> :</label>
                                 <input type="text" class="form-control" id="R" value="800">
                             </div>
-                            
+
                             <div id="colorGroup" class="form-group">
                                 <label for="color" class="control-label">Line Color:</label>
                                 <div class="input-group">
@@ -128,11 +131,29 @@ Examples:
             </div>
         </div>
 
+        <div id="saveSettingsModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Save Settings</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p >Use this link to re-create your Spirograph later:</p>
+                        <input id="saveSettings" type="text" class="form-control" readonly></input>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Bootstrap core JavaScript==================================================-->
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
-        
+
         <script src="js/utilities.js"></script>
         <script src="js/spirograph.js"></script>
     </body>
