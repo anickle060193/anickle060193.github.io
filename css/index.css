@@ -1,4 +1,4 @@
-@media screen and ( max-width: 480px )
+@media screen and ( max-width: 600px )
 {
 	#grid[ data-columns ]::before
     {
@@ -6,7 +6,7 @@
 	}
 }
 
-@media screen and ( min-width: 481px ) and ( max-width: 768px )
+@media screen and ( min-width: 601px ) and ( max-width: 900px )
 {
 	#grid[ data-columns ]::before
     {
@@ -14,7 +14,7 @@
 	}
 }
 
-@media screen and ( min-width: 769px ) and ( max-width: 1200px )
+@media screen and ( min-width: 901px ) and ( max-width: 1200px )
 {
 	#grid[ data-columns ]::before
     {
@@ -22,11 +22,19 @@
 	}
 }
 
-@media screen and ( min-width: 1201px )
+@media screen and ( min-width: 1201px ) and ( max-width: 1500px )
 {
 	#grid[ data-columns ]::before
     {
 		content: '4 .column.size-1of4';
+	}
+}
+
+@media screen and ( min-width: 1501px )
+{
+	#grid[ data-columns ]::before
+    {
+		content: '5 .column.size-1of5';
 	}
 }
 
@@ -35,6 +43,7 @@
 .size-1of2 { width: 50%; }
 .size-1of3 { width: 33.333%; }
 .size-1of4 { width: 25%; }
+.size-1of5 { width: 20%; }
 
 .thumbnail
 {
