@@ -227,7 +227,7 @@ function createURL()
 		data[ url_k ] = Number( kInput.value );
 		data[ url_l ] = Number( lInput.value );
 		data[ url_R ] = Number( Rinput.value );
-		data[ url_color ] = getColor();
+		data[ url_color ] = getColor().substring( 1 );
 		data[ url_lineWidth ] = Number( lineWidthInput.value );
 		data[ url_step ] = Number( stepInput.value );
 		data[ url_iterations ] = Number( iterationsInput.value );
@@ -276,7 +276,7 @@ function setInputs( data )
 	}
 	if( data[ url_color ] !== undefined )
 	{
-		colorInput.value = data[ url_color ];
+		colorInput.value = "#" + data[ url_color ];
 	}
 	if( data[ url_lineWidth ] !== undefined )
 	{
