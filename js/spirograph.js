@@ -23,6 +23,12 @@ var colorGroup = document.getElementById( "colorGroup" );
 var lineWidthInput = document.getElementById( "lineWidth" );
 var lineWidthGroup = document.getElementById( "lineWidthGroup" );
 
+var stepInput = document.getElementById( "step" );
+var stepGroup = document.getElementById( "stepGroup" );
+
+var iterationsInput = document.getElementById( "iterations" );
+var iterationsGroup = document.getElementById( "iterationsGroup" );
+
 var draw = document.getElementById( "draw" );
 
 function onWindowResize()
@@ -68,6 +74,16 @@ function setupValidators()
 		var num = Number( input.value );
 		return isFinite( num ) && 0 <= num;
 	} );
+	validation.addValidator( stepInput, stepGroup, function( input )
+	{
+		var num = Number( input.value );
+		return isFinite( num ) && 0 < num;
+	} );
+	validation.addValidator( iterationsInput, iterationsGroup, function( input )
+	{
+		var num = Number( input.value );
+		return isFinite( num ) && 0 < num;
+	} );
 }
 
 
@@ -86,10 +102,13 @@ function equalWithin( p1, p2, tolerance )
 	return dist < tolerance;
 }
 
-function Spirograph( l, k, R, color, lineWidth )
+function Spirograph( l, k, R, color, lineWidth, step, iterations )
 {
 	this.color = color;
 	this.lineWidth = lineWidth;
+	
+	this.step = step;
+	this.iterations = iterations;
 	
 	this.path = [ ];
 	this.l = l;
@@ -118,17 +137,10 @@ Spirograph.prototype.createPath = function()
 	this._b = this._a / this.k;
 	this._c = this.l * this.k;
 	
-	var t = 0;
-	var start = this.getPoint( t );
-	var p;
-	this.path.push( start );
-	do
+	for( var t = 0; t < this.iterations; t += this.step )
 	{
-		t += increment;
-		p = this.getPoint( t );
-		this.path.push( p );
+		this.path.push( this.getPoint( t ) );
 	}
-	while( !equalWithin( start, p, tolerance ) );
 };
 
 Spirograph.prototype.draw = function()
@@ -167,8 +179,11 @@ function createSpirograph()
 	var R = Number( Rinput.value );
 	var lineWidth = Number( lineWidthInput.value );
 	var color = getColor();
+	var step = Number( stepInput.value );
+	var iterations = Number( iterationsInput.value );
 	
-	spirograph = new Spirograph( l, k, R, color, lineWidth );
+	spirograph = new Spirograph( l, k, R, color, lineWidth, step, iterations );
+	render();
 }
 
 draw.addEventListener( "click", function()
