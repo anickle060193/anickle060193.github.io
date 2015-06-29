@@ -390,7 +390,7 @@ var validation =
             validator.inputGroup.classList.add( "has-error" );
         }
     },
-    addValidater: function( input, inputGroup, validatorFunction )
+    addValidator: function( input, inputGroup, validatorFunction )
     {
         var validator = new Validator( input, inputGroup, validatorFunction );
         this.removeValidator( validator.input );
