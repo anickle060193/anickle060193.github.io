@@ -289,7 +289,7 @@ function setUrl()
 {
     var newURL = createURL();
     saveSettings.value = newURL;
-    history.pushState( null, "", newURL );
+    history.replaceState( null, "", newURL );
 
     setInputs( urlSettings.getUrlData() );
 }
@@ -298,10 +298,22 @@ function setInputs( data )
 {
     for( var i = 1; i <= 4; i++ )
     {
-        fInputs[ i ].value = data[ url_f + i ];
-        pInputs[ i ].value = data[ url_p + i ];
-        Ainputs[ i ].value = data[ url_A + i ];
-        dInputs[ i ].value = data[ url_d + i ];
+        if( data[ url_f + i ] !== undefined )
+        {
+            fInputs[ i ].value = data[ url_f + i ];
+        }
+        if( data[ url_p + i ] !== undefined )
+        {
+            pInputs[ i ].value = data[ url_p + i ];
+        }
+        if( data[ url_A + i ] !== undefined )
+        {
+            Ainputs[ i ].value = data[ url_A + i ];
+        }
+        if( data[ url_d + i ] !== undefined )
+        {
+            dInputs[ i ].value = data[ url_d + i ];
+        }
     }
     if( data[ url_color ] !== undefined )
     {
