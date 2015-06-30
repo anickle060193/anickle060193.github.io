@@ -20,9 +20,13 @@ var stepGroup = document.getElementById( "stepGroup" );
 var iterationsInput = document.getElementById( "iterations" );
 var iterationsGroup = document.getElementById( "iterationsGroup" );
 
-var draw = document.getElementById( "draw" );
+var drawButton = document.getElementById( "draw" );
 
+var openSettingsButton = document.getElementById( "openSettings" );
 var saveSettingsInput = document.getElementById( "saveSettings" );
+var randomButton = document.getElementById( "random" );
+var animateButton = document.getElementById( "animate" );
+var animateIcon = document.getElementById( "animateIcon" );
 
 var fInputs = [ ];
 var fGroup = document.getElementById( "fGroup" );
@@ -179,15 +183,32 @@ function createHarmonograph()
 	}
 
 	harmonograph = new Harmonograph( f, p, A, d, color, lineWidth, 0.01, iterations );
-
-	var newURL = createURL();
-	saveSettings.value = newURL;
-	history.pushState( null, "", newURL );
+	setUrl()
 	render();
 }
 
 
 /* Input */
+
+animateButton.addEventListener( "click", function()
+{
+	animating = !animating;
+	if( animating )
+	{
+		animateButton.classList.remove( "btn-success" );
+		animateButton.classList.add( "btn-danger" );
+		animateIcon.classList.remove( "glyphicon-play" );
+		animateIcon.classList.add( "glyphicon-stop" );
+	}
+	else
+	{
+		animateButton.classList.add( "btn-success" );
+		animateButton.classList.remove( "btn-danger" );
+		animateIcon.classList.add( "glyphicon-play" );
+		animateIcon.classList.remove( "glyphicon-stop" );
+		setUrl();
+	}
+} );
 
 var url_f = "f";
 var url_p = "p";
@@ -219,20 +240,32 @@ function createURL()
 	return urlSettings.createURL( data );
 }
 
-function getColor()
+function createRandomHarmonograph()
 {
-    var color = removeAllWhiteSpace( colorInput.value.toString() );
-    if( validHexColorString( color ) )
-    {
-        return color;
-    }
-    else
-    {
-        return null;
-    }
+	for( var i = 1; i <= 4; i++ )
+	{
+		fInputs[ i ].value = random( 200 );
+		pInputs[ i ].value = random( 100 );
+		Ainputs[ i ].value = random( 300 );
+		dInputs[ i ].value = random( 0.5 );
+	}
+	createHarmonograph();
 }
 
-draw.addEventListener( "click", function()
+function getColor()
+{
+	var color = removeAllWhiteSpace( colorInput.value.toString() );
+	if( validHexColorString( color ) )
+	{
+		return color;
+	}
+	else
+	{
+		return null;
+	}
+}
+
+drawButton.addEventListener( "click", function()
 {
 	if( validation.allValid() )
 	{
@@ -241,6 +274,25 @@ draw.addEventListener( "click", function()
 		createHarmonograph();
 	}
 } );
+
+randomButton.addEventListener( "click", function()
+{
+	createRandomHarmonograph();
+} );
+
+openSettingsButton.addEventListener( "click", function()
+{
+	setUrl()
+} );
+
+function setUrl()
+{
+	var newURL = createURL();
+	saveSettings.value = newURL;
+	history.pushState( null, "", newURL );
+
+	setInputs( urlSettings.getUrlData() );
+}
 
 function setInputs( data )
 {
@@ -270,6 +322,25 @@ function setInputs( data )
 }
 
 
+/* Animation */
+
+var animating = false;
+
+function update( elapsedTime )
+{
+	if( animating && harmonograph != null )
+	{
+		var delta = elapsedTime / 10;
+		for( var i = 1; i <= 4; i++ )
+		{
+			harmonograph.f[ i ] = ( harmonograph.f[ i ] + delta );
+		}
+		harmonograph.createPath();
+		render();
+	}
+}
+
+
 /* Render */
 
 function render()
@@ -292,4 +363,6 @@ function render()
 	createHarmonograph();
 	setupValidators();
 	render();
+
+	startAnimation( update, function() { } );
 } )();
