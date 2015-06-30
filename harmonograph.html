@@ -70,52 +70,102 @@
 
                         <!-- <img src="images/harmonograph_diagram.png" class="img-responsive center-block" alt="Harmonograph Diagram" width="300" height="300"> -->
 
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#display" role="tab" data-toggle="tab">Display</a></li>
-                            <li role="presentation"><a href="#p1a1" role="tab" data-toggle="tab">Pendulum 1 - Axis 1</a></li>
-                            <li role="presentation"><a href="#p1a2" role="tab" data-toggle="tab">Pendulum 1 - Axis 2</a></li>
-                            <li role="presentation"><a href="#p2a1" role="tab" data-toggle="tab">Pendulum 2 - Axis 1</a></li>
-                            <li role="presentation"><a href="#p2a2" role="tab" data-toggle="tab">Pendulum 2 - Axis 2</a></li>
-                        </ul>
-
-                        <div class="tab-content">
-
-                            <div class="tabpanel" class="tab-pane active" id="display">
-
-                                <div id="colorGroup" class="form-group">
-                                    <label for="color" class="control-label">Line Color:</label>
-                                    <input type="text" class="form-control" id="color" value="#0011FF">
-                                </div>
-
-                                <div id="lineWidthGroup" class="form-group">
-                                    <label for="lineWidth" class="control-label">Line Width:</label>
-                                    <input type="text" class="form-control" id="lineWidth" value="0.1">
-                                </div>
-
-                                <div id="stepGroup" class="form-group">
-                                    <label for="step" class="control-label">Iteration Step:</label>
-                                    <input type="text" class="form-control" id="step" value="0.1">
-                                </div>
-
-                                <div id="iterationsGroup" class="form-group">
-                                    <label for="iterations" class="control-label">Number of Iterations:</label>
-                                    <input type="text" class="form-control" id="iterations" value="10000">
-                                </div>
-                            </div>
-
-                        
-
-                            <div id="f1Group" class="form-group col-md-3 ">
-                                <label for="f1" class="control-label"><var>f</var><sub>1</sub> :</label>
-                                <input type="text" class="form-control" id="f1" value="10">
-                            </div>
-
-                        </div>
-
-
                         <form>
 
+                            <div id="colorGroup" class="form-group">
+                                <label for="color" class="control-label">Line Color:</label>
+                                <input type="text" class="form-control" id="color" value="#0011FF">
+                            </div>
+
+                            <div id="lineWidthGroup" class="form-group">
+                                <label for="lineWidth" class="control-label">Line Width:</label>
+                                <input type="text" class="form-control" id="lineWidth" value="0.1">
+                            </div>
+
+                            <div id="stepGroup" class="form-group">
+                                <label for="step" class="control-label">Iteration Step:</label>
+                                <input type="text" class="form-control" id="step" value="0.1">
+                            </div>
+
+                            <div id="iterationsGroup" class="form-group">
+                                <label for="iterations" class="control-label">Number of Iterations:</label>
+                                <input type="text" class="form-control" id="iterations" value="10000">
+                            </div>
+
+                            <div id="fGroup" class="form-group">
+                                <label for="fGroup" class="control-label"><var>f</var> (Frequency):</label>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="f1" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="f2" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="f3" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="f4" value="10">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="pGroup" class="form-group">
+                                <label for="pGroup" class="control-label"><var>p</var> (Phase):</label>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="p1" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="p2" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="p3" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="p4" value="10">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="Agroup" class="form-group">
+                                <label for="Agroup" class="control-label"><var>A</var> (Amplitude):</label>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="A1" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="A2" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="A3" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="A4" value="10">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="dGroup" class="form-group">
+                                <label for="Agroup" class="control-label"><var>d</var> (Damping):</label>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="d1" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="d2" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="d3" value="10">
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <input type="text" class="form-control" id="d4" value="10">
+                                    </div>
+                                </div>
+                            </div>
+
                         </form>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

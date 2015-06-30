@@ -8,15 +8,6 @@
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
-var kInput = document.getElementById( "k" );
-var kGroup = document.getElementById( "kGroup" );
-
-var lInput = document.getElementById( "l" );
-var lGroup = document.getElementById( "lGroup" );
-
-var Rinput = document.getElementById( "R" );
-var Rgroup = document.getElementById( "Rgroup" );
-
 var colorInput = document.getElementById( "color" );
 var colorGroup = document.getElementById( "colorGroup" );
 
@@ -32,6 +23,26 @@ var iterationsGroup = document.getElementById( "iterationsGroup" );
 var draw = document.getElementById( "draw" );
 
 var saveSettingsInput = document.getElementById( "saveSettings" );
+
+var fInputs = [ ];
+var fGroup = document.getElementById( "fGroup" );
+
+var pInputs = [ ];
+var pGroup = document.getElementById( "pGroup" );
+
+var Ainputs = [ ];
+var Agroup = document.getElementById( "Agroup" );
+
+var dInputs = [ ];
+var dGroup = document.getElementById( "dGroup" );
+
+for( var i = 1; i <= 4; i++ )
+{
+	fInputs[ i ] = document.getElementById( "f" + i );
+	pInputs[ i ] = document.getElementById( "p" + i );
+	Ainputs[ i ] = document.getElementById( "A" + i );
+	dInputs[ i ] = document.getElementById( "d" + i );
+}
 
 function onWindowResize()
 {
@@ -50,23 +61,21 @@ $( '[ data-toggle="popover" ]' ).popover();
 
 /* Validation */
 
+function hasNonnegativeValue( input )
+{
+	var num = Number( input.value );
+	return isFinite( num ) && 0 <= num;
+}
+
 function setupValidators()
 {
-	validation.addValidator( kInput, kGroup, function( input )
+	for( var i = 1; i <= 4; i++ )
 	{
-		var num = Number( input.value );
-		return isFinite( num ) && 0 <= num && num <= 1;
-	} );
-	validation.addValidator( lInput, lGroup, function( input )
-	{
-		var num = Number( input.value );
-		return isFinite( num ) && 0 <= num && num <= 1;
-	} );
-	validation.addValidator( Rinput, Rgroup, function( input )
-	{
-		var num = Number( input.value );
-		return isFinite( num ) && 0 < num;
-	} );
+		validation.addValidator( fInputs[ i ], fGroup, hasNonnegativeValue );
+		validation.addValidator( pInputs[ i ], pGroup, hasNonnegativeValue );
+		validation.addValidator( Ainputs[ i ], Agroup, hasNonnegativeValue );
+		validation.addValidator( dInputs[ i ], dGroup, hasNonnegativeValue );
+	}
 	validation.addValidator( colorInput, colorGroup, function( input )
 	{
 		return getColor() != null;
@@ -121,13 +130,6 @@ function Harmonograph( fArr, pArr, Aarr, dArr, color, lineWidth, step, iteration
 	this.createPath();
 }
 
-Harmonograph.prototype.getPoint = function( t )
-{
-	var x = this.A[ 0 ] * Math.sin( t * this.f[ 0 ] + this.p[ 0 ] ) * Math.exp( - this.d[ 0 ] * t ) + this.A[ 1 ] * Math.sin( t * this.f[ 1 ] + this.p[ 1 ] ) * Math.exp( - this.d[ 1 ] * t );
-	var y = this.A[ 2 ] * Math.sin( t * this.f[ 2 ] + this.p[ 2 ] ) * Math.exp( - this.d[ 2 ] * t ) + this.A[ 3 ] * Math.sin( t * this.f[ 3 ] + this.p[ 3 ] ) * Math.exp( - this.d[ 3 ] * t );
-	return new Point( x, y );
-};
-
 Harmonograph.prototype.createPath = function()
 {
 	this.path = [ ];
@@ -135,7 +137,11 @@ Harmonograph.prototype.createPath = function()
 	var t = 0;
 	for( var i = 0; i < this.iterations; i++ )
 	{
-		this.path.push( this.getPoint( t ) );
+		var x1 = this.A[ 1 ] * Math.sin( t * this.f[ 1 ] + this.p[ 1 ] ) * Math.exp( - this.d[ 1 ] * t );
+		var x2 = this.A[ 2 ] * Math.sin( t * this.f[ 2 ] + this.p[ 2 ] ) * Math.exp( - this.d[ 2 ] * t );
+		var y1 = this.A[ 3 ] * Math.sin( t * this.f[ 3 ] + this.p[ 3 ] ) * Math.exp( - this.d[ 3 ] * t );
+		var y2 = this.A[ 4 ] * Math.sin( t * this.f[ 4 ] + this.p[ 4 ] ) * Math.exp( - this.d[ 4 ] * t );
+		this.path.push( new Point( x1 + x2, y1 + y2 ) );
 		t += this.step;
 	}
 };
@@ -155,91 +161,62 @@ Harmonograph.prototype.draw = function()
 
 function createHarmonograph()
 {
-	var l = Number( lInput.value );
-	var k = Number( kInput.value );
-	var R = Number( Rinput.value );
 	var lineWidth = Number( lineWidthInput.value );
 	var color = getColor();
 	var step = Number( stepInput.value );
 	var iterations = Number( iterationsInput.value );
 
-	saveSettings.value = createURL();
-
 	var f = [ ];
 	var p = [ ];
 	var A = [ ];
 	var d = [ ];
-	for( var i = 0; i < 4; i++ )
+	for( var i = 1; i <= 4; i++ )
 	{
-		f[ i ] = 10;
-		p[ i ] = Math.random() * 10;
-		A[ i ] = Math.random() * 400;
-		d[ i ] = Math.random() * .5;
+		f[ i ] = Number( fInputs[ i ].value );
+		p[ i ] = Number( pInputs[ i ].value );
+		A[ i ] = Number( Ainputs[ i ].value );
+		d[ i ] = Number( dInputs[ i ].value );
 	}
 
 	harmonograph = new Harmonograph( f, p, A, d, color, lineWidth, 0.01, iterations );
+
+	var newURL = createURL();
+	saveSettings.value = newURL;
+	history.pushState( null, "", newURL );
 	render();
 }
 
 
 /* Input */
 
-var url_k = "k";
-var url_l = "l";
-var url_R = "R";
+var url_f = "f";
+var url_p = "p";
+var url_A = "A";
+var url_d = "d";
 var url_color = "c";
 var url_lineWidth = "lw";
 var url_step = "s";
 var url_iterations = "i";
 
-// From: http://stackoverflow.com/a/2880929
-var urlParams;
-( function getUrlParams()
-{
-    var match;
-	var pl = /\+/g;  // Regex for replacing addition symbol with a space
-    var search = /([^&=]+)=?([^&]*)/g;
-	var decode = function( s )
-	{
-		return decodeURIComponent( s.replace( pl, " " ) );
-	};
-    var query = window.location.search.substring( 1 );
-
-    urlParams = { };
-    while( match = search.exec( query ) )
-	{
-       urlParams[ decode( match[ 1 ] ) ] = decode( match[ 2 ] );
-	}
-} )();
-
-// From: http://stackoverflow.com/a/111545
-function encodeQueryData( data )
-{
-	var ret = [ ];
-	for ( var d in data )
-	{
-		ret.push( encodeURIComponent( d ) + "=" + encodeURIComponent( data[ d ] ) );
-	}
-	return ret.join( "&" );
-}
-
 function createURL()
 {
-	var url = [ location.protocol, '//', location.host, location.pathname ].join( '' );
-	if( validation.allValid() )
+	var data = { };
+	if( harmonograph != null )
 	{
-		var data = { };
-		data[ url_k ] = Number( kInput.value );
-		data[ url_l ] = Number( lInput.value );
-		data[ url_R ] = Number( Rinput.value );
-		data[ url_color ] = getColor().substring( 1 );
-		data[ url_lineWidth ] = Number( lineWidthInput.value );
-		data[ url_step ] = Number( stepInput.value );
-		data[ url_iterations ] = Number( iterationsInput.value );
+		data[ url_color ] = harmonograph.color.substring( 1 );
+		data[ url_lineWidth ] = harmonograph.lineWidth;
+		data[ url_step ] = harmonograph.step;
+		data[ url_iterations ] = harmonograph.iterations;
 
-		url += "?" + encodeQueryData( data );
+		for( var i = 1; i <= 4; i++ )
+		{
+			data[ url_f + i ] = harmonograph.f[ i ];
+			data[ url_p + i ] = harmonograph.p[ i ];
+			data[ url_A + i ] = harmonograph.A[ i ];
+			data[ url_d + i ] = harmonograph.d[ i ];
+		}
 	}
-	return url;
+	return urlSettings.createURL( data );
 }
 
 function getColor()
@@ -267,17 +244,12 @@ draw.addEventListener( "click", function()
 
 function setInputs( data )
 {
-	if( data[ url_k ] !== undefined )
+	for( var i = 1; i <= 4; i++ )
 	{
-		kInput.value = data[ url_k ];
-	}
-	if( data[ url_l ] !== undefined )
-	{
-		lInput.value = data[ url_l ];
-	}
-	if( data[ url_R ] !== undefined )
-	{
-		Rinput.value = data[ url_R ];
+		fInputs[ i ].value = data[ url_f + i ];
+		pInputs[ i ].value = data[ url_p + i ];
+		Ainputs[ i ].value = data[ url_A + i ];
+		dInputs[ i ].value = data[ url_d + i ];
 	}
 	if( data[ url_color ] !== undefined )
 	{
@@ -316,7 +288,7 @@ function render()
 ( function()
 {
 	onWindowResize();
-	setInputs( urlParams )
+	setInputs( urlSettings.getUrlData() )
 	createHarmonograph();
 	setupValidators();
 	render();
