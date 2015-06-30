@@ -321,10 +321,13 @@ function setInputs( data )
 
 timeFactorInput.addEventListener( "change", function()
 {
-    var num = Number( timeFactorInput.value );
-    if( isFinite( num ) )
+    if( timeFactorInput.value !== "" )
     {
-        timeFactor = num;
+        var num = Number( timeFactorInput.value );
+        if( isFinite( num ) )
+        {
+            timeFactor = num;
+        }
     }
 } );
 
