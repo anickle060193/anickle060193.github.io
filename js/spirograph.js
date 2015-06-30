@@ -31,7 +31,13 @@ var iterationsGroup = document.getElementById( "iterationsGroup" );
 
 var draw = document.getElementById( "draw" );
 
+var openSettingsButton = document.getElementById( "openSettings" );
 var saveSettingsInput = document.getElementById( "saveSettings" );
+var randomButton = document.getElementById( "random" );
+
+var animateButton = document.getElementById( "animate" );
+var animateIcon = document.getElementById( "animateIcon" );
+var timeFactorInput = document.getElementById( "timeFactor" );
 
 function onWindowResize()
 {
@@ -91,18 +97,7 @@ function setupValidators()
 
 /* Spirograph */
 
-var increment = 0.1;
-var tolerance = 1;
-
 var spirograph = null;
-
-function equalWithin( p1, p2, tolerance )
-{
-    var xDiff = p1.x - p2.x;
-    var yDiff = p1.y - p2.y;
-    var dist = Math.sqrt( xDiff * xDiff + yDiff + yDiff );
-    return dist < tolerance;
-}
 
 function Spirograph( l, k, R, color, lineWidth, step, iterations )
 {
@@ -124,13 +119,6 @@ function Spirograph( l, k, R, color, lineWidth, step, iterations )
     this.createPath();
 }
 
-Spirograph.prototype.getPoint = function( t )
-{
-    var x = this.R * ( this._a * Math.cos( t ) + this._c * Math.cos( this._b * t ) );
-    var y = this.R * ( this._a * Math.sin( t ) - this._c * Math.sin( this._b * t ) );
-    return new Point( x, y );
-};
-
 Spirograph.prototype.createPath = function()
 {
     this.path = [ ];
@@ -142,7 +130,9 @@ Spirograph.prototype.createPath = function()
     var t = 0;
     for( var i = 0; i < this.iterations; i++ )
     {
-        this.path.push( this.getPoint( t ) );
+        var x = this.R * ( this._a * Math.cos( t ) + this._c * Math.cos( this._b * t ) );
+        var y = this.R * ( this._a * Math.sin( t ) - this._c * Math.sin( this._b * t ) );
+        this.path.push( new Point( x, y ) );
         t += this.step;
     }
 };
@@ -173,11 +163,33 @@ function createSpirograph()
     saveSettings.value = createURL();
 
     spirograph = new Spirograph( l, k, R, color, lineWidth, step, iterations );
+    setUrl();
     render();
 }
 
 
 /* Input */
+
+animateButton.addEventListener( "click", function()
+{
+    animating = !animating;
+    if( animating )
+    {
+        animateButton.classList.remove( "btn-success" );
+        animateButton.classList.add( "btn-danger" );
+        animateIcon.classList.remove( "glyphicon-play" );
+        animateIcon.classList.add( "glyphicon-stop" );
+    }
+    else
+    {
+        animateButton.classList.add( "btn-success" );
+        animateButton.classList.remove( "btn-danger" );
+        animateIcon.classList.add( "glyphicon-play" );
+        animateIcon.classList.remove( "glyphicon-stop" );
+        setUrl();
+        setInputs( urlSettings.getUrlData() );
+    }
+} );
 
 var url_k = "k";
 var url_l = "l";
@@ -187,54 +199,28 @@ var url_lineWidth = "lw";
 var url_step = "s";
 var url_iterations = "i";
 
-// From: http://stackoverflow.com/a/2880929
-var urlParams;
-( function getUrlParams()
-{
-    var match;
-    var pl = /\+/g;  // Regex for replacing addition symbol with a space
-    var search = /([^&=]+)=?([^&]*)/g;
-    var decode = function( s )
-    {
-        return decodeURIComponent( s.replace( pl, " " ) );
-    };
-    var query = window.location.search.substring( 1 );
-
-    urlParams = { };
-    while( match = search.exec( query ) )
-    {
-        urlParams[ decode( match[ 1 ] ) ] = decode( match[ 2 ] );
-    }
-} )();
-
-// From: http://stackoverflow.com/a/111545
-function encodeQueryData( data )
-{
-    var ret = [ ];
-    for ( var d in data )
-    {
-        ret.push( encodeURIComponent( d ) + "=" + encodeURIComponent( data[ d ] ) );
-    }
-    return ret.join( "&" );
-}
-
 function createURL()
 {
-    var url = [ location.protocol, '//', location.host, location.pathname ].join( '' );
-    if( validation.allValid() )
+    var data = { };
+    if( spirograph != null )
     {
-        var data = { };
-        data[ url_k ] = Number( kInput.value );
-        data[ url_l ] = Number( lInput.value );
-        data[ url_R ] = Number( Rinput.value );
-        data[ url_color ] = getColor().substring( 1 );
-        data[ url_lineWidth ] = Number( lineWidthInput.value );
-        data[ url_step ] = Number( stepInput.value );
-        data[ url_iterations ] = Number( iterationsInput.value );
-
-        url += "?" + encodeQueryData( data );
+        data[ url_k ] = spirograph.k;
+        data[ url_l ] = spirograph.l;
+        data[ url_R ] = spirograph.R;;
+        data[ url_color ] = spirograph.color.substring( 1 );
+        data[ url_lineWidth ] = spirograph.lineWidth;
+        data[ url_step ] = spirograph.step;
+        data[ url_iterations ] = spirograph.iterations;
     }
-    return url;
+    return urlSettings.createURL( data );
+}
+
+function createRandomSpirograph()
+{
+    kInput.value = random( 0.2, 1.0 );
+    lInput.value = random( 0.2, 1.0 );
+    Rinput.value = random( 500, 600 );
+    createSpirograph();
 }
 
 function getColor()
@@ -259,6 +245,23 @@ draw.addEventListener( "click", function()
         createSpirograph();
     }
 } );
+
+randomButton.addEventListener( "click", function()
+{
+    createRandomSpirograph();
+} );
+
+openSettingsButton.addEventListener( "click", function()
+{
+    setUrl();
+} );
+
+function setUrl()
+{
+    var newURL = createURL();
+    saveSettings.value = newURL;
+    history.replaceState( null, "", newURL );
+}
 
 function setInputs( data )
 {
@@ -292,6 +295,33 @@ function setInputs( data )
     }
 }
 
+timeFactorInput.addEventListener( "change", function()
+{
+    var num = Number( timeFactorInput.value );
+    if( isFinite( num ) )
+    {
+        timeFactor = num;
+    }
+} );
+
+
+/* Animation */
+
+var animating = false;
+var timeFactor = 0.01
+
+function update( elapsedTime )
+{
+    if( animating && spirograph != null )
+    {
+        var delta = elapsedTime * timeFactor;
+        spirograph.k = ( spirograph.k + delta ) % 1;
+        spirograph.l = ( spirograph.l + delta ) % 1;
+        spirograph.createPath();
+        render();
+    }
+}
+
 
 /* Render */
 
@@ -311,8 +341,10 @@ function render()
 ( function()
 {
     onWindowResize();
-    setInputs( urlParams )
+    setInputs( urlSettings.getUrlData() )
     createSpirograph();
     setupValidators();
     render();
+
+    startAnimation( update, function() { } );
 } )();

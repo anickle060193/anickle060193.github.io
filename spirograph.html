@@ -45,14 +45,27 @@
                 </div>
 
                 <div class="collapse navbar-collapse" role="group" id="navbar-collapse">
-                    <div class="navbar-right">
+                    <form class="navbar-form navbar-right">
                         <button type="button" class="btn btn-default navbar-btn" aria-label="Save Settings" data-toggle="modal" data-target="#saveSettingsModal">
                             Save Settings
                         </button>
-                        <button type="button" class="btn btn-info navbar-btn" aria-label="Settings" data-toggle="modal" data-target="#settings">
+                        <button type="button" class="btn btn-info navbar-btn" aria-label="Settings" data-toggle="modal" data-target="#settings" id="openSettings">
                             Settings
                         </button>
-                    </div>
+                        <button type="button" class="btn btn-warning navbar-btn" aria-label="Random" id="random">
+                            Random
+                        </button>
+                        <div class="form-group" id="timeFactorGroup">
+                            <div class="input-group">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-success" aria-label="Animate" id="animate">
+                                        Animate <span class="glyphicon glyphicon-play" aria-hidden="true" id="animateIcon"></span>
+                                    </button>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Time Factor" id="timeFactor" size="10">
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </nav>

@@ -102,18 +102,7 @@ function setupValidators()
 
 /* Harmonograph */
 
-var increment = 0.1;
-var tolerance = 1;
-
 var harmonograph = null;
-
-function equalWithin( p1, p2, tolerance )
-{
-    var xDiff = p1.x - p2.x;
-    var yDiff = p1.y - p2.y;
-    var dist = Math.sqrt( xDiff * xDiff + yDiff + yDiff );
-    return dist < tolerance;
-}
 
 function Harmonograph( fArr, pArr, Aarr, dArr, color, lineWidth, step, iterations )
 {
@@ -181,7 +170,7 @@ function createHarmonograph()
     }
 
     harmonograph = new Harmonograph( f, p, A, d, color, lineWidth, 0.01, iterations );
-    setUrl()
+    setUrl();
     render();
 }
 
