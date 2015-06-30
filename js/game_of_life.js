@@ -63,7 +63,7 @@ function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    
+
     resizeBoard();
     render();
 }
@@ -95,11 +95,11 @@ validation.addValidater( timeInput, timeGroup, function( input )
 /* Versions */
 
 var versions = {
-	"Standard (B3/S23)": new Version( "Standard (B3/S23)", "B3/S23", false ),
-	"Highlife (B36/S23)": new Version( "Highlife (B36/S23)", "B36/S23", false ),
-	"Sierpinkski (B1/S12)": new Version( "Sierpinkski (B1/S12)", "B1/S12", false ),
-	"Seeds (B2/S)": new Version( "Seeds (B2/S)", "B2/S", false ),
-	"Custom": new Version( "Custom", "B/S", true )
+    "Standard (B3/S23)": new Version( "Standard (B3/S23)", "B3/S23", false ),
+    "Highlife (B36/S23)": new Version( "Highlife (B36/S23)", "B36/S23", false ),
+    "Sierpinkski (B1/S12)": new Version( "Sierpinkski (B1/S12)", "B1/S12", false ),
+    "Seeds (B2/S)": new Version( "Seeds (B2/S)", "B2/S", false ),
+    "Custom": new Version( "Custom", "B/S", true )
 };
 
 function Version( name, versionString, custom )
@@ -172,7 +172,7 @@ function Board( rows, columns )
     this.board = [ ];
     this.rows = rows === undefined ? 0 : rows;
     this.columns = columns === undefined ? 0 : columns;
-    
+
     this.resize = function( rows, columns )
     {
         this.rows = rows;
@@ -245,7 +245,7 @@ function resizeBoard()
 {
     var rows = Math.ceil( canvas.height / cellHeight );
     var columns = Math.ceil( canvas.width / cellWidth );
-    
+
     board.resize( rows, columns );
 }
 
@@ -342,10 +342,10 @@ updateButton.addEventListener( "click", function()
         cellWidth = Number( widthInput.value );
         cellHeight = Number( heightInput.value );
         iterationDelay = Number( timeInput.value ) * 1000;
-        
+
         boardColors[ alive ] = $( "#aliveColor" ).colorpicker( "getValue", "black" );
         boardColors[ dead ] = $( "#deadColor" ).colorpicker( "getValue", "gray" );
-        
+
         version = versions[ versionSelect.value ];
         if( version.custom )
         {
@@ -375,7 +375,7 @@ function render()
     context.fillStyle = boardColors[ dead ];
     context.fillRect( 0, 0, canvas.width, canvas.height );
     context.restore();
-    
+
     context.fillStyle = boardColors[ alive ];
     var x = 0;
     var y = 0;
@@ -410,7 +410,7 @@ var version;
     widthInput.value = cellWidth;
     heightInput.value = cellHeight;
     timeInput.value = iterationDelay / 1000;
-    
+
     onWindowResize();
     startAnimation( update, function() { } );
 } )();

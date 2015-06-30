@@ -22,7 +22,7 @@ update.addEventListener( "click", function()
     if( validation.allValid() )
     {
         setData();
-        
+
         $( ".modal" ).modal( "hide" );
     }
 } );
