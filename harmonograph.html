@@ -45,20 +45,27 @@
                 </div>
 
                 <div class="collapse navbar-collapse" role="group" id="navbar-collapse">
-                    <div class="navbar-right">
+                    <form class="navbar-form navbar-right">
                         <button type="button" class="btn btn-default navbar-btn" aria-label="Save Settings" data-toggle="modal" data-target="#saveSettingsModal">
                             Save Settings
                         </button>
                         <button type="button" class="btn btn-info navbar-btn" aria-label="Settings" data-toggle="modal" data-target="#settings" id="openSettings">
                             Settings
                         </button>
-                        <button type="button" class="btn btn-success navbar-btn" aria-label="Random" id="random">
+                        <button type="button" class="btn btn-warning navbar-btn" aria-label="Random" id="random">
                             Random
                         </button>
-                        <button type="button" class="btn btn-success navbar-btn" aria-label="Animate" id="animate">
-                            Animate <span class="glyphicon glyphicon-play" aria-hidden="true" id="animateIcon"></span>
-                        </button>
-                    </div>
+                        <div class="form-group" id="timeFactorGroup">
+                            <div class="input-group">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-success" aria-label="Animate" id="animate">
+                                        Animate <span class="glyphicon glyphicon-play" aria-hidden="true" id="animateIcon"></span>
+                                    </button>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Time Factor" id="timeFactor" size="10">
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -78,22 +85,22 @@
 
                         <form>
 
-                            <div id="colorGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="color" class="control-label">Line Color:</label>
                                 <input type="text" class="form-control" id="color" value="#0011FF">
                             </div>
 
-                            <div id="lineWidthGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="lineWidth" class="control-label">Line Width:</label>
                                 <input type="text" class="form-control" id="lineWidth" value="0.1">
                             </div>
 
-                            <div id="stepGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="step" class="control-label">Iteration Step:</label>
                                 <input type="text" class="form-control" id="step" value="0.1">
                             </div>
 
-                            <div id="iterationsGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="iterations" class="control-label">Number of Iterations:</label>
                                 <input type="text" class="form-control" id="iterations" value="10000">
                             </div>

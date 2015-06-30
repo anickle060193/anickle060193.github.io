@@ -9,24 +9,22 @@ var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
 var colorInput = document.getElementById( "color" );
-var colorGroup = document.getElementById( "colorGroup" );
 
 var lineWidthInput = document.getElementById( "lineWidth" );
-var lineWidthGroup = document.getElementById( "lineWidthGroup" );
 
 var stepInput = document.getElementById( "step" );
-var stepGroup = document.getElementById( "stepGroup" );
 
 var iterationsInput = document.getElementById( "iterations" );
-var iterationsGroup = document.getElementById( "iterationsGroup" );
 
 var drawButton = document.getElementById( "draw" );
 
 var openSettingsButton = document.getElementById( "openSettings" );
 var saveSettingsInput = document.getElementById( "saveSettings" );
 var randomButton = document.getElementById( "random" );
+
 var animateButton = document.getElementById( "animate" );
 var animateIcon = document.getElementById( "animateIcon" );
+var timeFactorInput = document.getElementById( "timeFactor" );
 
 var fInputs = [ ];
 var fGroup = document.getElementById( "fGroup" );
@@ -80,21 +78,21 @@ function setupValidators()
         validation.addValidator( Ainputs[ i ], Agroup, hasNonnegativeValue );
         validation.addValidator( dInputs[ i ], dGroup, hasNonnegativeValue );
     }
-    validation.addValidator( colorInput, colorGroup, function( input )
+    validation.addValidator( colorInput, colorInput.parentNode, function( input )
     {
         return getColor() != null;
     } );
-    validation.addValidator( lineWidthInput, lineWidthGroup, function( input )
+    validation.addValidator( lineWidthInput, lineWidthInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 <= num;
     } );
-    validation.addValidator( stepInput, stepGroup, function( input )
+    validation.addValidator( stepInput, stepInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
     } );
-    validation.addValidator( iterationsInput, iterationsGroup, function( input )
+    validation.addValidator( iterationsInput, iterationsInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
@@ -207,6 +205,7 @@ animateButton.addEventListener( "click", function()
         animateIcon.classList.add( "glyphicon-play" );
         animateIcon.classList.remove( "glyphicon-stop" );
         setUrl();
+        setInputs( urlSettings.getUrlData() );
     }
 } );
 
@@ -282,7 +281,7 @@ randomButton.addEventListener( "click", function()
 
 openSettingsButton.addEventListener( "click", function()
 {
-    setUrl()
+    setUrl();
 } );
 
 function setUrl()
@@ -290,8 +289,6 @@ function setUrl()
     var newURL = createURL();
     saveSettings.value = newURL;
     history.replaceState( null, "", newURL );
-
-    setInputs( urlSettings.getUrlData() );
 }
 
 function setInputs( data )
@@ -333,16 +330,26 @@ function setInputs( data )
     }
 }
 
+timeFactorInput.addEventListener( "change", function()
+{
+    var num = Number( timeFactorInput.value );
+    if( isFinite( num ) )
+    {
+        timeFactor = num;
+    }
+} );
+
 
 /* Animation */
 
 var animating = false;
+var timeFactor = 0.1
 
 function update( elapsedTime )
 {
     if( animating && harmonograph != null )
     {
-        var delta = elapsedTime / 10;
+        var delta = elapsedTime * timeFactor;
         for( var i = 1; i <= 4; i++ )
         {
             harmonograph.f[ i ] = ( harmonograph.f[ i ] + delta );
