@@ -419,3 +419,49 @@ var validation =
         return true;
     }
 };
+
+
+/* URL Settings */
+
+var urlSettings = {
+    // From: http://stackoverflow.com/a/2880929
+    getUrlData: function()
+    {
+        var match;
+    	var pl = /\+/g;  // Regex for replacing addition symbol with a space
+        var search = /([^&=]+)=?([^&]*)/g;
+    	var decode = function( s )
+    	{
+    		return decodeURIComponent( s.replace( pl, " " ) );
+    	};
+        var query = window.location.search.substring( 1 );
+
+        var data = { };
+        while( match = search.exec( query ) )
+    	{
+           data[ decode( match[ 1 ] ) ] = decode( match[ 2 ] );
+    	}
+        return data;
+    },
+
+    // From: http://stackoverflow.com/a/111545
+    encodeURLData: function( data )
+    {
+    	var ret = [ ];
+    	for ( var d in data )
+    	{
+    		ret.push( encodeURIComponent( d ) + "=" + encodeURIComponent( data[ d ] ) );
+    	}
+    	return ret.join( "&" );
+    },
+
+    createURL: function( data )
+    {
+    	var url = [ location.protocol, '//', location.host, location.pathname ];
+    	if( data !== undefined && Object.keys( data ).length != 0 )
+    	{
+    		url.push( "?", this.encodeURLData( data ) );
+    	}
+    	return url.join( "" );
+    }
+};
