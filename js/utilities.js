@@ -251,12 +251,14 @@ function fillCircle( context, centerX, centerY, radius, fillStyle )
     context.fill();
 }
 
-function drawLines( context, points, strokeStyle )
+function drawLines( context, points, strokeStyle, lineWidth )
 {
     if( points.length > 1 )
     {
         context.strokeStyle = strokeStyle;
+        context.lineWidth = lineWidth;
         context.beginPath();
+
         var p = points[ 0 ];
         context.moveTo( p.x, p.y );
         for( var i = 1; i < points.length; i++ )
@@ -268,6 +270,29 @@ function drawLines( context, points, strokeStyle )
     }
 }
 
+function drawSmoothLines( context, points, strokeStyle, lineWidth )
+{
+    if( points.length > 1 )
+    {
+        context.strokeStyle = strokeStyle;
+        context.lineWidth = lineWidth;
+        context.beginPath();
+
+        // move to the first point
+        context.moveTo( points[ 0 ].x, points[ 0 ].y );
+        var i;
+        for( i = 1; i < points.length - 2; i++ )
+        {
+            var xc = ( points[ i ].x + points[ i + 1 ].x ) / 2;
+            var yc = ( points[ i ].y + points[ i + 1 ].y ) / 2;
+            context.quadraticCurveTo( points[ i ].x, points[ i ].y, xc, yc );
+        }
+        // curve through the last two points
+        context.quadraticCurveTo( points[ i ].x, points[ i ].y, points[ i + 1 ].x, points[ i + 1 ].y );
+
+        context.stroke();
+    }
+}
 
 /* Canvas Manipulations */
 

@@ -84,52 +84,45 @@
                         <img src="images/spirograph_diagram.png" class="img-responsive center-block" alt="Spirograph Diagram" width="300" height="300">
 
                         <form>
-                            <div id="kGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="k" class="control-label"><var>k</var> = <var>r</var> / <var>R</var> :</label>
                                 <input type="text" class="form-control" id="k" value="0.61">
                             </div>
 
-                            <div id="lGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="l" class="control-label"><var>l</var> = <var>p</var> / <var>r</var> :</label>
                                 <input type="text" class="form-control" id="l" value="0.3">
                             </div>
 
-                            <div id="Rgroup" class="form-group">
+                            <div class="form-group">
                                 <label for="R" class="control-label"><var>R</var> :</label>
                                 <input type="text" class="form-control" id="R" value="800">
                             </div>
 
-                            <div id="colorGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="color" class="control-label">Line Color:</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="color" value="#0011FF">
-                                    <span class="input-group-btn">
-                                        <a tabindex="-1" class="btn btn-default" role="button" data-toggle="popover" data-trigger="focus" data-container="body" data-html="true"
-                                            data-title="Planet Color"
-                                            data-content="
-<pre>
-Examples:
-    #5FD62C
-    #5fd62c
-</pre>
-                                            ">
-                                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                                        </a>
-                                    </span>
-                                </div>
+                                <input type="text" class="form-control" id="color" value="#0011FF">
                             </div>
 
-                            <div id="lineWidthGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="lineWidth" class="control-label">Line Width:</label>
                                 <input type="text" class="form-control" id="lineWidth" value="0.1">
                             </div>
 
-                            <div id="stepGroup" class="form-group">
+                            <div class="form-group">
+                                <label for="smooth" class="control-label">Smooth Lines:</label>
+                                <select class="form-control" id="smooth">
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="step" class="control-label">Iteration Step:</label>
                                 <input type="text" class="form-control" id="step" value="0.1">
                             </div>
 
-                            <div id="iterationsGroup" class="form-group">
+                            <div class="form-group">
                                 <label for="iterations" class="control-label">Number of Iterations:</label>
                                 <input type="text" class="form-control" id="iterations" value="10000">
                             </div>

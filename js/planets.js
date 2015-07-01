@@ -324,7 +324,7 @@ function Body( x, y )
     };
     this.paint = function()
     {
-        drawLines( context, this.path, this.pathColor );
+        drawLines( context, this.path, this.pathColor, 1.0 );
         var pixelLoc = this.position.toPixels();
         var pixelRadius = this.radius * meterToPixel;
         fillCircle( context, pixelLoc.x, pixelLoc.y, pixelRadius, this.color );

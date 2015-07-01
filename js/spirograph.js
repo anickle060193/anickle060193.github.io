@@ -9,25 +9,20 @@ var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
 var kInput = document.getElementById( "k" );
-var kGroup = document.getElementById( "kGroup" );
 
 var lInput = document.getElementById( "l" );
-var lGroup = document.getElementById( "lGroup" );
 
 var Rinput = document.getElementById( "R" );
-var Rgroup = document.getElementById( "Rgroup" );
 
 var colorInput = document.getElementById( "color" );
-var colorGroup = document.getElementById( "colorGroup" );
 
 var lineWidthInput = document.getElementById( "lineWidth" );
-var lineWidthGroup = document.getElementById( "lineWidthGroup" );
+
+var smoothInput = document.getElementById( "smooth" );
 
 var stepInput = document.getElementById( "step" );
-var stepGroup = document.getElementById( "stepGroup" );
 
 var iterationsInput = document.getElementById( "iterations" );
-var iterationsGroup = document.getElementById( "iterationsGroup" );
 
 var draw = document.getElementById( "draw" );
 
@@ -58,36 +53,36 @@ $( '[ data-toggle="popover" ]' ).popover();
 
 function setupValidators()
 {
-    validation.addValidator( kInput, kGroup, function( input )
+    validation.addValidator( kInput, kInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 <= num && num <= 1;
     } );
-    validation.addValidator( lInput, lGroup, function( input )
+    validation.addValidator( lInput, lInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 <= num && num <= 1;
     } );
-    validation.addValidator( Rinput, Rgroup, function( input )
+    validation.addValidator( Rinput, Rinput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
     } );
-    validation.addValidator( colorInput, colorGroup, function( input )
+    validation.addValidator( colorInput, colorInput.parentNode, function( input )
     {
         return getColor() != null;
     } );
-    validation.addValidator( lineWidthInput, lineWidthGroup, function( input )
+    validation.addValidator( lineWidthInput, lineWidthInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 <= num;
     } );
-    validation.addValidator( stepInput, stepGroup, function( input )
+    validation.addValidator( stepInput, stepInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
     } );
-    validation.addValidator( iterationsInput, iterationsGroup, function( input )
+    validation.addValidator( iterationsInput, iterationsInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
@@ -99,10 +94,11 @@ function setupValidators()
 
 var spirograph = null;
 
-function Spirograph( l, k, R, color, lineWidth, step, iterations )
+function Spirograph( l, k, R, color, lineWidth, smooth, step, iterations )
 {
     this.color = color;
     this.lineWidth = lineWidth;
+    this.smooth = smooth;
 
     this.step = step;
     this.iterations = iterations;
@@ -137,17 +133,16 @@ Spirograph.prototype.createPath = function()
     }
 };
 
-Spirograph.prototype.draw = function()
+Spirograph.prototype.draw = function( smooth )
 {
-    context.strokeStyle = this.color;
-    context.lineWidth = this.lineWidth;
-    context.beginPath();
-    for( var i = 0; i < this.path.length; i++ )
+    if( this.smooth )
     {
-        var p = this.path[ i ];
-        context.lineTo( p.x, p.y );
+        drawSmoothLines( context, this.path, this.color, this.lineWidth );
     }
-    context.stroke();
+    else
+    {
+        drawLines( context, this.path, this.color, this.lineWidth );
+    }
 };
 
 function createSpirograph()
@@ -156,13 +151,14 @@ function createSpirograph()
     var k = Number( kInput.value );
     var R = Number( Rinput.value );
     var lineWidth = Number( lineWidthInput.value );
+    var smooth = smoothInput.selectedIndex == 0;
     var color = getColor();
     var step = Number( stepInput.value );
     var iterations = Number( iterationsInput.value );
 
     saveSettings.value = createURL();
 
-    spirograph = new Spirograph( l, k, R, color, lineWidth, step, iterations );
+    spirograph = new Spirograph( l, k, R, color, lineWidth, smooth, step, iterations );
     setUrl();
     render();
 }
@@ -196,6 +192,7 @@ var url_l = "l";
 var url_R = "R";
 var url_color = "c";
 var url_lineWidth = "lw";
+var url_smooth = "sm";
 var url_step = "s";
 var url_iterations = "i";
 
@@ -209,6 +206,7 @@ function createURL()
         data[ url_R ] = spirograph.R;;
         data[ url_color ] = spirograph.color.substring( 1 );
         data[ url_lineWidth ] = spirograph.lineWidth;
+        data[ url_smooth ] = spirograph.smooth;
         data[ url_step ] = spirograph.step;
         data[ url_iterations ] = spirograph.iterations;
     }
@@ -284,6 +282,10 @@ function setInputs( data )
     if( data[ url_lineWidth ] !== undefined )
     {
         lineWidth.value = data[ url_lineWidth ];
+    }
+    if( data[ url_smooth ] !== undefined )
+    {
+        smoothInput.selectedIndex = data[ url_smooth ] == "true" ? 0 : 1;
     }
     if( data[ url_step ] !== undefined )
     {

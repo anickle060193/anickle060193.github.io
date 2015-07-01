@@ -16,6 +16,8 @@ var stepInput = document.getElementById( "step" );
 
 var iterationsInput = document.getElementById( "iterations" );
 
+var smoothInput = document.getElementById( "smooth" );
+
 var drawButton = document.getElementById( "draw" );
 
 var openSettingsButton = document.getElementById( "openSettings" );
@@ -104,10 +106,11 @@ function setupValidators()
 
 var harmonograph = null;
 
-function Harmonograph( fArr, pArr, Aarr, dArr, color, lineWidth, step, iterations )
+function Harmonograph( fArr, pArr, Aarr, dArr, color, lineWidth, smooth, step, iterations )
 {
     this.color = color;
     this.lineWidth = lineWidth;
+    this.smooth = smooth;
 
     this.step = step;
     this.iterations = iterations;
@@ -137,22 +140,22 @@ Harmonograph.prototype.createPath = function()
     }
 };
 
-Harmonograph.prototype.draw = function()
+Harmonograph.prototype.draw = function( smooth )
 {
-    context.strokeStyle = this.color;
-    context.lineWidth = this.lineWidth;
-    context.beginPath();
-    for( var i = 0; i < this.path.length; i++ )
+    if( this.smooth )
     {
-        var p = this.path[ i ];
-        context.lineTo( p.x, p.y );
+        drawSmoothLines( context, this.path, this.color, this.lineWidth );
     }
-    context.stroke();
+    else
+    {
+        drawLines( context, this.path, this.color, this.lineWidth );
+    }
 };
 
 function createHarmonograph()
 {
     var lineWidth = Number( lineWidthInput.value );
+    var smooth = smoothInput.selectedIndex == 0;
     var color = getColor();
     var step = Number( stepInput.value );
     var iterations = Number( iterationsInput.value );
@@ -169,7 +172,7 @@ function createHarmonograph()
         d[ i ] = Number( dInputs[ i ].value );
     }
 
-    harmonograph = new Harmonograph( f, p, A, d, color, lineWidth, 0.01, iterations );
+    harmonograph = new Harmonograph( f, p, A, d, color, lineWidth, smooth, step, iterations );
     setUrl();
     render();
 }
@@ -204,6 +207,7 @@ var url_A = "A";
 var url_d = "d";
 var url_color = "c";
 var url_lineWidth = "lw";
+var url_smooth = "sm";
 var url_step = "s";
 var url_iterations = "i";
 
@@ -214,6 +218,7 @@ function createURL()
     {
         data[ url_color ] = harmonograph.color.substring( 1 );
         data[ url_lineWidth ] = harmonograph.lineWidth;
+        data[ url_smooth ] = harmonograph.smooth;
         data[ url_step ] = harmonograph.step;
         data[ url_iterations ] = harmonograph.iterations;
 
@@ -308,6 +313,10 @@ function setInputs( data )
     if( data[ url_lineWidth ] !== undefined )
     {
         lineWidth.value = data[ url_lineWidth ];
+    }
+    if( data[ url_smooth ] !== undefined )
+    {
+        smoothInput.selectedIndex = data[ url_smooth ] == "true" ? 0 : 1;
     }
     if( data[ url_step ] !== undefined )
     {
