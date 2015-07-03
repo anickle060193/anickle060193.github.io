@@ -73,19 +73,19 @@ onDebouncedWindowResize( onWindowResize );
 
 /* Validators */
 
-validation.addValidater( widthInput, widthGroup, function( input )
+validation.addValidator( widthInput, widthGroup, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;
 } );
 
-validation.addValidater( heightInput, heightGroup, function( input )
+validation.addValidator( heightInput, heightGroup, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;
 } );
 
-validation.addValidater( timeInput, timeGroup, function( input )
+validation.addValidator( timeInput, timeGroup, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;

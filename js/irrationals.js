@@ -71,17 +71,17 @@ function setData()
 
 /* Validations */
 
-validation.addValidater( digitLengthInput, digitLengthGroup, function( input )
+validation.addValidator( digitLengthInput, digitLengthGroup, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && minDigitLength <= num && num <= maxDigitLength;
 } );
-validation.addValidater( irrationalLengthInput, irrationalLengthGroup, function( input )
+validation.addValidator( irrationalLengthInput, irrationalLengthGroup, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && minIrrationalLength <= num && num <= maxIrrationalLength;
 } );
-validation.addValidater( lineWidthInput, lineWidthGroup, function( input )
+validation.addValidator( lineWidthInput, lineWidthGroup, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;
