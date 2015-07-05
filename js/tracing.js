@@ -69,25 +69,79 @@ function setupValidators()
 
 /* Tracing */
 
-var tracing = null;
+var tracings = { };
 
-function Tracing( data, color, lineWidth, smooth, step, iterations )
+tracings[ "Spirograph" ] = ( function()
 {
-    this.color = color;
-    this.lineWidth = lineWidth;
-    this.smooth = smooth;
+    var collapse = document.getElementById( "spirographSettings" );
 
-    this.step = step;
-    this.iterations = iterations;
+    var validation = new ValidationGroup();
+    var inputs = { };
+    inputs.k = validation.addValidator( "k", function( input )
+    {
+        var num = Number( input.value );
+        return isFinite( num ) && 0 <= num && num <= 1;
+    } ).input;
+    inputs.l = validation.addValidator( "l", function( input )
+    {
+        var num = Number( input.value );
+        return isFinite( num ) && 0 <= num && num <= 1;
+    } ).input;
+    inputs.R = validation.addValidator( "R", function( input )
+    {
+        var num = Number( input.value );
+        return isFinite( num ) && 0 < num;
+    } ).input;
 
+    var setInputData = function( data, inputs )
+    {
+        data.k = Number( inputs.k.value );
+        data.l = Number( inputs.l.value );
+        data.R = Number( inputs.R.value );
+    };
+
+    var createPath = function( data, path )
+    {
+        path = [ ];
+
+        var a = 1 - data.k;
+        var b = a / data.k;
+        var c = data.l * data.k;
+
+        var t = 0;
+        for( var i = 0; i < data.i; i++ )
+        {
+            var x = data.R * ( a * Math.cos( t ) + c * Math.cos( b * t ) );
+            var y = this.R * ( a * Math.sin( t ) - c * Math.sin( b * t ) );
+            path.push( new Point( x, y ) );
+            t += data.s;
+        }
+    };
+    return new Tracing( validation, setInputData, createPath, collapse, inputs );
+} )();
+
+var currentTracing = tracings[ "Spirograph" ];
+
+function Tracing( validation, setInputData, createPath, collapse, inputs )
+{
+    this.validation = validation;
+    this.setInputData = setInputData;
+    this.createPath = createPath;
+    this.collapse = collapse;
+    this.inputs = inputs;
+
+    this.data = { };
     this.path = [ ];
-    this.createPath();
 }
-
-Tracing.prototype.createPath = function()
+Tracing.prototype.setDisplayData = function()
 {
+    this.data.lw = Number( lineWidthInput.value );
+    this.data.sm = smoothInput.selectedIndex === 0;
+    this.data.c = getColor();
+    this.data.s = Number( stepInput.value );
+    this.data.i = Number( iterationsInput.value );
+    this.setInputData( this.data );
 };
-
 Tracing.prototype.draw = function( smooth )
 {
     if( this.smooth )
@@ -100,43 +154,10 @@ Tracing.prototype.draw = function( smooth )
     }
 };
 
-function createTracing()
+function setTracing( tracingName )
 {
-
-}
-
-function createRandomTracing()
-{
-    createTracing();
-}
-
-function TracingDOM( name, input, group )
-{
-    this.name = name;
-    if( typeof( input ) === "string" )
-    {
-        this.input = document.getElementById( input );
-    }
-    else if( input instanceof HTMLElement )
-    {
-        this.input = input;
-    }
-    else
-    {
-        throw new Error( "Input must be of type string or HTMLElement." );
-    }
-    if( typeof( group ) === "string" )
-    {
-        this.group = document.getElementById( group );
-    }
-    else if( group instanceof HTMLElement )
-    {
-        this.group = group;
-    }
-    else
-    {
-        throw new Error( "Group must be of type string or HTMLElement." );
-    }
+    var tracing = tracings[ tracingName ];
+    $( tracing ).collapse( );
 }
 
 
@@ -163,22 +184,12 @@ animateButton.addEventListener( "click", function()
     }
 } );
 
-var url_color = "c";
-var url_lineWidth = "lw";
-var url_smooth = "sm";
-var url_step = "s";
-var url_iterations = "i";
-
 function createURL()
 {
     var data = { };
-    if( tracing != null )
+    if( currentTracing != null )
     {
-        data[ url_color ] = tracing.color.substring( 1 );
-        data[ url_lineWidth ] = tracing.lineWidth;
-        data[ url_smooth ] = tracing.smooth;
-        data[ url_step ] = tracing.step;
-        data[ url_iterations ] = tracing.iterations;
+        currentTracing.setData( data );
     }
     return urlSettings.createURL( data );
 }
@@ -198,7 +209,7 @@ function getColor()
 
 typeSelect.addEventListener( "change", function()
 {
-
+    if( tracing)
 } );
 
 drawButton.addEventListener( "click", function()
@@ -228,25 +239,25 @@ function setUrl()
 
 function setInputs( data )
 {
-    if( data[ url_color ] !== undefined )
+    if( data.c !== undefined )
     {
-        colorInput.value = "#" + data[ url_color ];
+        colorInput.value = "#" + data.c;
     }
-    if( data[ url_lineWidth ] !== undefined )
+    if( data.lw !== undefined )
     {
-        lineWidth.value = data[ url_lineWidth ];
+        lineWidth.value = data.lw;
     }
-    if( data[ url_smooth ] !== undefined )
+    if( data.sm !== undefined )
     {
-        smoothInput.selectedIndex = data[ url_smooth ] == "true" ? 0 : 1;
+        smoothInput.selectedIndex = data.sm == "true" ? 0 : 1;
     }
-    if( data[ url_step ] !== undefined )
+    if( data.s !== undefined )
     {
-        stepInput.value = data[ url_step ];
+        stepInput.value = data.s;
     }
-    if( data[ url_iterations ] !== undefined )
+    if( data.i !== undefined )
     {
-        iterationsInput.value = data[ url_iterations ];
+        iterationsInput.value = data.i;
     }
 }
 
@@ -284,11 +295,6 @@ function update( elapsedTime )
 function render()
 {
     clear( context );
-
-    if( tracing != null )
-    {
-        tracing.draw();
-    }
 }
 
 

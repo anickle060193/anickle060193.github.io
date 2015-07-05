@@ -386,7 +386,18 @@ function zoom( clicks )
 
 function Validator( input, validatorFunction )
 {
-    this.input = input;
+    if( typeof( input ) === "string" )
+    {
+        this.input = document.getElementById( input );
+    }
+    else if( input instanceof HTMLElement )
+    {
+        this.input = input;
+    }
+    else
+    {
+        throw new Error( "Input must be of type 'string' or 'HTMLElement'." );
+    }
     var parent = this.input.parentNode;
     while( parent )
     {
@@ -430,8 +441,9 @@ ValidationGroup.prototype.addValidator = function( input, validatorFunction )
     var validator = new Validator( input, validatorFunction );
     this.removeValidator( validator.input );
     this.validators[ validator.input.id ] = validator;
-    input.addEventListener( "input", validator.onInput );
+    validator.input.addEventListener( "input", validator.onInput );
     validator.updateValidity();
+    return validator;
 };
 ValidationGroup.prototype.removeValidator = function( input )
 {
