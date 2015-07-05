@@ -9,13 +9,9 @@ var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
 var colorInput = document.getElementById( "color" );
-
 var lineWidthInput = document.getElementById( "lineWidth" );
-
 var stepInput = document.getElementById( "step" );
-
 var iterationsInput = document.getElementById( "iterations" );
-
 var smoothInput = document.getElementById( "smooth" );
 
 var drawButton = document.getElementById( "draw" );
@@ -29,16 +25,9 @@ var animateIcon = document.getElementById( "animateIcon" );
 var timeFactorInput = document.getElementById( "timeFactor" );
 
 var fInputs = [ ];
-var fGroup = document.getElementById( "fGroup" );
-
 var pInputs = [ ];
-var pGroup = document.getElementById( "pGroup" );
-
 var Ainputs = [ ];
-var Agroup = document.getElementById( "Agroup" );
-
 var dInputs = [ ];
-var dGroup = document.getElementById( "dGroup" );
 
 for( var i = 1; i <= 4; i++ )
 {
@@ -77,26 +66,26 @@ function setupValidators()
 {
     for( var i = 1; i <= 4; i++ )
     {
-        validation.addValidator( fInputs[ i ], fGroup, hasNonnegativeValue );
-        validation.addValidator( pInputs[ i ], pGroup, hasNonnegativeValue );
-        validation.addValidator( Ainputs[ i ], Agroup, hasNonnegativeValue );
-        validation.addValidator( dInputs[ i ], dGroup, hasNonnegativeValue );
+        validation.addValidator( fInputs[ i ], hasNonnegativeValue );
+        validation.addValidator( pInputs[ i ], hasNonnegativeValue );
+        validation.addValidator( Ainputs[ i ], hasNonnegativeValue );
+        validation.addValidator( dInputs[ i ], hasNonnegativeValue );
     }
-    validation.addValidator( colorInput, colorInput.parentNode, function( input )
+    validation.addValidator( colorInput, function( input )
     {
         return getColor() != null;
     } );
-    validation.addValidator( lineWidthInput, lineWidthInput.parentNode, function( input )
+    validation.addValidator( lineWidthInput, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 <= num;
     } );
-    validation.addValidator( stepInput, stepInput.parentNode, function( input )
+    validation.addValidator( stepInput, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
     } );
-    validation.addValidator( iterationsInput, iterationsInput.parentNode, function( input )
+    validation.addValidator( iterationsInput, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;

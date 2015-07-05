@@ -384,10 +384,19 @@ function zoom( clicks )
 
 /* Input Validation */
 
-function Validator( input, inputGroup, validatorFunction )
+function Validator( input, validatorFunction )
 {
     this.input = input;
-    this.inputGroup = inputGroup;
+    var parent = this.input.parentNode;
+    while( parent )
+    {
+        if( parent.classList.contains( "form-group" ) )
+        {
+            break;
+        }
+        parent = parent.parentNode;
+    }
+    this.group = parent;
     this.valid = function()
     {
         return validatorFunction( this.input );
@@ -404,11 +413,11 @@ Validator.prototype.updateValidity = function()
 {
     if( this.valid() )
     {
-        this.inputGroup.classList.remove( "has-error" );
+        this.group.classList.remove( "has-error" );
     }
     else
     {
-        this.inputGroup.classList.add( "has-error" );
+        this.group.classList.add( "has-error" );
     }
 };
 
@@ -416,9 +425,9 @@ function ValidationGroup()
 {
     this.validators = { };
 }
-ValidationGroup.prototype.addValidator = function( input, inputGroup, validatorFunction )
+ValidationGroup.prototype.addValidator = function( input, validatorFunction )
 {
-    var validator = new Validator( input, inputGroup, validatorFunction );
+    var validator = new Validator( input, validatorFunction );
     this.removeValidator( validator.input );
     this.validators[ validator.input.id ] = validator;
     input.addEventListener( "input", validator.onInput );

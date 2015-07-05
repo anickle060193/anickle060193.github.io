@@ -10,11 +10,8 @@ var context = canvas.getContext( "2d" );
 context.translate( 0.5, 0.5 );
 
 var widthInput = document.getElementById( "width" );
-var widthGroup = document.getElementById( "widthGroup" );
 var heightInput = document.getElementById( "height" );
-var heightGroup = document.getElementById( "heightGroup" );
 var timeInput = document.getElementById( "time" );
-var timeGroup = document.getElementById( "timeGroup" );
 var versionSelect = document.getElementById( "version" );
 var updateButton = document.getElementById( "update" );
 var editSettingsButton = document.getElementById( "editSettings" );
@@ -75,19 +72,19 @@ onDebouncedWindowResize( onWindowResize );
 
 var validation = new ValidationGroup();
 
-validation.addValidator( widthInput, widthGroup, function( input )
+validation.addValidator( widthInput, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;
 } );
 
-validation.addValidator( heightInput, heightGroup, function( input )
+validation.addValidator( heightInput, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;
 } );
 
-validation.addValidator( timeInput, timeGroup, function( input )
+validation.addValidator( timeInput, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;

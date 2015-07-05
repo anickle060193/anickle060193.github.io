@@ -45,21 +45,21 @@ var display = new ValidationGroup();
 
 function setupValidators()
 {
-    display.addValidator( colorInput, colorInput.parentNode, function( input )
+    display.addValidator( colorInput, function( input )
     {
         return getColor() != null;
     } );
-    display.addValidator( lineWidthInput, lineWidthInput.parentNode, function( input )
+    display.addValidator( lineWidthInput, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 <= num;
     } );
-    display.addValidator( stepInput, stepInput.parentNode, function( input )
+    display.addValidator( stepInput, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
     } );
-    display.addValidator( iterationsInput, iterationsInput.parentNode, function( input )
+    display.addValidator( iterationsInput, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;

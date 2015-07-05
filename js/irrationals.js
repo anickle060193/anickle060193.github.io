@@ -10,11 +10,8 @@ var context = canvas.getContext( "2d" );
 
 var update = document.getElementById( "update" );
 var digitLengthInput = document.getElementById( "digitLength" );
-var digitLengthGroup = document.getElementById( "digitLengthGroup" );
 var irrationalLengthInput = document.getElementById( "irrationalLength" );
-var irrationalLengthGroup = document.getElementById( "irrationalLengthGroup" );
 var lineWidthInput = document.getElementById( "lineWidth" );
-var lineWidthGroup = document.getElementById( "lineWidthGroup" );
 var irrationalSelect = document.getElementById( "irrational" );
 
 update.addEventListener( "click", function()
@@ -73,17 +70,17 @@ function setData()
 
 var validation = new ValidationGroup();
 
-validation.addValidator( digitLengthInput, digitLengthGroup, function( input )
+validation.addValidator( digitLengthInput, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && minDigitLength <= num && num <= maxDigitLength;
 } );
-validation.addValidator( irrationalLengthInput, irrationalLengthGroup, function( input )
+validation.addValidator( irrationalLengthInput, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && minIrrationalLength <= num && num <= maxIrrationalLength;
 } );
-validation.addValidator( lineWidthInput, lineWidthGroup, function( input )
+validation.addValidator( lineWidthInput, function( input )
 {
     var num = Number( input.value );
     return isFinite( num ) && 0 < num;
