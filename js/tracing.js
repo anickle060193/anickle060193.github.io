@@ -41,23 +41,25 @@ $( ".collapse" ).collapse( "hide" );
 
 /* Validation */
 
+var display = new ValidationGroup();
+
 function setupValidators()
 {
-    validation.addValidator( colorInput, colorInput.parentNode, function( input )
+    display.addValidator( colorInput, colorInput.parentNode, function( input )
     {
         return getColor() != null;
     } );
-    validation.addValidator( lineWidthInput, lineWidthInput.parentNode, function( input )
+    display.addValidator( lineWidthInput, lineWidthInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 <= num;
     } );
-    validation.addValidator( stepInput, stepInput.parentNode, function( input )
+    display.addValidator( stepInput, stepInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
     } );
-    validation.addValidator( iterationsInput, iterationsInput.parentNode, function( input )
+    display.addValidator( iterationsInput, iterationsInput.parentNode, function( input )
     {
         var num = Number( input.value );
         return isFinite( num ) && 0 < num;
@@ -106,6 +108,35 @@ function createTracing()
 function createRandomTracing()
 {
     createTracing();
+}
+
+function TracingDOM( name, input, group )
+{
+    this.name = name;
+    if( typeof( input ) === "string" )
+    {
+        this.input = document.getElementById( input );
+    }
+    else if( input instanceof HTMLElement )
+    {
+        this.input = input;
+    }
+    else
+    {
+        throw new Error( "Input must be of type string or HTMLElement." );
+    }
+    if( typeof( group ) === "string" )
+    {
+        this.group = document.getElementById( group );
+    }
+    else if( group instanceof HTMLElement )
+    {
+        this.group = group;
+    }
+    else
+    {
+        throw new Error( "Group must be of type string or HTMLElement." );
+    }
 }
 
 
@@ -167,12 +198,12 @@ function getColor()
 
 typeSelect.addEventListener( "change", function()
 {
-    
+
 } );
 
 drawButton.addEventListener( "click", function()
 {
-    if( validation.allValid() )
+    if( display.allValid() )
     {
         $( ".modal" ).modal( "hide" );
 

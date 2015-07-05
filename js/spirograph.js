@@ -51,6 +51,8 @@ $( '[ data-toggle="popover" ]' ).popover();
 
 /* Validation */
 
+var validation = new ValidationGroup();
+
 function setupValidators()
 {
     validation.addValidator( kInput, kInput.parentNode, function( input )

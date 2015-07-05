@@ -65,6 +65,8 @@ $( '[ data-toggle="popover" ]' ).popover();
 
 /* Validation */
 
+var validation = new ValidationGroup();
+
 function hasNonnegativeValue( input )
 {
     var num = Number( input.value );

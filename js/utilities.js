@@ -396,53 +396,53 @@ function Validator( input, inputGroup, validatorFunction )
     {
         return function()
         {
-            validation.updateValidity( validator );
+            validator.updateValidity();
         };
     } )( this );
 }
-
-var validation =
+Validator.prototype.updateValidity = function()
 {
-    validators : { },
-    updateValidity: function( validator )
+    if( this.valid() )
     {
-        if( validator.valid() )
-        {
-            validator.inputGroup.classList.remove( "has-error" );
-        }
-        else
-        {
-            validator.inputGroup.classList.add( "has-error" );
-        }
-    },
-    addValidator: function( input, inputGroup, validatorFunction )
-    {
-        var validator = new Validator( input, inputGroup, validatorFunction );
-        this.removeValidator( validator.input );
-        this.validators[ validator.input.id ] = validator;
-        input.addEventListener( "input", validator.onInput );
-        this.updateValidity( validator );
-    },
-    removeValidator: function( input )
-    {
-        var validator = this.validators[ input.id ];
-        if( validator !== undefined )
-        {
-            validator.input.removeEventListener( "input", validator.onInput );
-            delete this.validators[ input.id ];
-        }
-    },
-    allValid: function()
-    {
-        for( var key in this.validators )
-        {
-            if( !this.validators[ key ].valid() )
-            {
-                return false;
-            }
-        }
-        return true;
+        this.inputGroup.classList.remove( "has-error" );
     }
+    else
+    {
+        this.inputGroup.classList.add( "has-error" );
+    }
+};
+
+function ValidationGroup()
+{
+    this.validators = { };
+}
+ValidationGroup.prototype.addValidator = function( input, inputGroup, validatorFunction )
+{
+    var validator = new Validator( input, inputGroup, validatorFunction );
+    this.removeValidator( validator.input );
+    this.validators[ validator.input.id ] = validator;
+    input.addEventListener( "input", validator.onInput );
+    validator.updateValidity();
+};
+ValidationGroup.prototype.removeValidator = function( input )
+{
+    var validator = this.validators[ input.id ];
+    if( validator !== undefined )
+    {
+        validator.input.removeEventListener( "input", validator.onInput );
+        delete this.validators[ input.id ];
+    }
+};
+ValidationGroup.prototype.allValid = function()
+{
+    for( var key in this.validators )
+    {
+        if( !this.validators[ key ].valid() )
+        {
+            return false;
+        }
+    }
+    return true;
 };
 
 

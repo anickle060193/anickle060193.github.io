@@ -71,6 +71,8 @@ function setData()
 
 /* Validations */
 
+var validation = new ValidationGroup();
+
 validation.addValidator( digitLengthInput, digitLengthGroup, function( input )
 {
     var num = Number( input.value );

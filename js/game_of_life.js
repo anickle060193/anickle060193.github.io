@@ -73,6 +73,8 @@ onDebouncedWindowResize( onWindowResize );
 
 /* Validators */
 
+var validation = new ValidationGroup();
+
 validation.addValidator( widthInput, widthGroup, function( input )
 {
     var num = Number( input.value );
