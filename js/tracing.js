@@ -43,7 +43,7 @@ $( ".collapse" ).collapse( "hide" );
 
 var display = new ValidationGroup();
 
-function setupValidators()
+function setupDisplayValidators()
 {
     display.addValidator( colorInput, function( input )
     {
@@ -73,7 +73,7 @@ var tracings = { };
 
 tracings[ "Spirograph" ] = ( function()
 {
-    var collapse = document.getElementById( "spirographSettings" );
+    var collapse = $( "#spirographSettings" );
 
     var validation = new ValidationGroup();
     var inputs = { };
@@ -93,11 +93,26 @@ tracings[ "Spirograph" ] = ( function()
         return isFinite( num ) && 0 < num;
     } ).input;
 
-    var setInputData = function( data, inputs )
+    var setData = function( data, inputs )
     {
         data.k = Number( inputs.k.value );
         data.l = Number( inputs.l.value );
         data.R = Number( inputs.R.value );
+    };
+    var setInputs = function( data, inputs )
+    {
+        if( data.k !== undefined )
+        {
+            inputs.k.value = data.k;
+        }
+        if( data.l !== undefined )
+        {
+            inputs.l.value = data.l;
+        }
+        if( data.R !== undefined )
+        {
+            inputs.R.value = data.R;
+        }
     };
 
     var createPath = function( data, path )
@@ -117,49 +132,125 @@ tracings[ "Spirograph" ] = ( function()
             t += data.s;
         }
     };
-    return new Tracing( validation, setInputData, createPath, collapse, inputs );
+    var randomize = function( data )
+    {
+        data.k = Math.random();
+        data.l = Math.random();
+    };
+    var update = function( data, elapsedTime )
+    {
+        data.k = ( data.k + elapsedTime ) % 1;
+        data.l = ( data.l + elapsedTime ) % 1;
+    };
+    return new Tracing( "Spirograph", validation, setData, setInputs, createPath, randomize, update, collapse, inputs );
 } )();
 
-var currentTracing = tracings[ "Spirograph" ];
+var currentTracing = null;
 
-function Tracing( validation, setInputData, createPath, collapse, inputs )
+function Tracing( name, validation, setData, setInputs, createPath, randomize, update, collapse, inputs )
 {
+    this.name = name;
     this.validation = validation;
-    this.setInputData = setInputData;
-    this.createPath = createPath;
+    this._setData = setData;
+    this._setInputs = setInputs;
+    this._createPath = createPath;
+    this._randomize = randomize;
+    this._update = update;
     this.collapse = collapse;
     this.inputs = inputs;
 
     this.data = { };
     this.path = [ ];
 }
-Tracing.prototype.setDisplayData = function()
+Tracing.prototype.setData = function()
 {
+    this.data.type = this.name;
     this.data.lw = Number( lineWidthInput.value );
     this.data.sm = smoothInput.selectedIndex === 0;
     this.data.c = getColor();
     this.data.s = Number( stepInput.value );
     this.data.i = Number( iterationsInput.value );
-    this.setInputData( this.data );
+    this._setData( this.data, this.inputs );
 };
-Tracing.prototype.draw = function( smooth )
+Tracing.prototype.setInputs = function()
 {
-    if( this.smooth )
+    if( this.data.type !== undefined )
     {
-        drawSmoothLines( context, this.path, this.color, this.lineWidth );
+        typeSelect.value = this.data.type;
+    }
+    if( this.data.c !== undefined )
+    {
+        colorInput.value = "#" + this.data.c;
+    }
+    if( this.data.lw !== undefined )
+    {
+        lineWidth.value = this.data.lw;
+    }
+    if( this.data.sm !== undefined )
+    {
+        smoothInput.selectedIndex = this.data.sm == "true" ? 0 : 1;
+    }
+    if( this.data.s !== undefined )
+    {
+        stepInput.value = this.data.s;
+    }
+    if( this.data.i !== undefined )
+    {
+        iterationsInput.value = this.data.i;
+    }
+    this._setInputs( this.data, this.inputs );
+
+    this.setData();
+};
+Tracing.prototype.createPath = function()
+{
+    this._createPath( this.data, this.path );
+};
+Tracing.prototype.randomize = function()
+{
+    this._randomize( this.data );
+};
+Tracing.prototype.update = function( elapsedTime )
+{
+    this._update( this.data, elapsedTime );
+};
+Tracing.prototype.draw = function()
+{
+    if( this.data.sm )
+    {
+        drawSmoothLines( context, this.path, this.data.c, this.data.lw );
     }
     else
     {
-        drawLines( context, this.path, this.color, this.lineWidth );
+        drawLines( context, this.path, this.data.c, this.data.lw );
     }
 };
 
 function setTracing( tracingName )
 {
-    var tracing = tracings[ tracingName ];
-    $( tracing ).collapse( );
+    if( currentTracing != null )
+    {
+        currentTracing.collapse.collapse( "hide" );
+    }
+    currentTracing = tracings[ tracingName ];
+    currentTracing.collapse.collapse( "show" );
+    typeSelect.value = tracingName;
 }
 
+function recreateTracing()
+{
+    currentTracing.setData();
+    currentTracing.createPath();
+
+    currentTracing.setInputs();
+    render();
+}
+
+function recreateRandomTracing()
+{
+    currentTracing.randomize();
+    recreateTracing();
+}
 
 /* Input */
 
@@ -179,15 +270,13 @@ animateButton.addEventListener( "click", function()
         animateButton.classList.remove( "btn-danger" );
         animateIcon.classList.add( "glyphicon-play" );
         animateIcon.classList.remove( "glyphicon-stop" );
-        setUrl();
-        setInputs( urlSettings.getUrlData() );
     }
 } );
 
 function createURL()
 {
     var data = { };
-    if( currentTracing != null )
+    if( currentTracing )
     {
         currentTracing.setData( data );
     }
@@ -209,56 +298,32 @@ function getColor()
 
 typeSelect.addEventListener( "change", function()
 {
-    if( tracing)
+    setTracing( typeSelect.value );
 } );
 
 drawButton.addEventListener( "click", function()
 {
-    if( display.allValid() )
+    if( display.allValid() && currentTracing.validation.allValid() )
     {
         $( ".modal" ).modal( "hide" );
 
-        createTracing();
+        recreateTracing();
     }
 } );
 
 randomButton.addEventListener( "click", function()
 {
-    createRandomTracing();
+    recreateRandomTracing();
 } );
 
 openSettingsButton.addEventListener( "click", function()
 {
-    setUrl();
+    // setUrl();
 } );
 
 function setUrl()
 {
     history.replaceState( null, "", createURL() );
-}
-
-function setInputs( data )
-{
-    if( data.c !== undefined )
-    {
-        colorInput.value = "#" + data.c;
-    }
-    if( data.lw !== undefined )
-    {
-        lineWidth.value = data.lw;
-    }
-    if( data.sm !== undefined )
-    {
-        smoothInput.selectedIndex = data.sm == "true" ? 0 : 1;
-    }
-    if( data.s !== undefined )
-    {
-        stepInput.value = data.s;
-    }
-    if( data.i !== undefined )
-    {
-        iterationsInput.value = data.i;
-    }
 }
 
 timeFactorInput.addEventListener( "change", function()
@@ -281,10 +346,11 @@ var timeFactor = 0.1
 
 function update( elapsedTime )
 {
-    if( animating && tracing != null )
+    if( animating )
     {
         var delta = elapsedTime * timeFactor;
-        tracing.createPath();
+        currentTracing.update( delta );
+        currentTracing.createPath();
         render();
     }
 }
@@ -295,6 +361,11 @@ function update( elapsedTime )
 function render()
 {
     clear( context );
+
+    if( currentTracing )
+    {
+        currentTracing.draw();
+    }
 }
 
 
@@ -303,9 +374,10 @@ function render()
 ( function()
 {
     onWindowResize();
-    setInputs( urlSettings.getUrlData() )
-    createTracing();
-    setupValidators();
+    setTracing( "Spirograph" );
+    currentTracing.data = urlSettings.getUrlData();
+    currentTracing.setInputs();
+    setupDisplayValidators();
     render();
 
     startAnimation( update, function() { } );
