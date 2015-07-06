@@ -115,9 +115,9 @@ tracings[ "Spirograph" ] = ( function()
         }
     };
 
-    var createPath = function( data, path )
+    var createPath = function( data )
     {
-        path = [ ];
+        var path = [ ];
 
         var a = 1 - data.k;
         var b = a / data.k;
@@ -127,10 +127,11 @@ tracings[ "Spirograph" ] = ( function()
         for( var i = 0; i < data.i; i++ )
         {
             var x = data.R * ( a * Math.cos( t ) + c * Math.cos( b * t ) );
-            var y = this.R * ( a * Math.sin( t ) - c * Math.sin( b * t ) );
+            var y = data.R * ( a * Math.sin( t ) - c * Math.sin( b * t ) );
             path.push( new Point( x, y ) );
             t += data.s;
         }
+        return path;
     };
     var randomize = function( data )
     {
@@ -143,6 +144,95 @@ tracings[ "Spirograph" ] = ( function()
         data.l = ( data.l + elapsedTime ) % 1;
     };
     return new Tracing( "Spirograph", validation, setData, setInputs, createPath, randomize, update, collapse, inputs );
+} )();
+
+tracings[ "Harmonograph" ] = ( function()
+{
+    var collapse = $( "#harmonographSettings" );
+
+    var validation = new ValidationGroup();
+    var inputs = { f: [ ], p: [ ], A: [ ], d: [ ] };
+
+    var hasNonnegativeValue = function( input )
+    {
+        var num = Number( input.value );
+        return isFinite( num ) && 0 <= num;
+    };
+    for( var i = 1; i <= 4; i++ )
+    {
+        inputs.f[ i ] = validation.addValidator( document.getElementById( "f" + i ), hasNonnegativeValue ).input;
+        inputs.p[ i ] = validation.addValidator( document.getElementById( "p" + i ), hasNonnegativeValue ).input;
+        inputs.A[ i ] = validation.addValidator( document.getElementById( "A" + i ), hasNonnegativeValue ).input;
+        inputs.d[ i ] = validation.addValidator( document.getElementById( "d" + i ), hasNonnegativeValue ).input;
+    }
+
+    var setData = function( data, inputs )
+    {
+        for( var i = 1; i <= 4; i++ )
+        {
+            data[ "f" + i ] = Number( inputs.f[ i ].value );
+            data[ "p" + i ] = Number( inputs.p[ i ].value );
+            data[ "A" + i ] = Number( inputs.A[ i ].value );
+            data[ "d" + i ] = Number( inputs.d[ i ].value );
+        }
+    };
+    var setInputs = function( data, inputs )
+    {
+        for( var i = 1; i <= 4; i++ )
+        {
+            if( data[ "f" + i ] !== undefined )
+            {
+                inputs.f[ i ].value = data[ "f" + i ];
+            }
+            if( data[ "p" + i ] !== undefined )
+            {
+                inputs.p[ i ].value = data[ "p" + i ];
+            }
+            if( data[ "A" + i ] !== undefined )
+            {
+                inputs.A[ i ].value = data[ "A" + i ];
+            }
+            if( data[ "d" + i ] !== undefined )
+            {
+                inputs.d[ i ].value = data[ "d" + i ];
+            }
+        }
+    };
+
+    var createPath = function( data )
+    {
+        var path = [ ];
+
+        var t = 0;
+        for( var i = 0; i < data.i; i++ )
+        {
+            var x1 = data[ "A1" ] * Math.sin( t * data[ "f1" ] + data[ "p1" ] ) * Math.exp( - data[ "d1" ] * t );
+            var x2 = data[ "A2" ] * Math.sin( t * data[ "f2" ] + data[ "p2" ] ) * Math.exp( - data[ "d2" ] * t );
+            var y1 = data[ "A3" ] * Math.sin( t * data[ "f3" ] + data[ "p3" ] ) * Math.exp( - data[ "d3" ] * t );
+            var y2 = data[ "A4" ] * Math.sin( t * data[ "f4" ] + data[ "p4" ] ) * Math.exp( - data[ "d4" ] * t );
+            path.push( new Point( x1 + x2, y1 + y2 ) );
+            t += data.s;
+        }
+        return path;
+    };
+    var randomize = function( data )
+    {
+        for( var i = 1; i <= 4; i++ )
+        {
+            data[ "f" + i ].value = random( 200 );
+            data[ "p" + i ].value = random( 100 );
+            data[ "A" + i ].value = random( 300 );
+            data[ "d" + i ].value = random( 0.5 );
+        }
+    };
+    var update = function( data, elapsedTime )
+    {
+        for( var i = 1; i <= 4; i++ )
+        {
+            data[ "f" + i ] = ( data[ "f" + i ] + elapsedTime );
+        }
+    };
+    return new Tracing( "Harmonograph", validation, setData, setInputs, createPath, randomize, update, collapse, inputs );
 } )();
 
 var currentTracing = null;
@@ -164,9 +254,10 @@ function Tracing( name, validation, setData, setInputs, createPath, randomize, u
 }
 Tracing.prototype.setData = function()
 {
+    this.data = { };
     this.data.type = this.name;
     this.data.lw = Number( lineWidthInput.value );
-    this.data.sm = smoothInput.selectedIndex === 0;
+    this.data.sm = ( smoothInput.selectedIndex === 0 ).toString();
     this.data.c = getColor();
     this.data.s = Number( stepInput.value );
     this.data.i = Number( iterationsInput.value );
@@ -180,7 +271,7 @@ Tracing.prototype.setInputs = function()
     }
     if( this.data.c !== undefined )
     {
-        colorInput.value = "#" + this.data.c;
+        colorInput.value = this.data.c;
     }
     if( this.data.lw !== undefined )
     {
@@ -201,10 +292,11 @@ Tracing.prototype.setInputs = function()
     this._setInputs( this.data, this.inputs );
 
     this.setData();
+    setUrl();
 };
 Tracing.prototype.createPath = function()
 {
-    this._createPath( this.data, this.path );
+    this.path = this._createPath( this.data );
 };
 Tracing.prototype.randomize = function()
 {
@@ -216,7 +308,7 @@ Tracing.prototype.update = function( elapsedTime )
 };
 Tracing.prototype.draw = function()
 {
-    if( this.data.sm )
+    if( this.data.sm === "true" )
     {
         drawSmoothLines( context, this.path, this.data.c, this.data.lw );
     }
@@ -242,7 +334,6 @@ function recreateTracing()
     currentTracing.setData();
     currentTracing.createPath();
 
-    currentTracing.setInputs();
     render();
 }
 
@@ -270,17 +361,20 @@ animateButton.addEventListener( "click", function()
         animateButton.classList.remove( "btn-danger" );
         animateIcon.classList.add( "glyphicon-play" );
         animateIcon.classList.remove( "glyphicon-stop" );
+        currentTracing.setInputs();
     }
 } );
 
 function createURL()
 {
-    var data = { };
     if( currentTracing )
     {
-        currentTracing.setData( data );
+        return urlSettings.createURL( currentTracing.data );
     }
-    return urlSettings.createURL( data );
+    else
+    {
+        return urlSettings.createURL();
+    }
 }
 
 function getColor()
@@ -318,7 +412,8 @@ randomButton.addEventListener( "click", function()
 
 openSettingsButton.addEventListener( "click", function()
 {
-    // setUrl();
+    setUrl();
+    currentTracing.setInputs();
 } );
 
 function setUrl()
@@ -374,9 +469,10 @@ function render()
 ( function()
 {
     onWindowResize();
-    setTracing( "Spirograph" );
+    setTracing( "Harmonograph" );
     currentTracing.data = urlSettings.getUrlData();
     currentTracing.setInputs();
+    recreateTracing();
     setupDisplayValidators();
     render();
 
