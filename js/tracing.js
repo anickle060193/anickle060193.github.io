@@ -469,7 +469,15 @@ function render()
 ( function()
 {
     onWindowResize();
-    setTracing( "Harmonograph" );
+    var data = urlSettings.getUrlData();
+    if( data.type !== undefined && tracings[ data.type ] !== undefined )
+    {
+        setTracing( data.type );
+    }
+    else
+    {
+        setTracing( "Harmonograph" );
+    }
     currentTracing.data = urlSettings.getUrlData();
     currentTracing.setInputs();
     recreateTracing();
