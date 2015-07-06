@@ -89,6 +89,7 @@
                                 <select class="form-control" id="type">
                                     <option>Harmonograph</option>
                                     <option>Spirograph</option>
+                                    <option>Epitrochoid</option>
                                 </select>
                             </div>
 
@@ -197,6 +198,7 @@
                             </div>
 
                             <div class="collapse" id="spirographSettings">
+                                <img src="images/spirograph_diagram.png" class="img-responsive center-block" alt="Spirograph Diagram" width="300" height="300">
                                 <form>
                                     <div class="form-group">
                                         <label for="k" class="control-label"><var>k</var> = <var>r</var> / <var>R</var> :</label>
@@ -211,6 +213,26 @@
                                     <div class="form-group">
                                         <label for="R" class="control-label"><var>R</var> :</label>
                                         <input type="text" class="form-control" id="R" value="800">
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="collapse" id="epitrochoidSettings">
+                                <img src="images/epitrochoid_diagram.png" class="img-responsive center-block" alt="Epitrochoid Diagram" width="300" height="300">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="a" class="control-label"><var>a</var> :</label>
+                                        <input type="text" class="form-control" id="a" value="142">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="b" class="control-label"><var>b</var> :</label>
+                                        <input type="text" class="form-control" id="b" value="70">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="h" class="control-label"><var>h</var> :</label>
+                                        <input type="text" class="form-control" id="h" value="102">
                                     </div>
                                 </form>
                             </div>

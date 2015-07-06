@@ -1,3 +1,27 @@
+/* In-Use Variable Names */
+/*
+    Display:
+        lw : line width
+        sm : smooth lines
+        c : color
+        s : step
+        i : iteration
+    Harmonograph:
+        f1,2,3,4 : frequencies
+        p1,2,3,4 : period
+        A1,2,3,4 : amplitude
+        d1,2,3,4 : dampening
+    Spirograph:
+        k : ration of inner radius over outer radius
+        l : ratio of drawing point radius and inner radius
+        R : scaling factor
+    Epitrochoid:
+        a : center circle radius
+        b : outer circle radius
+        h: distance from center of outer circle to drawing point
+*/
+
+
 /* Includes */
 
 /// <reference path="../typings/jquery/jquery.d.ts"/>
@@ -235,6 +259,82 @@ tracings[ "Harmonograph" ] = ( function()
     return new Tracing( "Harmonograph", validation, setData, setInputs, createPath, randomize, update, collapse, inputs );
 } )();
 
+tracings[ "Epitrochoid" ] = ( function()
+{
+    var collapse = $( "#epitrochoidSettings" );
+
+    var validation = new ValidationGroup();
+    var inputs = { };
+    inputs.a = validation.addValidator( "a", function( input )
+    {
+        var num = Number( input.value );
+        return isFinite( num ) && 0 <= num;
+    } ).input;
+    inputs.b = validation.addValidator( "b", function( input )
+    {
+        var num = Number( input.value );
+        return isFinite( num ) && 0 <= num;
+    } ).input;
+    inputs.h = validation.addValidator( "h", function( input )
+    {
+        var num = Number( input.value );
+        return isFinite( num ) && 0 <= num;
+    } ).input;
+
+    var setData = function( data, inputs )
+    {
+        data.a = Number( inputs.a.value );
+        data.b = Number( inputs.b.value );
+        data.h = Number( inputs.h.value );
+    };
+    var setInputs = function( data, inputs )
+    {
+        if( data.a !== undefined )
+        {
+            inputs.a.value = data.a;
+        }
+        if( data.b !== undefined )
+        {
+            inputs.b.value = data.b;
+        }
+        if( data.h !== undefined )
+        {
+            inputs.h.value = data.h;
+        }
+    };
+
+    var createPath = function( data )
+    {
+        var path = [ ];
+
+        var AplusB = data.a + data.b;
+        var AplusBdivideB = ( data.a + data.b ) / data.b;
+
+        var t = 0;
+        for( var i = 0; i < data.i; i++ )
+        {
+            var x = AplusB * Math.cos( t ) - data.h * Math.cos( AplusBdivideB * t );
+            var y = AplusB * Math.sin( t ) - data.h * Math.sin( AplusBdivideB * t );
+            path.push( new Point( x, y ) );
+            t += data.s;
+        }
+        return path;
+    };
+    var randomize = function( data )
+    {
+        data.a = Math.random() * 300;
+        data.b = Math.random() * 100;
+        data.h = Math.random() * 75;
+    };
+    var update = function( data, elapsedTime )
+    {
+        data.a = ( data.a + elapsedTime ) % 1000;
+        data.b = ( data.b + elapsedTime ) % 500;
+        data.h = ( data.h + elapsedTime ) % 500;
+    };
+    return new Tracing( "Epitrochoid", validation, setData, setInputs, createPath, randomize, update, collapse, inputs );
+} )();
+
 var currentTracing = null;
 
 function Tracing( name, validation, setData, setInputs, createPath, randomize, update, collapse, inputs )
@@ -334,12 +434,14 @@ function recreateTracing()
     currentTracing.setData();
     currentTracing.createPath();
 
+    currentTracing.setInputs();
     render();
 }
 
 function recreateRandomTracing()
 {
     currentTracing.randomize();
+    currentTracing.setInputs();
     recreateTracing();
 }
 
