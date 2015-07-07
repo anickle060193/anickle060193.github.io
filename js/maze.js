@@ -21,6 +21,7 @@ function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
+    context.setTransform( 1, 0, 0, 1, 0.5, 0.5 );
 
     render();
 }
@@ -104,39 +105,68 @@ function Maze( rows, columns )
     this._maze = [ ];
     this._cells = [ ];
 
-    this._r = Math.floor( Math.random() * this.rows );
-    this._c = Math.floor( Math.random() * this.columns );
-    this._cells.push( new Cell( this._r, this._c ) );
+    var r = Math.floor( Math.random() * this.rows );
+    var c = Math.floor( Math.random() * this.columns );
+    this._cells.push( new Cell( r, c ) );
 }
-Maze.prototype.isActive = function( r, c )
+Maze.prototype.getFill = function( r, c )
 {
     for( var i = 0; i < this._cells.length; i++ )
     {
         var cell = this._cells[ i ];
         if( r === cell.r && c === cell.c )
         {
-            return true;
+            return "pink";
         }
     }
-    return false;
+    return "white";
+};
+Maze.prototype.selectIndex = function( method )
+{
+    method = method.toLowerCase();
+    if( method === "random" )
+    {
+        return Math.floor( Math.random() * this._cells.length );
+    }
+    else if( method === "first" )
+    {
+        return 0;
+    }
+    else if( method === "newest" )
+    {
+        return this._cells.length - 1;
+    }
+    else if( method === "middle" )
+    {
+        return Math.floor( this._cells.length / 2 );
+    }
+    else
+    {
+        throw new Error( "'" + method + "' is not a valid index selection method." );
+    }
 };
 Maze.prototype.generateStep = function()
 {
     if( this._cells.length > 0 )
     {
-        var index = this._cells.length - 1;
-        var cell = this._cells[ index ];
+        var index = this.selectIndex( "random" );
+        var r = this._cells[ index ].r;
+        var c = this._cells[ index ].c;
         var dirs = [ N, S, E, W ];
         dirs.shuffle();
         for( var i = 0; i < dirs.length; i++ )
         {
             var dir = dirs[ i ];
-            var nr = cell.r + DR[ dir ];
-            var nc = cell.c + DC[ dir ];
+            var nr = r + DR[ dir ];
+            var nc = c + DC[ dir ];
             if( nr >= 0 && nc >= 0 && nr < this.rows && nc < this.columns && this.get( nr, nc ) === 0 )
             {
-                this.set( cell.r, cell.c, this.get( cell.r, cell.c ) | dir );
-                this.set( nr, nc, this.get( nr, nc ) | OPPOSITE[ dir ] );
+                var old = this.get( r, c );
+                this.set( r, c, old | dir );
+
+                var nOld = this.get( nr, nc );
+                this.set( nr, nc, nOld | OPPOSITE[ dir ] );
+
                 this._cells.push( new Cell( nr, nc ) );
                 index = -1;
                 break;
@@ -175,23 +205,22 @@ Maze.prototype.get = function( row, col )
 Maze.prototype.draw = function()
 {
     var size = Math.min( canvas.width, canvas.height ) - 2 * padding;
+    var xOffset = ( canvas.width - size ) / 2;
+    var yOffset = ( canvas.height - size ) / 2;
     var width = size - ( this.columns + 1 ) * strokeWidth;
     var height = size - ( this.rows + 1 ) * strokeWidth;
     var cw = width / this.columns;
     var ch = height / this.rows;
 
-    context.fillStyle = "black";
-    //context.fillRect( padding, padding, width, height );
-
     context.strokeStyle = "black";
-    var y = padding;
+    var y = yOffset;
     for( var r = 0; r < this.rows; r++ )
     {
-        var x = padding;
+        var x = xOffset;
         for( var c = 0; c < this.columns; c++ )
         {
-            context.fillStyle = this.isActive( r, c ) ? "pink" : "white";
-            context.fillRect( x + strokeWidth, y + strokeWidth, cw, ch );
+            context.fillStyle = this.getFill( r, c );
+            context.fillRect( x, y, cw + strokeWidth * 2, ch + strokeWidth * 2 );
 
             var cell = this.get( r, c );
             if( ( cell & N ) !== N || r === 0 )
@@ -206,6 +235,8 @@ Maze.prototype.draw = function()
         }
         y += ch + strokeWidth;
     }
+    drawLine( xOffset, y, xOffset + size, y );
+    drawLine( x, yOffset, x, yOffset + size );
 };
 
 function generate()
