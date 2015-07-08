@@ -13,8 +13,6 @@ var columnsInput = document.getElementById( "columns" );
 
 var generateButton = document.getElementById( "generate" );
 
-var graphSizePercent = 0.25;
-
 function onWindowResize()
 {
     canvas.width = canvas.clientWidth;

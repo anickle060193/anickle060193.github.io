@@ -13,8 +13,6 @@ var columnsInput = document.getElementById( "columns" );
 
 var generateButton = document.getElementById( "generate" );
 
-var graphSizePercent = 0.25;
-
 function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
@@ -36,7 +34,9 @@ function drawLine( x1, y1, x2, y2, strokeWidth )
     context.moveTo( x1, y1 );
     context.lineTo( x2, y2 );
     context.stroke();
-}function indexOf( arr, value )
+}
+
+function indexOf( arr, value )
 {
     for( var i = 0; i < arr.length; i++ )
     {
@@ -199,8 +199,6 @@ function Maze( rows, columns )
 {
     this.rows = rows;
     this.columns = columns;
-
-    this.done = false;
 
     this._maze = [ ];
     new MazeGeneration( this ).generate();
