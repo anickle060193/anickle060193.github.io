@@ -127,30 +127,6 @@ Maze.prototype.getFill = function( r, c )
     }
     return "white";
 };
-Maze.prototype.selectIndex = function( method )
-{
-    method = method.toLowerCase();
-    if( method === "random" )
-    {
-        return Math.floor( Math.random() * this._cells.length );
-    }
-    else if( method === "first" )
-    {
-        return 0;
-    }
-    else if( method === "newest" )
-    {
-        return this._cells.length - 1;
-    }
-    else if( method === "middle" )
-    {
-        return Math.floor( this._cells.length / 2 );
-    }
-    else
-    {
-        throw new Error( "'" + method + "' is not a valid index selection method." );
-    }
-};
 Maze.prototype.addFrontier = function( r, c )
 {
     if( r >= 0 && r < this.rows && c >= 0 && c < this.columns && this.get( r, c ) === 0 )
