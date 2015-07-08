@@ -61,7 +61,7 @@ function setupValidators()
 
 
 /* Maze Generation */
-// From http://weblog.jamisbuck.org/2011/1/27/maze-generation-growing-tree-algorithm
+// From http://weblog.jamisbuck.org/2011/1/10/maze-generation-prim-s-algorithm
 
 var padding = 20;
 var strokeWidth = 1;
@@ -72,30 +72,40 @@ function Cell( r, c )
     this.c = c;
 }
 
-var maze = new Maze( 20, 20, 800, 800 );
-
 var N = 0x1;
 var S = 0x2;
 var E = 0x4;
 var W = 0x8;
 
-var DR = { };
-DR[ N ] = -1;
-DR[ E ] = 0;
-DR[ S ] = 1;
-DR[ W ] = 0;
-
-var DC = { };
-DC[ N ] = 0;
-DC[ E ] = 1;
-DC[ S ] = 0;
-DC[ W ] = -1;
-
+var IN = 0x10;
+var FRONTIER = 0x2;
 var OPPOSITE = { };
 OPPOSITE[ N ] = S;
-OPPOSITE[ E ] = E;
 OPPOSITE[ S ] = N;
+OPPOSITE[ E ] = W;
 OPPOSITE[ W ] = E;
+
+function direction( r1, c1, r2, c2 )
+{
+    if( c1 < c2 )
+    {
+        return E;
+    }
+    if( c1 > c2 )
+    {
+        return W;
+    }
+    if( r1 < r2 )
+    {
+        return S;
+    }
+    if( r1 > r2 )
+    {
+        return N;
+    }
+}
+
+var maze = new Maze( 20, 20 );
 
 function Maze( rows, columns )
 {
@@ -103,17 +113,17 @@ function Maze( rows, columns )
     this.columns = columns;
 
     this._maze = [ ];
-    this._cells = [ ];
+    this._frontier = [ ];
 
     var r = Math.floor( Math.random() * this.rows );
     var c = Math.floor( Math.random() * this.columns );
-    this._cells.push( new Cell( r, c ) );
+    this.mark( r, c );
 }
 Maze.prototype.getFill = function( r, c )
 {
-    for( var i = 0; i < this._cells.length; i++ )
+    for( var i = 0; i < this._frontier.length; i++ )
     {
-        var cell = this._cells[ i ];
+        var cell = this._frontier[ i ];
         if( r === cell.r && c === cell.c )
         {
             return "pink";
@@ -145,9 +155,46 @@ Maze.prototype.selectIndex = function( method )
         throw new Error( "'" + method + "' is not a valid index selection method." );
     }
 };
+Maze.prototype.addFrontier = function( r, c )
+{
+    if( r >= 0 && r < this.rows && c >= 0 && c < this.columns && this.get( r, c ) === 0 )
+    {
+        this.set( r, c, this.get( r, c ) | FRONTIER );
+        this._frontier.push( new Cell( r, c ) );
+    }
+};
+Maze.prototype.mark = function( r, c )
+{
+    this.set( r, c, this.get( r, c ) | IN );
+    this.addFrontier( r - 1, c );
+    this.addFrontier( r, c - 1 );
+    this.addFrontier( r + 1, c );
+    this.addFrontier( r, c + 1 );
+};
+Maze.prototype.neighbors = function( r, c )
+{
+    var n = [ ];
+    if( c > 0 && grid.get( r, c - 1 ) & IN !== 0 )
+    {
+        n.push( new Cell( r, c - 1 ) );
+    }
+    if( c + 1 < this.columns && this.get( r, c + 1 ) & IN !== 0 )
+    {
+        n.push( new Cell( r, c + 1 ) );
+    }
+    if( r > 0 && this.get( r - 1, c ) & IN !== 0 )
+    {
+        n.push( new Cell( r - 1, c ) );
+    }
+    if( r + 1 < this.rows && this.get( r + 1, c ) & IN !== 0 )
+    {
+        n.push( new Cell( r + 1, c ) );
+    }
+    return n;
+};
 Maze.prototype.generateStep = function()
 {
-    if( this._cells.length > 0 )
+    if( this._frontier.length > 0 )
     {
         var index = this.selectIndex( "random" );
         var r = this._cells[ index ].r;
