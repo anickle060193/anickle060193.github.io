@@ -8,8 +8,6 @@
 var canvas = document.getElementById( "canvas" );
 var context = canvas.getContext( "2d" );
 
-var widthInput = document.getElementById( "width" );
-var heightInput = document.getElementById( "height" );
 var rowsInput = document.getElementById( "rows" );
 var columnsInput = document.getElementById( "columns" );
 
@@ -53,8 +51,6 @@ function isNonnegative( input )
 
 function setupValidators()
 {
-    validation.addValidator( widthInput, isNonnegative );
-    validation.addValidator( heightInput, isNonnegative );
     validation.addValidator( rowsInput, isNonnegative );
     validation.addValidator( columnsInput, isNonnegative );
 }
@@ -105,7 +101,7 @@ function direction( r1, c1, r2, c2 )
     }
 }
 
-var maze = new Maze( 20, 20 );
+var maze = null;
 
 function Maze( rows, columns )
 {
@@ -174,19 +170,19 @@ Maze.prototype.mark = function( r, c )
 Maze.prototype.neighbors = function( r, c )
 {
     var n = [ ];
-    if( c > 0 && grid.get( r, c - 1 ) & IN !== 0 )
+    if( c > 0 && ( this.get( r, c - 1 ) & IN ) !== 0 )
     {
         n.push( new Cell( r, c - 1 ) );
     }
-    if( c + 1 < this.columns && this.get( r, c + 1 ) & IN !== 0 )
+    if( c + 1 < this.columns && ( this.get( r, c + 1 ) & IN ) !== 0 )
     {
         n.push( new Cell( r, c + 1 ) );
     }
-    if( r > 0 && this.get( r - 1, c ) & IN !== 0 )
+    if( r > 0 && ( this.get( r - 1, c ) & IN ) !== 0 )
     {
         n.push( new Cell( r - 1, c ) );
     }
-    if( r + 1 < this.rows && this.get( r + 1, c ) & IN !== 0 )
+    if( r + 1 < this.rows && ( this.get( r + 1, c ) & IN ) !== 0 )
     {
         n.push( new Cell( r + 1, c ) );
     }
@@ -196,35 +192,17 @@ Maze.prototype.generateStep = function()
 {
     if( this._frontier.length > 0 )
     {
-        var index = this.selectIndex( "random" );
-        var r = this._cells[ index ].r;
-        var c = this._cells[ index ].c;
-        var dirs = [ N, S, E, W ];
-        dirs.shuffle();
-        for( var i = 0; i < dirs.length; i++ )
-        {
-            var dir = dirs[ i ];
-            var nr = r + DR[ dir ];
-            var nc = c + DC[ dir ];
-            if( nr >= 0 && nc >= 0 && nr < this.rows && nc < this.columns && this.get( nr, nc ) === 0 )
-            {
-                var old = this.get( r, c );
-                this.set( r, c, old | dir );
+        var cell = this._frontier.splice( Math.floor( Math.random() * this._frontier.length ), 1 )[ 0 ];
+        var n = this.neighbors( cell.r, cell.c );
+        var nCell = n[ Math.floor( Math.random() * n.length ) ];
 
-                var nOld = this.get( nr, nc );
-                this.set( nr, nc, nOld | OPPOSITE[ dir ] );
+        var dir = direction( cell.r, cell.c, nCell.r, nCell.c );
+        this.set( cell.r, cell.c, this.get( cell.r, cell.c ) | dir );
+        this.set( nCell.r, nCell.c, this.get( nCell.r, nCell.c ) | OPPOSITE[ dir ] );
 
-                this._cells.push( new Cell( nr, nc ) );
-                index = -1;
-                break;
-            }
-        }
-        if( index !== -1 )
-        {
-            this._cells.splice( index, 1 );
-        }
+        this.mark( cell.r, cell.c );
     }
-    return this._cells.length === 0;
+    return this._frontier.length === 0;
 };
 Maze.prototype.set = function( row, col, value )
 {
@@ -290,9 +268,7 @@ function generate()
 {
     var rows = Number( rowsInput.value );
     var columns = Number( columnsInput.value );
-    var width = Number( widthInput.value );
-    var height = Number( heightInput.value );
-    maze = new Maze( rows, columns, width, height );
+    maze = new Maze( rows, columns );
 }
 
 
@@ -317,7 +293,7 @@ function render()
 
     if( maze != null )
     {
-        maze.draw( 10, 10 );
+        maze.draw();
     }
 }
 
@@ -335,6 +311,7 @@ function update( elapsedTime )
 ( function main()
 {
     setupValidators();
+    generate();
     onWindowResize();
     render();
     startAnimation( update, render );
