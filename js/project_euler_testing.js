@@ -110,8 +110,69 @@ var grid = new Grid();
 
 function getPercentage()
 {
-    for( var i = grid.rings; i++ )
+    var primes = 0;
+    var count = 0;
+    for( var i = -grid.rings + 1; i <= grid.rings - 1; i++ )
     {
-
+        if( isPrime( grid.get( i, i ) ) )
+        {
+            primes++;
+        }
+        if( i !== 0 )
+        {
+            if( isPrime( grid.get( i, -i ) ) )
+            {
+                primes++;
+            }
+            count++;
+        }
+        count++;
     }
+    return primes / count;
 }
+
+var minPercent = 0.12;
+
+var count = 1;
+var primes = 0;
+
+var lastRing = 0;
+
+do
+{
+    grid.addRing();
+
+    for( var i = -grid.rings + 1; i < -lastRing; i++ )
+    {
+        if( isPrime( grid.get( i, i ) ) )
+        {
+            primes++;
+        }
+        if( i !== 0 )
+        {
+            if( isPrime( grid.get( i, -i ) ) )
+            {
+                primes++;
+            }
+            count++;
+        }
+        count++;
+    }
+    for( var i = lastRing + 1; i <= grid.rings - 1; i++ )
+    {
+        if( i !== 0 )
+        {
+            if( isPrime( grid.get( i, -i ) ) )
+            {
+                primes++;
+            }
+            count++;
+        }
+        count++;
+    }
+    lastRing = grid.rings - 1;
+    console.log( primes / count );
+}
+while( primes / count >= minPercent );
+
+document.write( grid.rings * 2 - 1 );
