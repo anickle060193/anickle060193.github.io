@@ -6,6 +6,28 @@ function Point( x, y )
     this.y = y;
 }
 
+function HashMap()
+{
+    this.hashTable = { };
+}
+HashMap.prototype = {
+    constructor: HashMap,
+    put: function( key, value )
+    {
+        this.hashTable[ JSON.stringify( key ) ] = value;
+    },
+    get: function( key )
+    {
+        return this.hashTable[ JSON.stringify( key ) ];
+    }
+};
+Object.defineProperty( HashMap.prototype, "empty", {
+    get: function()
+    {
+        return Object.keys( this.hashTable ).length === 0;
+    }
+} );
+
 
 /* Resizing */
 

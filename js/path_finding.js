@@ -40,7 +40,7 @@ function indexOf( arr, value )
 {
     for( var i = 0; i < arr.length; i++ )
     {
-        if( arr[ i ] === value )
+        if( value.equals( arr[ i ] ) )
         {
             return i;
         }
@@ -95,6 +95,10 @@ function Cell( r, c )
     this.r = r;
     this.c = c;
 }
+Cell.prototype.equals = function( cell )
+{
+    return this.r === cell.r && this.c === cell.c;
+}
 
 var N = 0x1;
 var S = 0x2;
@@ -102,7 +106,7 @@ var E = 0x4;
 var W = 0x8;
 
 var IN = 0x10;
-var FRONTIER = 0x2;
+var FRONTIER = 0x20;
 var OPPOSITE = { };
 OPPOSITE[ N ] = S;
 OPPOSITE[ S ] = N;
@@ -179,6 +183,10 @@ MazeGeneration.prototype.neighbors = function( r, c )
 };
 MazeGeneration.prototype.generate = function()
 {
+    var r = Math.floor( Math.random() * this.maze.rows );
+    var c = Math.floor( Math.random() * this.maze.columns );
+    this.mark( r, c );
+
     while( this._frontier.length > 0 )
     {
         var cell = this._frontier.splice( Math.floor( Math.random() * this._frontier.length ), 1 )[ 0 ];
@@ -186,14 +194,12 @@ MazeGeneration.prototype.generate = function()
         var nCell = n[ Math.floor( Math.random() * n.length ) ];
 
         var dir = direction( cell.r, cell.c, nCell.r, nCell.c );
-        this.set( cell.r, cell.c, this.get( cell.r, cell.c ) | dir );
-        this.set( nCell.r, nCell.c, this.get( nCell.r, nCell.c ) | OPPOSITE[ dir ] );
+        this.maze.set( cell.r, cell.c, this.maze.get( cell.r, cell.c ) | dir );
+        this.maze.set( nCell.r, nCell.c, this.maze.get( nCell.r, nCell.c ) | OPPOSITE[ dir ] );
 
         this.mark( cell.r, cell.c );
     }
 };
-
-var maze = null;
 
 function Maze( rows, columns )
 {
@@ -203,34 +209,22 @@ function Maze( rows, columns )
     this._maze = [ ];
     new MazeGeneration( this ).generate();
 }
-Maze.prototype.getFill = function( r, c )
-{
-    for( var i = 0; i < this._frontier.length; i++ )
-    {
-        var cell = this._frontier[ i ];
-        if( r === cell.r && c === cell.c )
-        {
-            return "pink";
-        }
-    }
-    return "white";
-};
 Maze.prototype.neighbors = function( r, c )
 {
     var n = [ ];
-    if( c > 0 && ( this.get( r, c - 1 ) & W ) === W )
+    if( c > 0 && ( this.get( r, c ) & W ) === W )
     {
         n.push( new Cell( r, c - 1 ) );
     }
-    if( c + 1 < this.columns && ( this.get( r, c + 1 ) & E ) === E )
+    if( c + 1 < this.columns && ( this.get( r, c ) & E ) === E )
     {
         n.push( new Cell( r, c + 1 ) );
     }
-    if( r > 0 && ( this.get( r - 1, c ) & N ) === N )
+    if( r > 0 && ( this.get( r, c ) & N ) === N )
     {
         n.push( new Cell( r - 1, c ) );
     }
-    if( r + 1 < this.rows && ( this.get( r + 1, c ) & S ) === S )
+    if( r + 1 < this.rows && ( this.get( r, c ) & S ) === S )
     {
         n.push( new Cell( r + 1, c ) );
     }
@@ -259,27 +253,146 @@ Maze.prototype.get = function( row, col )
         return this._maze[ row ][ col ];
     }
 };
-Maze.prototype.draw = function()
+
+
+/* A* */
+
+var astar = null;
+
+function Astar( maze, start, goal )
+{
+    this.maze = maze;
+    this.start = start;
+    this.goal = goal;
+    this.done = false;
+
+    this.path = [ ];
+    this.current = null;
+    this.closedset = [ ];
+    this.openset = [ this.start ];
+    this.cameFrom = new HashMap();
+
+    this.gScore = new HashMap();
+    this.gScore.put( this.start, 0 );
+
+    this.fScore = new HashMap();
+    this.fScore.put( this.start, 0 + this.heuristic( this.start, this.goal ) );
+}
+Astar.prototype.lowestFScore = function()
+{
+    var minScore = Number.MAX_VALUE;
+    var node = null;
+    for( var i = 0; i < this.openset.length; i++ )
+    {
+        var f = this.fScore.get( this.openset[ i ] );
+        if( f < minScore )
+        {
+            minScore = f;
+            node = this.openset[ i ];
+        }
+    }
+    return node;
+};
+Astar.prototype.searchStep = function()
+{
+    if( !this.done && this.openset.length !== 0 )
+    {
+        this.current = this.lowestFScore();
+        this.path = this.reconstructPath( this.current );
+        if( this.current.equals( this.goal ) )
+        {
+            //this.path = this.reconstructPath( this.goal );
+            this.done = true;
+            return;
+        }
+
+        remove( this.openset, this.current );
+        this.closedset.push( this.current );
+        var neighbors = this.maze.neighbors( this.current.r, this.current.c );
+        for( var i = 0; i < neighbors.length; i++ )
+        {
+            var neighbor = neighbors[ i ];
+            if( contains( this.closedset, neighbor ) )
+            {
+                continue;
+            }
+            var tentativeGScore = this.gScore.get( this.current ) + this.distance( this.current, neighbor );
+
+            if( !contains( this.openset, neighbor ) || tentativeGScore < this.gScore.get( neighbor ) )
+            {
+                this.cameFrom.put( neighbor, this.current );
+                this.gScore.put( neighbor, tentativeGScore );
+                this.fScore.put( neighbor, this.gScore.get( neighbor ) + this.heuristic( neighbor, this.goal ) );
+                if( !contains( this.openset, neighbor ) )
+                {
+                    this.openset.push( neighbor );
+                }
+            }
+        }
+    }
+};
+Astar.prototype.reconstructPath = function( current )
+{
+    var path = [ current ];
+    while( this.cameFrom.get( current ) !== undefined )
+    {
+        current = this.cameFrom.get( current );
+        path.push( current );
+    }
+    return path;
+}
+Astar.prototype.distance = function( n1, n2 )
+{
+    var rDiff = n1.r - n2.r;
+    var cDiff = n1.c - n2.c;
+    return Math.sqrt( rDiff * rDiff + cDiff * cDiff );
+};
+Astar.prototype.heuristic = function( n1, n2 )
+{
+    return this.distance( n1, n2 );
+};
+Astar.prototype.getFill = function( r, c )
+{
+    var cell = new Cell( r, c );
+    if( this.current !== null && cell.equals( this.current ) )
+    {
+        return "red";
+    }
+    if( cell.equals( this.start ) )
+    {
+        return "#CCCCFF";
+    }
+    if( cell.equals( this.goal ) )
+    {
+        return "#CCFFCC";
+    }
+    if( contains( this.path, cell ) )
+    {
+        return "pink";
+    }
+    return "white";
+};
+Astar.prototype.draw = function()
 {
     var size = Math.min( canvas.width, canvas.height ) - 2 * padding;
     var xOffset = ( canvas.width - size ) / 2;
     var yOffset = ( canvas.height - size ) / 2;
-    var width = size - ( this.columns + 1 ) * strokeWidth;
-    var height = size - ( this.rows + 1 ) * strokeWidth;
-    var cw = width / this.columns;
-    var ch = height / this.rows;
+    var width = size - ( this.maze.columns + 1 ) * strokeWidth;
+    var height = size - ( this.maze.rows + 1 ) * strokeWidth;
+    var cw = width / this.maze.columns;
+    var ch = height / this.maze.rows;
 
     context.strokeStyle = "black";
     var y = yOffset;
-    for( var r = 0; r < this.rows; r++ )
+    for( var r = 0; r < this.maze.rows; r++ )
     {
         var x = xOffset;
-        for( var c = 0; c < this.columns; c++ )
+        for( var c = 0; c < this.maze.columns; c++ )
         {
             context.fillStyle = this.getFill( r, c );
             context.fillRect( x, y, cw + strokeWidth * 2, ch + strokeWidth * 2 );
 
-            var cell = this.get( r, c );
+            var cell = this.maze.get( r, c );
             if( ( cell & N ) !== N || r === 0 )
             {
                 drawLine( x, y, x + cw, y, strokeWidth );
@@ -296,79 +409,12 @@ Maze.prototype.draw = function()
     drawLine( x, yOffset, x, yOffset + size );
 };
 
-
-/* A* */
-
-function A*( start, goal )
+function generate()
 {
-    var closedset = [ ];
-    var openset = [ start ];
-    var cameFrom = { };
-
-    var gScore = { };
-    gScore[ start ] = 0;
-
-    var fScore = { };
-    fScore[ start ] = gScore[ start ] + heuristic( start, goal );
-
-    function lowestFScore()
-    {
-        var minScore = Number.MAX_VALUE;
-        var node = null;
-        for( var i = 0; i < openset.length; i++ )
-        {
-            var f = fScore[ openset[ i ] ];
-            if( f < minScore )
-            {
-                minScore = f;
-                node = openset[ i ];
-            }
-        }
-        return key;
-    }
-
-    while( closedset.length > 0 )
-    {
-        var current = lowestFScore();
-        if( current === goal )
-        {
-            return reconstructPath( cameFrom, goal );
-        }
-
-        remove( openset, current );
-        closedset.push( current );
-        for( var neighbor in neighbors( current ) )
-        {
-            if( contains( closedset, neighbor ) )
-            {
-                continue;
-            }
-            var tentativeGScore = gScore[ current ] + distBetween( current, neighbor );
-
-            if( !contains( openset, neighbor ) || tentativeGScore < gScore[ neighbor ] )
-            {
-                cameFrom[ neighbor ] = current;
-                gScore[ neighbor ] = tentativeGScore;
-                fScore[ neighbor ] = gScore[ neighbor ] + heuristic( neighbor, goal );
-                if( !contains( openset, neighbor ) )
-                {
-                    openset.push( neighbor );
-                }
-            }
-        }
-    }
-    return null;
-}
-
-function reconstructPath( cameFrom, current )
-{
-    var path = [ current ];
-    while( cameFrom[ current ] !== undefined )
-    {
-        current = cameFrom[ current ];
-        path.push( current );
-    }
-    return path;
+    var rows = Number( rowsInput.value );
+    var columns = Number( columnsInput.value );
+    var maze = new Maze( rows, columns );
+    astar = new Astar( maze, new Cell( 0, 0 ), new Cell( 10, 10 ) );
 }
 
 
@@ -391,18 +437,25 @@ function render()
 {
     clear( context );
 
-    if( maze != null )
+    if( astar != null )
     {
-        maze.draw();
+        astar.draw();
     }
 }
 
 
 /* Animation */
 
+var delay = 0.1;
+var t = 0;
 function update( elapsedTime )
 {
-    maze.generateStep();
+    t += elapsedTime;
+    if( t > delay )
+    {
+        astar.searchStep();
+        t = 0;
+    }
 }
 
 
