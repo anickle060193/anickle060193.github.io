@@ -396,9 +396,10 @@ Astar.prototype.draw = function()
     var ch = height / this.maze.rows;
 
     var y = yOffset;
+    var x = xOffset;
     for( var r = 0; r < this.maze.rows; r++ )
     {
-        var x = xOffset;
+        x = xOffset;
         for( var c = 0; c < this.maze.columns; c++ )
         {
             var color = this.getFill( r, c );
@@ -418,23 +419,43 @@ Astar.prototype.draw = function()
     y = yOffset;
     for( var r = 0; r < this.maze.rows; r++ )
     {
-        var x = xOffset;
+        x = xOffset;
+        context.moveTo( x, y );
         for( var c = 0; c < this.maze.columns; c++ )
         {
             var cell = this.maze.get( r, c );
             if( ( cell & N ) !== N || r === 0 )
             {
-                context.moveTo( x, y );
                 context.lineTo( x + cw, y );
             }
-            if( ( cell & W ) !== W || c === 0 )
+            else
             {
-                context.moveTo( x, y );
-                context.lineTo( x, y + ch );
+                context.moveTo( x + cw, y );
             }
             x += cw + strokeWidth;
         }
         y += ch + strokeWidth;
+    }
+
+    x = xOffset;
+    for( var c = 0; c < this.maze.columns; c++ )
+    {
+        y = yOffset;
+        context.moveTo( x, y );
+        for( var r = 0; r < this.maze.rows; r++ )
+        {
+            var cell = this.maze.get( r, c );
+            if( ( cell & W ) !== W || c === 0 )
+            {
+                context.lineTo( x, y + ch );
+            }
+            else
+            {
+                context.moveTo( x, y + ch );
+            }
+            y += ch + strokeWidth;
+        }
+        x += cw + strokeWidth;
     }
     context.moveTo( xOffset, y );
     context.lineTo( xOffset + size, y );
