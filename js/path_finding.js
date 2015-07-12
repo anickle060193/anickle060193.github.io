@@ -13,6 +13,10 @@ var columnsInput = document.getElementById( "columns" );
 
 var generateButton = document.getElementById( "generate" );
 
+var animateButton = document.getElementById( "animate" );
+var animateIcon = document.getElementById( "animateIcon" );
+var iterationDelayInput = document.getElementById( "iterationDelay" );
+
 function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
@@ -466,6 +470,34 @@ generateButton.addEventListener( "click", function()
     }
 } );
 
+animateButton.addEventListener( "click", function()
+{
+    paused = !paused;
+    if( !paused )
+    {
+        animateButton.classList.remove( "btn-success" );
+        animateButton.classList.add( "btn-danger" );
+        animateIcon.classList.remove( "glyphicon-play" );
+        animateIcon.classList.add( "glyphicon-stop" );
+    }
+    else
+    {
+        animateButton.classList.add( "btn-success" );
+        animateButton.classList.remove( "btn-danger" );
+        animateIcon.classList.add( "glyphicon-play" );
+        animateIcon.classList.remove( "glyphicon-stop" );
+    }
+} );
+
+iterationDelayInput.addEventListener( "change", function()
+{
+    var num = Number( iterationDelayInput.value );
+    if( isFinite( num ) && num > 0 )
+    {
+        iterationDelay = num;
+    }
+} );
+
 
 /* Render */
 
@@ -482,15 +514,21 @@ function render()
 
 /* Animation */
 
-var delay = 0.1;
+var paused = false;
+var iterationDelay = 0.05;
+
 var t = 0;
+
 function update( elapsedTime )
 {
-    t += elapsedTime;
-    if( t > delay )
+    if( !paused )
     {
-        astar.searchStep();
-        t = 0;
+        t += elapsedTime;
+        if( t > iterationDelay )
+        {
+            astar.searchStep();
+            t = 0;
+        }
     }
 }
 
