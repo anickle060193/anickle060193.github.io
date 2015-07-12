@@ -360,17 +360,30 @@ Astar.prototype.getFill = function( r, c )
     }
     if( cell.equals( this.start ) )
     {
-        return "#CCCCFF";
+        return "blue";
     }
     if( cell.equals( this.goal ) )
     {
-        return "#CCFFCC";
+        return "green";
     }
     if( contains( this.path, cell ) )
     {
         return "pink";
     }
-    return "white";
+    if( contains( this.openset, cell ) )
+    {
+        return "#888888";
+    }
+    if( contains( this.closedset, cell ) )
+    {
+        var r = Math.max( this.start.r, this.maze.rows - this.start.r - 1 );
+        var c = Math.max( this.start.c, this.maze.columns - this.start.c - 1 );
+        var dist = this.distance( this.start, new Cell( r, c ) );
+        var currDist = this.distance( this.start, cell );
+        var color = HSVtoRGB( currDist / dist, 0.85, 0.75 );
+        return color;
+    }
+    return null;
 };
 Astar.prototype.draw = function()
 {
@@ -382,31 +395,54 @@ Astar.prototype.draw = function()
     var cw = width / this.maze.columns;
     var ch = height / this.maze.rows;
 
-    context.strokeStyle = "black";
     var y = yOffset;
     for( var r = 0; r < this.maze.rows; r++ )
     {
         var x = xOffset;
         for( var c = 0; c < this.maze.columns; c++ )
         {
-            context.fillStyle = this.getFill( r, c );
-            context.fillRect( x, y, cw + strokeWidth * 2, ch + strokeWidth * 2 );
-
-            var cell = this.maze.get( r, c );
-            if( ( cell & N ) !== N || r === 0 )
+            var color = this.getFill( r, c );
+            if( color !== null )
             {
-                drawLine( x, y, x + cw, y, strokeWidth );
-            }
-            if( ( cell & W ) !== W || c === 0 )
-            {
-                drawLine( x, y, x, y + ch, strokeWidth );
+                context.fillStyle = color;
+                context.fillRect( x, y, cw + strokeWidth * 2, ch + strokeWidth * 2 );
             }
             x += cw + strokeWidth;
         }
         y += ch + strokeWidth;
     }
-    drawLine( xOffset, y, xOffset + size, y );
-    drawLine( x, yOffset, x, yOffset + size );
+
+    context.strokeStyle = "black";
+    context.lineWidth = strokeWidth;
+    context.beginPath();
+    y = yOffset;
+    for( var r = 0; r < this.maze.rows; r++ )
+    {
+        var x = xOffset;
+        for( var c = 0; c < this.maze.columns; c++ )
+        {
+            var cell = this.maze.get( r, c );
+            if( ( cell & N ) !== N || r === 0 )
+            {
+                context.moveTo( x, y );
+                context.lineTo( x + cw, y );
+            }
+            if( ( cell & W ) !== W || c === 0 )
+            {
+                context.moveTo( x, y );
+                context.lineTo( x, y + ch );
+            }
+            x += cw + strokeWidth;
+        }
+        y += ch + strokeWidth;
+    }
+    context.moveTo( xOffset, y );
+    context.lineTo( xOffset + size, y );
+
+    context.moveTo( x, yOffset );
+    context.lineTo( x, yOffset + size );
+
+    context.stroke();
 };
 
 function generate()
@@ -414,7 +450,7 @@ function generate()
     var rows = Number( rowsInput.value );
     var columns = Number( columnsInput.value );
     var maze = new Maze( rows, columns );
-    astar = new Astar( maze, new Cell( 0, 0 ), new Cell( 10, 10 ) );
+    astar = new Astar( maze, new Cell( 0, 0 ), new Cell( rows - 1, columns - 1 ) );
 }
 
 
