@@ -2,7 +2,7 @@
 
 /// <reference path="../typings/jquery/jquery.d.ts"/>
 /// <reference path="utilities.js" />
-/// <reference path="maze_generation.js" />
+/// <reference path="maze.js" />
 
 /* Document Elements */
 
