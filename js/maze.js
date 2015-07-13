@@ -175,6 +175,10 @@ PrimsAlgorithm.prototype.getFill = function( r, c )
             return "pink";
         }
     }
+    if( this.maze.get( r, c ) === 0 )
+    {
+        return "#CCCCCC";
+    }
     return "white";
 };
 
@@ -202,6 +206,10 @@ GrowingTree.prototype.nextIndex = function( method )
     {
         return length - 1;
     }
+    else if( method === "middle" )
+    {
+        return Math.floor( length / 2 );
+    }
     else
     {
         throw new Error( "' " + method + "' is not a valid index selection method." );
@@ -211,7 +219,7 @@ GrowingTree.prototype.generateStep = function()
 {
     if( this._cells.length > 0 )
     {
-        var index = this.nextIndex( "random" );
+        var index = this.nextIndex( "newest" );
         var cell = this._cells[ index ];
 
         var directions = [ N, S, E, W ];
@@ -257,7 +265,7 @@ function Maze( rows, columns )
     this.done = false;
 
     this._maze = [ ];
-    this._generation = new GrowingTree( this );
+    this._generation = new PrimsAlgorithm( this );
 }
 Maze.prototype.isValid = function( r, c )
 {
