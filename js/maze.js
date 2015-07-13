@@ -1,3 +1,20 @@
+"use strict";
+
+/* Utilities */
+
+function contains( array, o )
+{
+    var oStr = JSON.stringify( o );
+    for( var i = 0; i < array.length; i++ )
+    {
+        if( JSON.stringify( array[ i ] ) === oStr )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 /* Maze Generation */
 // From http://weblog.jamisbuck.org/2011/1/10/maze-generation-prim-s-algorithm
 
@@ -27,6 +44,18 @@ OPPOSITE[ S ] = N;
 OPPOSITE[ E ] = W;
 OPPOSITE[ W ] = E;
 
+var DR = { };
+DR[ N ] = -1;
+DR[ S ] = 1;
+DR[ E ] = 0;
+DR[ W ] = 0;
+
+var DC = { };
+DC[ N ] = 0;
+DC[ S ] = 0;
+DC[ E ] = 1;
+DC[ W ] = -1;
+
 function direction( r1, c1, r2, c2 )
 {
     if( c1 < c2 )
@@ -50,6 +79,31 @@ function direction( r1, c1, r2, c2 )
 function MazeGeneration( maze )
 {
     this.maze = maze;
+    this.done = false;
+}
+MazeGeneration.prototype.generateStep = function()
+{
+    if( !this.done )
+    {
+        this.done = true;
+    }
+    return this.done;
+};
+MazeGeneration.prototype.generate = function()
+{
+    while( !this.done )
+    {
+        this.done = this.generateStep();
+    }
+};
+MazeGeneration.prototype.getFill = function( r, c )
+{
+    return "white";
+};
+
+function PrimsAlgorithm( maze )
+{
+    MazeGeneration.call( this, maze );
 
     this._frontier = [ ];
 
@@ -57,7 +111,8 @@ function MazeGeneration( maze )
     var c = Math.floor( Math.random() * this.maze.columns );
     this.mark( r, c );
 }
-MazeGeneration.prototype.addFrontier = function( r, c )
+PrimsAlgorithm.prototype = Object.create( MazeGeneration.prototype );
+PrimsAlgorithm.prototype.addFrontier = function( r, c )
 {
     if( r >= 0 && r < this.maze.rows && c >= 0 && c < this.maze.columns && this.maze.get( r, c ) === 0 )
     {
@@ -65,7 +120,7 @@ MazeGeneration.prototype.addFrontier = function( r, c )
         this._frontier.push( new Cell( r, c ) );
     }
 };
-MazeGeneration.prototype.mark = function( r, c )
+PrimsAlgorithm.prototype.mark = function( r, c )
 {
     this.maze.set( r, c, this.maze.get( r, c ) | IN );
     this.addFrontier( r - 1, c );
@@ -73,7 +128,7 @@ MazeGeneration.prototype.mark = function( r, c )
     this.addFrontier( r + 1, c );
     this.addFrontier( r, c + 1 );
 };
-MazeGeneration.prototype.inNeighbors = function( r, c )
+PrimsAlgorithm.prototype.inNeighbors = function( r, c )
 {
     var n = [ ];
     if( c > 0 && ( this.maze.get( r, c - 1 ) & IN ) !== 0 )
@@ -94,7 +149,7 @@ MazeGeneration.prototype.inNeighbors = function( r, c )
     }
     return n;
 };
-MazeGeneration.prototype.generateStep = function()
+PrimsAlgorithm.prototype.generateStep = function()
 {
     if( this._frontier.length > 0 )
     {
@@ -110,6 +165,90 @@ MazeGeneration.prototype.generateStep = function()
     }
     return this._frontier.length === 0;
 };
+PrimsAlgorithm.prototype.getFill = function( r, c )
+{
+    for( var i = 0; i < this._frontier.length; i++ )
+    {
+        var cell = this._frontier[ i ];
+        if( r === cell.r && c === cell.c )
+        {
+            return "pink";
+        }
+    }
+    return "white";
+};
+
+function GrowingTree( maze )
+{
+    MazeGeneration.call( this, maze );
+
+    var row = Math.floor( Math.random() * this.maze.rows );
+    var col = Math.floor( Math.random() * this.maze.columns );
+    this._cells = [ new Cell( row, col ) ];
+}
+GrowingTree.prototype = Object.create( MazeGeneration.prototype );
+GrowingTree.prototype.nextIndex = function( method )
+{
+    var length = this._cells.length;
+    if( method === "random" )
+    {
+        return Math.floor( Math.random() * length );
+    }
+    else if( method === "oldest" )
+    {
+        return 0;
+    }
+    else if( method === "newest" )
+    {
+        return length - 1;
+    }
+    else
+    {
+        throw new Error( "' " + method + "' is not a valid index selection method." );
+    }
+};
+GrowingTree.prototype.generateStep = function()
+{
+    if( this._cells.length > 0 )
+    {
+        var index = this.nextIndex( "random" );
+        var cell = this._cells[ index ];
+
+        var directions = [ N, S, E, W ];
+        directions.shuffle();
+        for( var i = 0; i < directions.length; i++ )
+        {
+            var dir = directions[ i ];
+            var nr = cell.r + DR[ dir ];
+            var nc = cell.c + DC[ dir ];
+            if( this.maze.get( nr, nc ) === 0 && this.maze.isValid( nr, nc ) )
+            {
+                this.maze.carve( cell.r, cell.c, dir );
+                this._cells.push( new Cell( nr, nc ) );
+                index = -1;
+                break;
+            }
+        }
+
+        if( index !== -1 )
+        {
+            this._cells.splice( index, 1 );
+        }
+    }
+    return this._cells.length === 0;
+};
+GrowingTree.prototype.getFill = function( r, c )
+{
+    if( contains( this._cells, new Cell( r, c ) ) )
+    {
+        return "pink";
+    }
+    if( this.maze.get( r, c ) === 0 )
+    {
+        return "#CCCCCC";
+    }
+    return "white";
+};
 
 function Maze( rows, columns )
 {
@@ -118,8 +257,31 @@ function Maze( rows, columns )
     this.done = false;
 
     this._maze = [ ];
-    this._generation = new MazeGeneration( this );
+    this._generation = new GrowingTree( this );
 }
+Maze.prototype.isValid = function( r, c )
+{
+    return 0 <= r && r < this.rows && 0 <= c && c < this.columns;
+};
+Maze.prototype.carve = function( r, c, direction )
+{
+    var nr = DR[ direction ] + r;
+    var nc = DC[ direction ] + c;
+    if( this.isValid( nr, nc ) )
+    {
+        this.or( r, c, direction );
+        this.or( nr, nc, OPPOSITE[ direction ] );
+        return true;
+    }
+    return false;
+};
+Maze.prototype.or = function( r, c, value )
+{
+    if( this.isValid( r, c ) )
+    {
+        this.set( r, c, this.get( r, c ) | value );
+    }
+};
 Maze.prototype.generateStep = function()
 {
     return this._generation.generateStep();
@@ -177,6 +339,17 @@ Maze.prototype.get = function( row, col )
 };
 Maze.prototype.draw = function( ctx, getFillFunc )
 {
+    if( typeof getFillFunc !== "function" )
+    {
+        getFillFunc = ( function( generation )
+        {
+            return function( r, c )
+            {
+                return generation.getFill( r, c );
+            }
+        } )( this._generation );
+    }
+
     var width = ctx.canvas.width;
     var height = ctx.canvas.height;
     var size = Math.min( width, height ) - 2 * padding;

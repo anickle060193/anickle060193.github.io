@@ -1,3 +1,5 @@
+"use strict";
+
 /* Includes */
 
 /// <reference path="../typings/jquery/jquery.d.ts"/>
@@ -59,19 +61,6 @@ function setupValidators()
 
 var maze = null;
 
-function getFill( r, c )
-{
-    for( var i = 0; i < maze._generation._frontier.length; i++ )
-    {
-        var cell = maze._generation._frontier[ i ];
-        if( r === cell.r && c === cell.c )
-        {
-            return "pink";
-        }
-    }
-    return "white";
-}
-
 function generate()
 {
     var rows = Number( rowsInput.value );
@@ -101,7 +90,7 @@ function render()
 
     if( maze != null )
     {
-        maze.draw( context, getFill );
+        maze.draw( context );
     }
 }
 
