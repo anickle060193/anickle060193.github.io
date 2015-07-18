@@ -22,7 +22,7 @@ function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-
+    
     context.setTransform( 1, 0, 0, 1, canvas.width / 2, canvas.height / 2 );
 
     render();
@@ -97,18 +97,17 @@ function Line( startX, startY, endX, endY )
 
 var fractal = null;
 
-function Fractal( color, lineWidth )
+function Fractal( lineWidth )
 {
-    this.color = color;
     this.lineWidth = lineWidth;
 }
 Fractal.prototype.draw = function()
 {
 };
 
-function TreeFractal( color, lineWidth, depth, angleScale )
+function TreeFractal( lineWidth, depth, angleScale )
 {
-    Fractal.call( this, color, lineWidth );
+    Fractal.call( this, lineWidth );
 
     this.depth = depth;
     this.angleScale = angleScale;
@@ -167,15 +166,126 @@ TreeFractal.prototype.draw = function()
     }
 };
 
-function generateFractal()
+function DragonCurve( lineWidth, iterations )
 {
-    var color = getColor();
+    Fractal.call( this, lineWidth );
+    
+    this.iterations = iterations;
+    this.width = { min: Number.MAX_VALUE, max: Number.MIN_VALUE };
+    this.height = { min: Number.MAX_VALUE, max: Number.MIN_VALUE };
+    this.translate = new Point( 0, 0 );
+
+    this._lines = [ DragonCurve.Up ];
+    this.generate();
+}
+DragonCurve.prototype = Object.create( Fractal.prototype );
+DragonCurve.Left = "L";
+DragonCurve.Right = "R";
+DragonCurve.Up = "U";
+DragonCurve.Down = "D";
+DragonCurve.Rotate = { };
+DragonCurve.Rotate[ DragonCurve.Left ] = DragonCurve.Up;
+DragonCurve.Rotate[ DragonCurve.Right ] = DragonCurve.Down;
+DragonCurve.Rotate[ DragonCurve.Up ] = DragonCurve.Right;
+DragonCurve.Rotate[ DragonCurve.Down ] = DragonCurve.Left;
+DragonCurve.Shift = { };
+DragonCurve.Shift[ DragonCurve.Left ] = new Point( -1, 0 );
+DragonCurve.Shift[ DragonCurve.Right ] = new Point( 1, 0 );
+DragonCurve.Shift[ DragonCurve.Up ] = new Point( 0, -1 );
+DragonCurve.Shift[ DragonCurve.Down ] = new Point( 0, 1 );
+DragonCurve.prototype._generate = function()
+{
+    for( var i = this._lines.length - 1; i >= 0; i-- )
+    {
+        this._lines.push( DragonCurve.Rotate[ this._lines[ i ] ] );
+    }
+};
+DragonCurve.prototype.generate = function()
+{
+    for( var i = 0; i < this.iterations; i++ )
+    {
+        this._generate();
+    }
+    var leftRights = 0;
+    var upDowns = 0;
+    for( var i = 0; i < this._lines.length; i++ )
+    {
+        var line = this._lines[ i ];
+        if( line === DragonCurve.Left )
+        {
+            leftRights--;
+        }
+        else if( line === DragonCurve.Right )
+        {
+            leftRights++;
+        }
+        else if( line === DragonCurve.Up )
+        {
+            upDowns--;
+        }
+        else if( line === DragonCurve.Down )
+        {
+            upDowns++;
+        }
+        this.width.min = Math.min( this.width.min, leftRights );
+        this.width.max = Math.max( this.width.max, leftRights );
+        this.height.min = Math.min( this.height.min, upDowns );
+        this.height.max = Math.max( this.height.max, upDowns );
+    }
+};
+DragonCurve.prototype.draw = function()
+{
+    var width = this.width.max - this.width.min;
+    var height = this.height.max - this.height.min;
+    var shiftScale = Math.min( canvas.width * 0.9 / width, canvas.height * 0.9 / height );
+    
+    context.setTransform( 1, 0, 0, 1, canvas.width / 2, canvas.height / 2 );
+    fillCircle( context, 0, 0, 5, "green" );
+    
+    var xShift = canvas.width / 2 - this.width.min * shiftScale / 2;
+    var yShift = canvas.height / 2 - this.height.min * shiftScale / 2;
+    
+    fillCircle( context, -width * shiftScale / 2, -height * shiftScale / 2, 5, "blue" );
+    
+    context.setTransform( 1, 0, 0, 1, xShift, yShift );
+    fillCircle( context, 0, 0, 5, "red" );
+    
+    var x = 0;
+    var y = 0;
+    context.beginPath();
+    context.moveTo( x, y );
+    for( var i = 0; i < this._lines.length; i++ )
+    {
+        var shift = DragonCurve.Shift[ this._lines[ i ] ];
+        x += shift.x * shiftScale;
+        y += shift.y * shiftScale;
+        context.lineTo( x, y );
+    }
+    context.stroke();
+};
+
+var fractalsCreators = { };
+fractalsCreators[ "Tree" ] = function()
+{
     var lineWidth = Number( lineWidthInput.value );
     var depth = Number( depthInput.value );
     var angleScale = getAngleScale();
 
-    fractal = new TreeFractal( color, lineWidth, depth, angleScale );
+    fractal = new TreeFractal( lineWidth, depth, angleScale );
     render();
+};
+fractalsCreators[ "Dragon Curve" ] = function()
+{
+    var lineWidth = Number( lineWidthInput.value );
+    var depth = Number( depthInput.value );
+
+    fractal = new DragonCurve( lineWidth, depth );
+    render();
+};
+
+function generateFractal()
+{
+    fractalsCreators[ typeSelect.value ]();
 }
 
 
@@ -183,7 +293,7 @@ function generateFractal()
 
 typeSelect.addEventListener( "change", function()
 {
-    setTracing( typeSelect.value );
+    //setFractal( typeSelect.value );
 } );
 
 drawButton.addEventListener( "click", function()
@@ -248,8 +358,7 @@ function render()
 
 ( function()
 {
+    generateFractal();
     onWindowResize();
     setupDisplayValidators();
-
-    generateFractal();
 } )();
