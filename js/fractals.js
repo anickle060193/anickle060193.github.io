@@ -172,91 +172,63 @@ function DragonCurve( lineWidth, iterations )
     Fractal.call( this, lineWidth );
     
     this.iterations = iterations;
-    this.width = { min: Number.MAX_VALUE, max: Number.MIN_VALUE };
-    this.height = { min: Number.MAX_VALUE, max: Number.MIN_VALUE };
-    this.translate = new Point( 0, 0 );
-
-    this._lines = [ DragonCurve.Down ];
-    this.generate();
 }
 DragonCurve.prototype = Object.create( Fractal.prototype );
-DragonCurve.Left = "L";
-DragonCurve.Right = "R";
-DragonCurve.Up = "U";
-DragonCurve.Down = "D";
-DragonCurve.Rotate = { };
-DragonCurve.Rotate[ DragonCurve.Left ] = DragonCurve.Up;
-DragonCurve.Rotate[ DragonCurve.Right ] = DragonCurve.Down;
-DragonCurve.Rotate[ DragonCurve.Up ] = DragonCurve.Right;
-DragonCurve.Rotate[ DragonCurve.Down ] = DragonCurve.Left;
-DragonCurve.Shift = { };
-DragonCurve.Shift[ DragonCurve.Left ] = new Point( -1, 0 );
-DragonCurve.Shift[ DragonCurve.Right ] = new Point( 1, 0 );
-DragonCurve.Shift[ DragonCurve.Up ] = new Point( 0, -1 );
-DragonCurve.Shift[ DragonCurve.Down ] = new Point( 0, 1 );
-DragonCurve.prototype._generate = function()
+DragonCurve.prototype._draw = function( a, c, depth, lr )
 {
-    for( var i = this._lines.length - 1; i >= 0; i-- )
+    if( depth === 0 )
     {
-        this._lines.push( DragonCurve.Rotate[ this._lines[ i ] ] );
+        context.moveTo( a[ 0 ], a[ 1 ] );
+        context.lineTo( c[ 0 ], c[ 1 ] );
     }
-};
-DragonCurve.prototype.generate = function()
-{
-    for( var i = 0; i < this.iterations; i++ )
+    else
     {
-        this._generate();
-    }
-    var leftRights = 0;
-    var upDowns = 0;
-    for( var i = 0; i < this._lines.length; i++ )
-    {
-        var line = this._lines[ i ];
-        if( line === DragonCurve.Left )
+        var growNewPoint = function ( ptA, ptC, lr )
         {
-            leftRights--;
-        }
-        else if( line === DragonCurve.Right )
-        {
-            leftRights++;
-        }
-        else if( line === DragonCurve.Up )
-        {
-            upDowns--;
-        }
-        else if( line === DragonCurve.Down )
-        {
-            upDowns++;
-        }
-        this.width.min = Math.min( this.width.min, leftRights );
-        this.width.max = Math.max( this.width.max, leftRights );
-        this.height.min = Math.min( this.height.min, upDowns );
-        this.height.max = Math.max( this.height.max, upDowns );
+            var left  = [ [ 1/2,-1/2 ], 
+                          [ 1/2, 1/2 ] ]; 
+            
+            var right = [ [ 1/2, 1/2 ],
+                          [-1/2, 1/2 ] ];
+            
+            return matrix.plus( ptA, matrix.mult( lr ? left : right, matrix.minus( c, a ) ) );
+        }; 
+        
+        var ptB = growNewPoint( a, c, lr, depth );
+        
+        this._draw( ptB, a, depth - 1, lr );
+        this._draw( ptB, c, depth - 1, lr );
     }
 };
 DragonCurve.prototype.draw = function()
-{
-    var width = this.width.max - this.width.min;
-    var height = this.height.max - this.height.min;
-    var shiftScale = Math.min( canvas.width * 0.9 / width, canvas.height * 0.9 / height );
+{   
+    var width = canvas.width;
+    var height = canvas.height;
     
-    var fractalWidth = ( this.width.min + this.width.max ) * shiftScale;
-    var fractalHeight = ( this.height.max + this.height.min ) * shiftScale;
+    var size = Math.min( height, width / 1.5 ) * 0.9;
     
-    context.setTransform( 1, 0, 0, 1, ( canvas.width - fractalWidth ) / 2, ( canvas.height - fractalHeight ) / 2 );
-    
-    var x = 0;
-    var y = 0;
-    context.beginPath();
-    context.moveTo( x, y );
-    for( var i = 0; i < this._lines.length; i++ )
-    {
-        var shift = DragonCurve.Shift[ this._lines[ i ] ];
-        x += shift.x * shiftScale;
-        y += shift.y * shiftScale;
-        context.lineTo( x, y );
-    }
+    var x1 = -size * ( 0.75 - 1 / 6 );
+    var x2 = size * ( 0.75 - 1 / 3 );
+    var y = height * 2 / 3 + -height / 2;
+ 
+    context.beginPath();   
+    this._draw( [ x1, y ], [ x2, y ], this.iterations, false );
     context.stroke();
+};
+
+var matrix = {
+    mult: function( m, v )
+    {
+        return [ m[ 0 ][ 0 ] * v[ 0 ] + m[ 0 ][ 1 ] * v[ 1 ], m[ 1 ][ 0 ] * v[ 0 ] + m[ 1 ][ 1 ] * v[ 1 ] ];
+    },
+    minus: function( a, b )
+    {
+        return [ a[ 0 ] - b[ 0 ], a[ 1 ] - b[ 1 ] ];
+    },
+    plus: function( a, b )
+    {
+        return [ a[ 0 ] + b[ 0 ], a[ 1 ] + b[ 1 ] ];
+    }
 };
 
 var fractalsCreators = { };
