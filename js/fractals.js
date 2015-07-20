@@ -30,6 +30,7 @@ function onWindowResize()
 
 onDebouncedWindowResize( onWindowResize );
 
+
 /* Validation */
 
 var display = new ValidationGroup();
@@ -175,7 +176,7 @@ function DragonCurve( lineWidth, iterations )
     this.height = { min: Number.MAX_VALUE, max: Number.MIN_VALUE };
     this.translate = new Point( 0, 0 );
 
-    this._lines = [ DragonCurve.Up ];
+    this._lines = [ DragonCurve.Down ];
     this.generate();
 }
 DragonCurve.prototype = Object.create( Fractal.prototype );
@@ -239,16 +240,10 @@ DragonCurve.prototype.draw = function()
     var height = this.height.max - this.height.min;
     var shiftScale = Math.min( canvas.width * 0.9 / width, canvas.height * 0.9 / height );
     
-    context.setTransform( 1, 0, 0, 1, canvas.width / 2, canvas.height / 2 );
-    fillCircle( context, 0, 0, 5, "green" );
+    var fractalWidth = ( this.width.min + this.width.max ) * shiftScale;
+    var fractalHeight = ( this.height.max + this.height.min ) * shiftScale;
     
-    var xShift = canvas.width / 2 - this.width.min * shiftScale / 2;
-    var yShift = canvas.height / 2 - this.height.min * shiftScale / 2;
-    
-    fillCircle( context, -width * shiftScale / 2, -height * shiftScale / 2, 5, "blue" );
-    
-    context.setTransform( 1, 0, 0, 1, xShift, yShift );
-    fillCircle( context, 0, 0, 5, "red" );
+    context.setTransform( 1, 0, 0, 1, ( canvas.width - fractalWidth ) / 2, ( canvas.height - fractalHeight ) / 2 );
     
     var x = 0;
     var y = 0;
