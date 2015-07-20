@@ -174,6 +174,31 @@ function DragonCurve( lineWidth, iterations )
     this.iterations = iterations;
 }
 DragonCurve.prototype = Object.create( Fractal.prototype );
+DragonCurve.matrix = {
+    mult: function( m, v )
+    {
+        return [ m[ 0 ][ 0 ] * v[ 0 ] + m[ 0 ][ 1 ] * v[ 1 ], m[ 1 ][ 0 ] * v[ 0 ] + m[ 1 ][ 1 ] * v[ 1 ] ];
+    },
+    minus: function( a, b )
+    {
+        return [ a[ 0 ] - b[ 0 ], a[ 1 ] - b[ 1 ] ];
+    },
+    plus: function( a, b )
+    {
+        return [ a[ 0 ] + b[ 0 ], a[ 1 ] + b[ 1 ] ];
+    }
+};
+DragonCurve.Left = [ [ 1/2,-1/2 ], 
+                     [ 1/2, 1/2 ] ];
+DragonCurve.Right = [ [ 1/2, 1/2 ],
+                      [-1/2, 1/2 ] ];
+DragonCurve.growNewPoint = function( a, c, lr )
+{
+    var diff = DragonCurve.matrix.minus( c, a );
+    var directionMatrix = lr ? DragonCurve.Left : DragonCurve.Right;
+    var product = DragonCurve.matrix.mult( directionMatrix, diff )
+    return DragonCurve.matrix.plus( a, product );
+};
 DragonCurve.prototype._draw = function( a, c, depth, lr )
 {
     if( depth === 0 )
@@ -183,21 +208,10 @@ DragonCurve.prototype._draw = function( a, c, depth, lr )
     }
     else
     {
-        var growNewPoint = function ( ptA, ptC, lr )
-        {
-            var left  = [ [ 1/2,-1/2 ], 
-                          [ 1/2, 1/2 ] ]; 
-            
-            var right = [ [ 1/2, 1/2 ],
-                          [-1/2, 1/2 ] ];
-            
-            return matrix.plus( ptA, matrix.mult( lr ? left : right, matrix.minus( c, a ) ) );
-        }; 
+        var b = DragonCurve.growNewPoint( a, c, lr, depth );
         
-        var ptB = growNewPoint( a, c, lr, depth );
-        
-        this._draw( ptB, a, depth - 1, lr );
-        this._draw( ptB, c, depth - 1, lr );
+        this._draw( b, a, depth - 1, lr );
+        this._draw( b, c, depth - 1, lr );
     }
 };
 DragonCurve.prototype.draw = function()
@@ -214,21 +228,6 @@ DragonCurve.prototype.draw = function()
     context.beginPath();   
     this._draw( [ x1, y ], [ x2, y ], this.iterations, false );
     context.stroke();
-};
-
-var matrix = {
-    mult: function( m, v )
-    {
-        return [ m[ 0 ][ 0 ] * v[ 0 ] + m[ 0 ][ 1 ] * v[ 1 ], m[ 1 ][ 0 ] * v[ 0 ] + m[ 1 ][ 1 ] * v[ 1 ] ];
-    },
-    minus: function( a, b )
-    {
-        return [ a[ 0 ] - b[ 0 ], a[ 1 ] - b[ 1 ] ];
-    },
-    plus: function( a, b )
-    {
-        return [ a[ 0 ] + b[ 0 ], a[ 1 ] + b[ 1 ] ];
-    }
 };
 
 var fractalsCreators = { };
