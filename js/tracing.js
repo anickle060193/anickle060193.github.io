@@ -375,7 +375,7 @@ Tracing.prototype.setInputs = function()
     }
     if( this.data.lw !== undefined )
     {
-        lineWidth.value = this.data.lw;
+        lineWidthInput.value = this.data.lw;
     }
     if( this.data.sm !== undefined )
     {

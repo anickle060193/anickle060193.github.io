@@ -18,6 +18,9 @@ var angleScaleInput = document.getElementById( "angleScale" );
 var typeSelect = document.getElementById( "type" );
 var drawButton = document.getElementById( "draw" );
 
+var redrawButton = document.getElementById( "redraw" );
+var delayFactorInput = document.getElementById( "delayFactor" );
+
 function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
@@ -104,9 +107,12 @@ function Fractal( color, lineWidth )
     this.rainbow = this.color === "rainbow";
     this.lineWidth = lineWidth;
 }
-Fractal.prototype.draw = function()
+Fractal.prototype.draw = function() { };
+Fractal.prototype.generateStep = function()
 {
+    return false;
 };
+Fractal.prototype.reset = function() { };
 
 function TreeFractal( color, lineWidth, depth, angleScale )
 {
@@ -119,6 +125,7 @@ function TreeFractal( color, lineWidth, depth, angleScale )
     this._maxX = 0;
 
     this._lines = [ ];
+    this.reset();
     this.generate();
 }
 TreeFractal.prototype = Object.create( Fractal.prototype );
@@ -144,6 +151,19 @@ TreeFractal.prototype.generate = function()
     }
     this._generate( 0, 0, -Math.PI / 2, this.depth );
 };
+TreeFractal.prototype.generateStep = function()
+{
+    if( this._currentStep > 1 )
+    {
+        this._currentStep--;
+        return true;
+    }
+    return false;
+};
+TreeFractal.prototype.reset = function()
+{
+    this._currentStep = this.depth + 1;
+};
 TreeFractal.prototype.drawLine = function( line, color, lineWidth )
 {
     context.strokeStyle = this.rainbow ? color : this.color;
@@ -159,7 +179,7 @@ TreeFractal.prototype.drawLine = function( line, color, lineWidth )
 };
 TreeFractal.prototype.draw = function()
 {
-    for( var i = 1; i <= this.depth; i++ )
+    for( var i = this._currentStep; i <= this.depth; i++ )
     {
         var color = HSVtoRGB( i / this.depth, 0.85, 0.85 );
         for( var j = 0; j < this._lines[ i ].length; j++ )
@@ -180,6 +200,7 @@ function DragonCurve( color, lineWidth, iterations )
         this.color = 0;
         this.colorStep = 1 / Math.pow( 2, this.iterations );
     }
+    this.reset();
 }
 DragonCurve.prototype = Object.create( Fractal.prototype );
 DragonCurve.matrix = {
@@ -206,6 +227,20 @@ DragonCurve.growNewPoint = function( a, c, lr )
     var directionMatrix = lr ? DragonCurve.Left : DragonCurve.Right;
     var product = DragonCurve.matrix.mult( directionMatrix, diff )
     return DragonCurve.matrix.plus( a, product );
+};
+DragonCurve.prototype.reset = function()
+{
+    this.currentStep = 0;
+};
+DragonCurve.prototype.generateStep = function()
+{
+    if( this.currentStep < this.iterations )
+    {
+        this.currentStep++;
+        this.colorStep = 1 / Math.pow( 2, this.currentStep );
+        return true;
+    }
+    return false;
 };
 DragonCurve.prototype._draw = function( a, c, depth, lr )
 {
@@ -245,7 +280,7 @@ DragonCurve.prototype.draw = function()
     {
         context.strokeStyle = this.color;
     }
-    this._draw( [ x1, y ], [ x2, y ], this.iterations, false );
+    this._draw( [ x1, y ], [ x2, y ], this.currentStep, false );
 };
 
 var fractalsCreators = { };
@@ -277,6 +312,18 @@ function generateFractal()
 
 /* Input */
 
+function startDrawing()
+{
+    fractal.reset();
+    t = 0;
+    render();
+}
+
+redrawButton.addEventListener( "click", function()
+{
+    startDrawing();
+} );
+
 typeSelect.addEventListener( "change", function()
 {
     //setFractal( typeSelect.value );
@@ -289,6 +336,16 @@ drawButton.addEventListener( "click", function()
         $( ".modal" ).modal( "hide" );
 
         generateFractal();
+        startDrawing();
+    }
+} );
+
+delayFactorInput.addEventListener( "change", function()
+{
+    var num = Number( delayFactorInput.value );
+    if( isFinite( num ) && num > 0 )
+    {
+        delay = num;
     }
 } );
 
@@ -326,8 +383,20 @@ function getAngleScale()
 
 /* Animation */
 
+var delay = 0.5;
+var t = 0;
+
 function update( elapsedTime )
 {
+    t += elapsedTime;
+    if( t >= delay )
+    {
+        if( fractal.generateStep() )
+        {
+            render();
+        }
+        t = 0;
+    }
 }
 
 
@@ -351,4 +420,6 @@ function render()
     generateFractal();
     onWindowResize();
     setupDisplayValidators();
+    
+    startAnimation( update );
 } )();
