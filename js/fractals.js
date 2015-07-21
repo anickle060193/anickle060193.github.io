@@ -98,21 +98,23 @@ function Line( startX, startY, endX, endY )
 
 var fractal = null;
 
-function Fractal( lineWidth )
+function Fractal( color, lineWidth )
 {
+    this.color = color;
+    this.rainbow = this.color === "rainbow";
     this.lineWidth = lineWidth;
 }
 Fractal.prototype.draw = function()
 {
 };
 
-function TreeFractal( lineWidth, depth, angleScale )
+function TreeFractal( color, lineWidth, depth, angleScale )
 {
-    Fractal.call( this, lineWidth );
+    Fractal.call( this, color, lineWidth );
 
     this.depth = depth;
     this.angleScale = angleScale;
-
+    
     this._maxY = 0;
     this._maxX = 0;
 
@@ -144,7 +146,7 @@ TreeFractal.prototype.generate = function()
 };
 TreeFractal.prototype.drawLine = function( line, color, lineWidth )
 {
-    context.strokeStyle = color;
+    context.strokeStyle = this.rainbow ? color : this.color;
     context.lineWidth = lineWidth;
     context.beginPath();
     var x1 = line.start.x / this._maxX * canvas.width * 0.45;
@@ -167,11 +169,17 @@ TreeFractal.prototype.draw = function()
     }
 };
 
-function DragonCurve( lineWidth, iterations )
+function DragonCurve( color, lineWidth, iterations )
 {
-    Fractal.call( this, lineWidth );
+    Fractal.call( this, color, lineWidth );
     
     this.iterations = iterations;
+    
+    if( this.rainbow )
+    {
+        this.color = 0;
+        this.colorStep = 1 / Math.pow( 2, this.iterations );
+    }
 }
 DragonCurve.prototype = Object.create( Fractal.prototype );
 DragonCurve.matrix = {
@@ -203,8 +211,15 @@ DragonCurve.prototype._draw = function( a, c, depth, lr )
 {
     if( depth === 0 )
     {
+        if( this.rainbow )
+        {
+            context.strokeStyle = HSVtoRGB( this.color, 0.85, 0.85 );
+            this.color += this.colorStep;
+        }
+        context.beginPath();
         context.moveTo( a[ 0 ], a[ 1 ] );
         context.lineTo( c[ 0 ], c[ 1 ] );
+        context.stroke();
     }
     else
     {
@@ -225,27 +240,32 @@ DragonCurve.prototype.draw = function()
     var x2 = size * ( 0.75 - 1 / 3 );
     var y = height * 2 / 3 + -height / 2;
  
-    context.beginPath();   
+    context.lineWidth = this.lineWidth;
+    if( !this.rainbow )
+    {
+        context.strokeStyle = this.color;
+    }
     this._draw( [ x1, y ], [ x2, y ], this.iterations, false );
-    context.stroke();
 };
 
 var fractalsCreators = { };
 fractalsCreators[ "Tree" ] = function()
 {
+    var color = getColor();
     var lineWidth = Number( lineWidthInput.value );
     var depth = Number( depthInput.value );
     var angleScale = getAngleScale();
 
-    fractal = new TreeFractal( lineWidth, depth, angleScale );
+    fractal = new TreeFractal( color, lineWidth, depth, angleScale );
     render();
 };
 fractalsCreators[ "Dragon Curve" ] = function()
 {
+    var color = getColor();
     var lineWidth = Number( lineWidthInput.value );
     var depth = Number( depthInput.value );
 
-    fractal = new DragonCurve( lineWidth, depth );
+    fractal = new DragonCurve( color, lineWidth, depth );
     render();
 };
 
@@ -278,6 +298,10 @@ function getColor()
     if( validHexColorString( color ) )
     {
         return color;
+    }
+    else if( color.toLowerCase() === "rainbow" )
+    {
+        return "rainbow";
     }
     else
     {
