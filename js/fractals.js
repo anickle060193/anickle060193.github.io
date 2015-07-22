@@ -398,8 +398,18 @@ MandelbrotSet.prototype.draw = function()
         return maxIter - i;
     }
 
-    var width = Math.min( canvas.width, canvas.height );
-    var height = width * 2 / 3;
+    var width = 0;
+    var height = 0;
+    if( canvas.width / 3 < canvas.height / 2 )
+    {
+        width = canvas.width;
+        height = Math.floor( width * ( 2 / 3 ) );
+    }
+    else
+    {
+        height = canvas.height;
+        width = Math.floor( height * ( 3 / 2 ) );
+    }
 
     var xmin = -2;
     var xmax = 1;
@@ -429,19 +439,19 @@ MandelbrotSet.prototype.draw = function()
                 var c = 3 * Math.log( i ) / Math.log( this.iterations - 1 );
                 if( c < 1 )
                 {
-                    pix[ ppos ] = 255 * c;
+                    pix[ ppos + 0 ] = 255 * ( c - 0 );
                     pix[ ppos + 1 ] = 0;
                     pix[ ppos + 2 ] = 0;
                 }
                 else if( c < 2 )
                 {
-                    pix[ ppos ] = 255;
+                    pix[ ppos + 0 ] = 255;
                     pix[ ppos + 1 ] = 255 * ( c - 1 );
                     pix[ ppos + 2 ] = 0;
                 }
                 else
                 {
-                    pix[ ppos ] = 255;
+                    pix[ ppos + 0 ] = 255;
                     pix[ ppos + 1 ] = 255;
                     pix[ ppos + 2 ] = 255 * ( c - 2 );
                 }
