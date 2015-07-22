@@ -25,7 +25,7 @@ function onWindowResize()
 {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    
+
     context.setTransform( 1, 0, 0, 1, canvas.width / 2, canvas.height / 2 );
 
     render();
@@ -120,7 +120,7 @@ function TreeFractal( color, lineWidth, depth, angleScale )
 
     this.depth = depth;
     this.angleScale = angleScale;
-    
+
     this._maxY = 0;
     this._maxX = 0;
 
@@ -192,9 +192,9 @@ TreeFractal.prototype.draw = function()
 function DragonCurve( color, lineWidth, iterations )
 {
     Fractal.call( this, color, lineWidth );
-    
+
     this.iterations = iterations;
-    
+
     if( this.rainbow )
     {
         this.color = 0;
@@ -217,7 +217,7 @@ DragonCurve.matrix = {
         return [ a[ 0 ] + b[ 0 ], a[ 1 ] + b[ 1 ] ];
     }
 };
-DragonCurve.Left = [ [ 1/2,-1/2 ], 
+DragonCurve.Left = [ [ 1/2,-1/2 ],
                      [ 1/2, 1/2 ] ];
 DragonCurve.Right = [ [ 1/2, 1/2 ],
                       [-1/2, 1/2 ] ];
@@ -259,28 +259,110 @@ DragonCurve.prototype._draw = function( a, c, depth, lr )
     else
     {
         var b = DragonCurve.growNewPoint( a, c, lr, depth );
-        
+
         this._draw( b, a, depth - 1, lr );
         this._draw( b, c, depth - 1, lr );
     }
 };
 DragonCurve.prototype.draw = function()
-{   
+{
     var width = canvas.width;
     var height = canvas.height;
-    
+
     var size = Math.min( height, width / 1.5 ) * 0.9;
-    
+
     var x1 = -size * ( 0.75 - 1 / 6 );
     var x2 = size * ( 0.75 - 1 / 3 );
     var y = height * 2 / 3 + -height / 2;
- 
+
     context.lineWidth = this.lineWidth;
     if( !this.rainbow )
     {
         context.strokeStyle = this.color;
     }
     this._draw( [ x1, y ], [ x2, y ], this.currentStep, false );
+};
+
+function Triangle( a, b, c )
+{
+    this.a = a;
+    this.b = b;
+    this.c = c;
+}
+Triangle.prototype.divide = function()
+{
+    var ab = new Point( ( this.a.x + this.b.x ) / 2, ( this.a.y + this.b.y ) / 2 );
+    var ac = new Point( ( this.a.x + this.c.x ) / 2, ( this.a.y + this.c.y ) / 2 );
+    var bc = new Point( ( this.b.x + this.c.x ) / 2, ( this.b.y + this.c.y ) / 2 );
+    return [
+        new Triangle( this.a, ab, ac ),
+        new Triangle( ab, this.b, bc ),
+        new Triangle( ac, bc, this.c )
+    ];
+};
+
+function SierpinskiTriangle( color, iterations )
+{
+    Fractal.call( this, color, 0 );
+
+    this.iterations = Math.min( iterations, 9 );
+    this.triangles = null;
+    this.reset();
+}
+SierpinskiTriangle.prototype = Object.create( Fractal.prototype );
+SierpinskiTriangle.prototype.drawTriangle = function( tri, scale )
+{
+    if( this.rainbow )
+    {
+        var x = ( tri.a.x + tri.b.x + tri.c.x ) / 3;
+        var y = ( tri.a.y + tri.b.y + tri.c.y ) / 3;
+        var dist = Math.sqrt( x * x + y * y );
+        context.fillStyle = HSVtoRGB( dist, 0.85, 0.85 );
+    }
+    context.beginPath();
+    context.moveTo( tri.a.x * scale, tri.a.y * scale );
+    context.lineTo( tri.b.x * scale, tri.b.y * scale );
+    context.lineTo( tri.c.x * scale, tri.c.y * scale );
+    context.fill();
+};
+SierpinskiTriangle.prototype.draw = function()
+{
+    if( !this.rainbow )
+    {
+        context.fillStyle = this.color;
+    }
+    var size = Math.min( canvas.width, canvas.height ) * 0.98;
+    for( var i = 0; i < this.triangles.length; i++ )
+    {
+        this.drawTriangle( this.triangles[ i ], size );
+    }
+};
+SierpinskiTriangle.prototype.reset = function()
+{
+    var side = 1;
+    var height = Math.sqrt( 3 ) / 2 * side;
+    var a = new Point( 0, -height / 2 );
+    var b = new Point( -side / 2 , height / 2 );
+    var c = new Point(  side / 2 , height / 2 );
+    this.triangles = [ new Triangle( a, b, c ) ];
+
+    this.currentIteration = 0;
+};
+SierpinskiTriangle.prototype.generateStep = function()
+{
+    if( this.currentIteration < this.iterations )
+    {
+        this.currentIteration++;
+        var triangles = [ ];
+        for( var i = 0; i < this.triangles.length; i++ )
+        {
+            var ret = this.triangles[ i ].divide();
+            triangles.push.apply( triangles, ret );
+        }
+        this.triangles = triangles;
+        return true;
+    }
+    return false;
 };
 
 var fractalsCreators = { };
@@ -292,7 +374,6 @@ fractalsCreators[ "Tree" ] = function()
     var angleScale = getAngleScale();
 
     fractal = new TreeFractal( color, lineWidth, depth, angleScale );
-    render();
 };
 fractalsCreators[ "Dragon Curve" ] = function()
 {
@@ -301,12 +382,19 @@ fractalsCreators[ "Dragon Curve" ] = function()
     var depth = Number( depthInput.value );
 
     fractal = new DragonCurve( color, lineWidth, depth );
-    render();
+};
+fractalsCreators[ "Sierpinski Triangle" ] = function()
+{
+    var color = getColor();
+    var iterations = Number( depthInput.value );
+
+    fractal = new SierpinskiTriangle( color, iterations );
 };
 
 function generateFractal()
 {
     fractalsCreators[ typeSelect.value ]();
+    render();
 }
 
 
@@ -388,14 +476,17 @@ var t = 0;
 
 function update( elapsedTime )
 {
-    t += elapsedTime;
-    if( t >= delay )
+    if( fractal )
     {
-        if( fractal.generateStep() )
+        t += elapsedTime;
+        if( t >= delay )
         {
-            render();
+            if( fractal.generateStep() )
+            {
+                render();
+            }
+            t = 0;
         }
-        t = 0;
     }
 }
 
@@ -417,9 +508,10 @@ function render()
 
 ( function()
 {
-    generateFractal();
     onWindowResize();
     setupDisplayValidators();
-    
+
     startAnimation( update );
+
+    generateFractal();
 } )();
