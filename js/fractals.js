@@ -365,6 +365,101 @@ SierpinskiTriangle.prototype.generateStep = function()
     return false;
 };
 
+function MandelbrotSet( iterations )
+{
+    Fractal.call( this, "black", 0 );
+
+    this.iterations = iterations * 10;
+}
+MandelbrotSet.prototype = Object.create( Fractal.prototype );
+MandelbrotSet.prototype.reset = function()
+{
+    this.currentStep = 0;
+};
+MandelbrotSet.prototype.draw = function()
+{
+    function mandelIter( cx, cy, maxIter )
+    {
+        var x = 0;
+        var y = 0;
+        var xx = 0;
+        var yy = 0;
+        var xy = 0;
+
+        var i = maxIter;
+        while( i-- && xx + yy <= 4 )
+        {
+            xy = x * y;
+            xx = x * x;
+            yy = y * y;
+            x = xx - yy + cx;
+            y = xy + xy + cy;
+        }
+        return maxIter - i;
+    }
+
+    var width = Math.min( canvas.width, canvas.height );
+    var height = width * 2 / 3;
+
+    var xmin = -2;
+    var xmax = 1;
+    var ymin = -1;
+    var ymax = 1;
+
+    var img = context.getImageData( 0, 0, width, height );
+    var pix = img.data;
+
+    for( var ix = 0; ix < width; ix++ )
+    {
+        for( var iy = 0; iy < height; iy++ )
+        {
+            var x = xmin + ( xmax - xmin ) * ix / ( width - 1 );
+            var y = ymin + ( ymax - ymin ) * iy / ( height - 1 );
+            var i = mandelIter( x, y, this.iterations );
+            var ppos = 4 * ( width * iy + ix );
+
+            if( i > this.iterations )
+            {
+                pix[ ppos ] = 0;
+                pix[ ppos + 1 ] = 0;
+                pix[ ppos + 2 ] = 0;
+            }
+            else
+            {
+                var c = 3 * Math.log( i ) / Math.log( this.iterations - 1 );
+                if( c < 1 )
+                {
+                    pix[ ppos ] = 255 * c;
+                    pix[ ppos + 1 ] = 0;
+                    pix[ ppos + 2 ] = 0;
+                }
+                else if( c < 2 )
+                {
+                    pix[ ppos ] = 255;
+                    pix[ ppos + 1 ] = 255 * ( c - 1 );
+                    pix[ ppos + 2 ] = 0;
+                }
+                else
+                {
+                    pix[ ppos ] = 255;
+                    pix[ ppos + 1 ] = 255;
+                    pix[ ppos + 2 ] = 255 * ( c - 2 );
+                }
+            }
+            pix[ ppos + 3 ] = 255;
+        }
+    }
+    context.save();
+    context.setTransform( 1, 0, 0, 1, 0, 0 );
+    context.fillRect( 0, 0, canvas.width, canvas.height, "black" );
+    context.restore();
+    context.putImageData( img, ( canvas.width - width ) / 2, ( canvas.height - height ) / 2 );
+};
+MandelbrotSet.prototype.generateStep = function()
+{
+
+};
+
 var fractalsCreators = { };
 fractalsCreators[ "Tree" ] = function()
 {
@@ -389,6 +484,12 @@ fractalsCreators[ "Sierpinski Triangle" ] = function()
     var iterations = Number( depthInput.value );
 
     fractal = new SierpinskiTriangle( color, iterations );
+};
+fractalsCreators[ "Mandelbrot Set" ] = function()
+{
+    var iterations = Number( depthInput.value );
+
+    fractal = new MandelbrotSet( iterations );
 };
 
 function generateFractal()
