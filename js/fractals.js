@@ -370,11 +370,12 @@ function MandelbrotSet( iterations )
     Fractal.call( this, "black", 0 );
 
     this.iterations = iterations * 10;
+    this.reset();
 }
 MandelbrotSet.prototype = Object.create( Fractal.prototype );
 MandelbrotSet.prototype.reset = function()
 {
-    this.currentStep = 0;
+    this.currentIteration = 1;
 };
 MandelbrotSet.prototype.draw = function()
 {
@@ -425,10 +426,10 @@ MandelbrotSet.prototype.draw = function()
         {
             var x = xmin + ( xmax - xmin ) * ix / ( width - 1 );
             var y = ymin + ( ymax - ymin ) * iy / ( height - 1 );
-            var i = mandelIter( x, y, this.iterations );
+            var i = mandelIter( x, y, this.currentIteration );
             var ppos = 4 * ( width * iy + ix );
 
-            if( i > this.iterations )
+            if( i > this.currentIteration )
             {
                 pix[ ppos ] = 0;
                 pix[ ppos + 1 ] = 0;
@@ -436,7 +437,7 @@ MandelbrotSet.prototype.draw = function()
             }
             else
             {
-                var c = 3 * Math.log( i ) / Math.log( this.iterations - 1 );
+                var c = 3 * Math.log( i ) / Math.log( this.currentIteration - 1 );
                 if( c < 1 )
                 {
                     pix[ ppos + 0 ] = 255 * ( c - 0 );
@@ -459,16 +460,31 @@ MandelbrotSet.prototype.draw = function()
             pix[ ppos + 3 ] = 255;
         }
     }
-    context.save();
-    context.setTransform( 1, 0, 0, 1, 0, 0 );
-    context.fillRect( 0, 0, canvas.width, canvas.height, "black" );
-    context.restore();
     context.putImageData( img, ( canvas.width - width ) / 2, ( canvas.height - height ) / 2 );
 };
 MandelbrotSet.prototype.generateStep = function()
 {
-
+    if( this.currentIteration < this.iterations )
+    {/*
+        if( this.currentIteration < 10 )
+        {
+            this.currentIteration++;
+        }
+        else
+        {
+            this.currentIteration += 10;
+        }*/
+        this.currentIteration += Math.max( 1, Math.floor( this.currentIteration / 10 ) );
+        return true;
+    }
+    return false;
 };
+
+function SierpinskiCarpet( color, iterations )
+{
+    Fractal.call( this, color );
+}
+SierpinskiCarpet.prototype = Object.create( Fractal.prototype );
 
 var fractalsCreators = { };
 fractalsCreators[ "Tree" ] = function()
