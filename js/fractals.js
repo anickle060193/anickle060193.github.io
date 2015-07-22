@@ -465,26 +465,98 @@ MandelbrotSet.prototype.draw = function()
 MandelbrotSet.prototype.generateStep = function()
 {
     if( this.currentIteration < this.iterations )
-    {/*
-        if( this.currentIteration < 10 )
-        {
-            this.currentIteration++;
-        }
-        else
-        {
-            this.currentIteration += 10;
-        }*/
+    {
         this.currentIteration += Math.max( 1, Math.floor( this.currentIteration / 10 ) );
         return true;
     }
     return false;
 };
 
+function Square( x, y, width, height )
+{
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+
+    this.filled = false;
+}
+Square.prototype.divide = function()
+{
+    var squares = [ ];
+    var w = this.width / 3;
+    var h = this.height / 3;
+    for( var i = 0; i < 3; i++ )
+    {
+        for( var j = 0; j < 3; j++ )
+        {
+            var x = this.x + w * i;
+            var y = this.y + h * j;
+            squares.push( new Square( x, y, w, h ) );
+        }
+    }
+    squares[ 4 ].filled = true;
+    return squares;
+}
+Square.prototype.draw = function( color )
+{
+    if( this.filled )
+    {
+        context.fillStyle = color;
+        context.fillRect( this.x, this.y, this.width, this.height );
+    }
+};
+
 function SierpinskiCarpet( color, iterations )
 {
     Fractal.call( this, color );
+
+    this.iterations = Math.min( 6, iterations );
+    this.squares = null;
+    this.reset();
 }
 SierpinskiCarpet.prototype = Object.create( Fractal.prototype );
+SierpinskiCarpet.prototype.reset = function()
+{
+    this.currentIteration = 0;
+    var size = Math.min( canvas.width, canvas.height ) * 0.95;
+    this.squares = [ new Square( -size / 2, -size / 2, size, size ) ];
+};
+SierpinskiCarpet.prototype.generateStep = function()
+{
+    if( this.currentIteration < this.iterations )
+    {
+        var squares = [ ];
+        for( var i = 0; i < this.squares.length; i++ )
+        {
+            var square = this.squares[ i ];
+            if( square.filled )
+            {
+                squares.push( square );
+            }
+            else
+            {
+                var subSquares = square.divide();
+                squares.push.apply( squares, subSquares );
+            }
+        }
+        this.squares = squares;
+
+        this.currentIteration++;
+        return true;
+    }
+    return false;
+};
+SierpinskiCarpet.prototype.draw = function()
+{
+    var size = Math.min( canvas.width, canvas.height ) * 0.95;
+    context.fillStyle = this.rainbow ? "black" : this.color;
+    context.fillRect( -size / 2, -size / 2, size, size );
+    for( var i = 0; i < this.squares.length; i++ )
+    {
+        this.squares[ i ].draw( "white" );
+    }
+};
 
 var fractalsCreators = { };
 fractalsCreators[ "Tree" ] = function()
@@ -516,6 +588,13 @@ fractalsCreators[ "Mandelbrot Set" ] = function()
     var iterations = Number( depthInput.value );
 
     fractal = new MandelbrotSet( iterations );
+};
+fractalsCreators[ "Sierpinski Carpet" ] = function()
+{
+    var color = getColor();
+    var iterations = Number( depthInput.value );
+
+    fractal = new SierpinskiCarpet( color, iterations );
 };
 
 function generateFractal()
