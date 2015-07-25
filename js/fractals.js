@@ -101,8 +101,10 @@ function Line( startX, startY, endX, endY )
 
 var fractal = null;
 
-function Fractal( color, lineWidth )
+function Fractal( iterations, color, lineWidth )
 {
+    this.iterations = iterations;
+
     this.color = color;
     this.rainbow = this.color === "rainbow";
     this.lineWidth = lineWidth;
@@ -116,9 +118,8 @@ Fractal.prototype.reset = function() { };
 
 function TreeFractal( color, lineWidth, depth, angleScale )
 {
-    Fractal.call( this, color, lineWidth );
+    Fractal.call( this, depth, color, lineWidth );
 
-    this.depth = depth;
     this.angleScale = angleScale;
 
     this._maxY = 0;
@@ -145,11 +146,11 @@ TreeFractal.prototype._generate = function( x, y, angle, depth )
 TreeFractal.prototype.generate = function()
 {
     this._lines = [ ];
-    for( var i = this.depth; i > 0; i-- )
+    for( var i = this.iterations; i > 0; i-- )
     {
         this._lines[ i ] = [ ];
     }
-    this._generate( 0, 0, -Math.PI / 2, this.depth );
+    this._generate( 0, 0, -Math.PI / 2, this.iterations );
 };
 TreeFractal.prototype.generateStep = function()
 {
@@ -162,7 +163,7 @@ TreeFractal.prototype.generateStep = function()
 };
 TreeFractal.prototype.reset = function()
 {
-    this._currentStep = this.depth + 1;
+    this._currentStep = this.iterations + 1;
 };
 TreeFractal.prototype.drawLine = function( line, color, lineWidth )
 {
@@ -179,9 +180,9 @@ TreeFractal.prototype.drawLine = function( line, color, lineWidth )
 };
 TreeFractal.prototype.draw = function()
 {
-    for( var i = this._currentStep; i <= this.depth; i++ )
+    for( var i = this._currentStep; i <= this.iterations; i++ )
     {
-        var color = HSVtoRGB( i / this.depth, 0.85, 0.85 );
+        var color = HSVtoRGB( i / this.iterations, 0.85, 0.85 );
         for( var j = 0; j < this._lines[ i ].length; j++ )
         {
             this.drawLine( this._lines[ i ][ j ], color, this.lineWidth );
@@ -191,9 +192,7 @@ TreeFractal.prototype.draw = function()
 
 function DragonCurve( color, lineWidth, iterations )
 {
-    Fractal.call( this, color, lineWidth );
-
-    this.iterations = iterations;
+    Fractal.call( this, iterations, color, lineWidth );
 
     if( this.rainbow )
     {
@@ -303,9 +302,8 @@ Triangle.prototype.divide = function()
 
 function SierpinskiTriangle( color, iterations )
 {
-    Fractal.call( this, color, 0 );
+    Fractal.call( this, Math.min( 9, iterations ), color, undefined );
 
-    this.iterations = Math.min( iterations, 9 );
     this.triangles = null;
     this.reset();
 }
@@ -367,9 +365,8 @@ SierpinskiTriangle.prototype.generateStep = function()
 
 function MandelbrotSet( iterations )
 {
-    Fractal.call( this, "black", 0 );
+    Fractal.call( this, iterations * 10, "black", undefined );
 
-    this.iterations = iterations * 10;
     this.reset();
 }
 MandelbrotSet.prototype = Object.create( Fractal.prototype );
@@ -509,9 +506,8 @@ Square.prototype.draw = function( color )
 
 function SierpinskiCarpet( color, iterations )
 {
-    Fractal.call( this, color );
+    Fractal.call( this, Math.min( 6, iterations ), color, undefined );
 
-    this.iterations = Math.min( 6, iterations );
     this.squares = null;
     this.reset();
 }
