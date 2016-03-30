@@ -77,37 +77,59 @@ function sorted()
     return true;
 }
 
-function BubbleSort()
+function* BubbleSort()
 {
-    this.lastIndex = 0;
-    this.sortIteration = function()
+    var changed;
+    do
     {
-        var i = this.lastIndex;
-        var j = this.lastIndex + 1;
-        if( items[ i ] > items[ j ] )
+        changed = false;
+        for( var i = 0; i < itemCount - 1; i++ )
         {
-            swap( i, j );
+            if( items[ i ] > items[ i + 1 ] )
+            {
+                swap( i, i + 1 );
+                changed = true;
+                yield;
+            }
         }
-        this.lastIndex = ( this.lastIndex + 1 ) % ( itemCount - 1 );
-    };
-    this.done = function()
-    {
-        return sorted();
-    };
+    }
+    while( changed );
 }
 
-function CocktailSort()
+function* CocktailSort()
 {
-    this.lastIndex = 0;
-    this.direction = 1;
-    this.sortIteration = function()
+    var changed;
+    do
     {
-        var i = this.lastIndex;
-    };
+        changed = false;
+        for( var i = 0; i < itemCount - 1; i++ )
+        {
+            if( items[ i ] > items[ i + 1 ] )
+            {
+                swap( i, i + 1 );
+                changed = true;
+                yield;
+            }
+        }
+        if( !changed )
+        {
+            break;
+        }
+        for( var i = itemCount - 1; i >= 1; i-- )
+        {
+            if( items[ i - 1 ] > items[ i ] )
+            {
+                swap( i - 1, i );
+                yield;
+            }
+        }
+    }
+    while( changed );
 }
 
 var sortingAlgorithms = {
-    "Bubble" : new BubbleSort()
+    "Bubble" : BubbleSort,
+    "Cocktail" : CocktailSort
 };
 
 var sorter = null;
@@ -117,7 +139,7 @@ var itemColors = [ ]
 
 function setSort()
 {
-    sorter = sortingAlgorithms[ algorithmSelect.value ];
+    sorter = sortingAlgorithms[ algorithmSelect.value ]();
     initializeItems();
     randomizeItems();
 
@@ -142,19 +164,6 @@ function randomizeItems()
 {
     items.shuffle();
     render();
-}
-
-function sortIteration()
-{
-    if( sorter )
-    {
-        sorter.sortIteration();
-        if( sorter.done() )
-        {
-            console.log( "Done" );
-            sorting = false;
-        }
-    }
 }
 
 
@@ -206,9 +215,13 @@ function update( elapsedTime )
     {
         if( totalTime > iterationDelay )
         {
-            for( var i = 0; i < changesPerIteration && sorting; i++ )
+            for( var i = 0; i < changesPerIteration; i++ )
             {
-                sortIteration();
+                if( sorter.next().done )
+                {
+                    sorting = false;
+                    break;
+                }
             }
             render();
             totalTime = 0;
