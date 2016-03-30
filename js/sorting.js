@@ -32,6 +32,16 @@ onDebouncedWindowResize( onWindowResize );
 
 $( '[ data-toggle="popover" ]' ).popover();
 
+function addSortingAlgorithms()
+{
+    for( var algorithmName in sortingAlgorithms )
+    {
+        var opt = document.createElement( "option" );
+        opt.innerHTML = algorithmName;
+        algorithmSelect.appendChild( opt );
+    }
+}
+
 /* Validation */
 
 var display = new ValidationGroup();
@@ -67,9 +77,9 @@ function swap( i, j )
 
 function sorted()
 {
-    for( var i = 0; i < itemCount - 1; i++ )
+    for( var i = 0; i < itemCount; i++ )
     {
-        if( items[ i ] > items[ i + 1 ] )
+        if( i != items[ i ] )
         {
             return false;
         }
@@ -127,9 +137,144 @@ function* CocktailSort()
     while( changed );
 }
 
+function* RandomSort()
+{
+    while( !sorted() )
+    {
+        items.shuffle();
+        yield;
+    }
+}
+
+function* InsertionSort()
+{
+    for( var i = 1; i < itemCount; i++ )
+    {
+        var temp = items[ i ];
+        var j = 0;
+        for( j = i; j > 0; j-- )
+        {
+            if( items[ j - 1 ] < temp )
+            {
+                break;
+            }
+            items[ j ] = items[ j - 1 ];
+            yield;
+        }
+        items[ j ] = temp;
+        yield;
+    }
+}
+
+function* CombSort()
+{
+    var gap = itemCount;
+    var shrink = 1.3;
+    var swapped = false;
+    while( gap != 1 || swapped )
+    {
+        gap = Math.floor( gap / shrink );
+        if( gap < 1 )
+        {
+            gap = 1;
+        }
+        swapped = false;
+        for( var i = 0; i + gap < itemCount; i++ )
+        {
+            if( items[ i ] > items[ i + gap ] )
+            {
+                swap( i, i + gap );
+                swapped = true;
+                yield;
+            }
+        }
+    }
+}
+
+function* InPlaceMSDRadixSort()
+{
+    function _getBit( num, bit )
+    {
+        return ( num & ( 1 << ( bit - 1 ) ) ) != 0 ? 1 : 0;
+    }
+
+    function* _sort( start, end, bit )
+    {
+        if( bit == 0 || ( end - start ) == 0 )
+        {
+            return;
+        }
+
+        var bin0 = start - 1;
+        var bin1 = end;
+        while( bin0 + 1 < bin1 )
+        {
+            var bin = _getBit( items[ bin0 + 1 ], bit );
+            if( bin == 1 )
+            {
+                swap( bin0 + 1, bin1 - 1 );
+                bin1--;
+                yield;
+            }
+            else
+            {
+                bin0++;
+            }
+        }
+        yield* _sort( start, bin0 + 1, bit - 1 );
+        yield* _sort( bin1, end, bit - 1 );
+    }
+    yield* _sort( 0, itemCount, 64 );
+}
+
+function* BitonicSort()
+{
+    function* _sort( lo, n, ascending )
+    {
+        if( n > 1 )
+        {
+            var k = Math.floor( n / 2 );
+            yield* _sort( lo, k, true );
+            yield* _sort( lo + k, k, false );
+
+            yield* _merge( lo, n, ascending );
+        }
+    }
+
+    function* _merge( lo, n, ascending )
+    {
+        if( n > 1 )
+        {
+            var k = Math.floor( n / 2 );
+            for( var i = lo; i < lo + k; i++ )
+            {
+                yield* _compare( i, i + k, ascending );
+            }
+            yield* _merge( lo, k, ascending );
+            yield* _merge( lo + k, k, ascending );
+        }
+    }
+
+    function* _compare( i, j, ascending )
+    {
+        if( ascending == ( items[ i ] > items[ j ] ) )
+        {
+            swap( i, j );
+            yield;
+        }
+    }
+
+    yield* _sort( 0, itemCount, true );
+}
+
 var sortingAlgorithms = {
-    "Bubble" : BubbleSort,
-    "Cocktail" : CocktailSort
+    "Bubble Sort" : BubbleSort,
+    "Cocktail Shaker Sort" : CocktailSort,
+    "RandoSort" : RandomSort,
+    "Insertion Sort" : InsertionSort,
+    "Comb Sort" : CombSort,
+    "In-Place MSD Radix Sort" : InPlaceMSDRadixSort,
+    "Bitonic Sort" : BitonicSort
 };
 
 var sorter = null;
@@ -139,7 +284,14 @@ var itemColors = [ ]
 
 function setSort()
 {
-    sorter = sortingAlgorithms[ algorithmSelect.value ]();
+    var sorterName = algorithmSelect.value
+    sorter = sortingAlgorithms[ sorterName ]();
+
+    if( sorterName == "Bitonic Sort" )
+    {
+        itemCountInput.value = Math.pow( 2, Math.ceil( Math.log( itemCount ) / Math.log( 2 ) ) );
+    }
+
     initializeItems();
     randomizeItems();
 
@@ -257,6 +409,7 @@ function render()
 ( function()
 {
     onWindowResize();
+    addSortingAlgorithms();
     setupDisplayValidators();
     initializeItems();
     render();
