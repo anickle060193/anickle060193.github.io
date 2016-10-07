@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +12,7 @@
     <title>Team Lunch</title>
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
 
     <style type="text/css">
         /* Space out content a bit */
@@ -142,8 +141,9 @@
             </div>
         </footer>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="js/jquery-3.1.1.min.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="js/utilities.js"></script>
         <script type="text/javascript">
             var resturants = {
                 'jasminepavilion' : { name : 'Jasmine Pavilion', url : 'http://www.jasminepavilion.com/#/' },
@@ -158,7 +158,7 @@
 
             $( function()
             {
-                var r = new URL( window.location ).searchParams.get( 'r' );
+                var r = urlSettings.getUrlData()[ 'r' ];
                 var resturant = resturants[ r ];
 
                 if( typeof resturant !== 'undefined' )
